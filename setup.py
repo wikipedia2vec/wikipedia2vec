@@ -26,6 +26,9 @@ setup(
         Extension(
             '*', ['entity_vector/utils/tokenizer/*.pyx'],
         ),
+        Extension(
+            '*', ['entity_vector/utils/ner/*.pyx'],
+        ),
     ]),
     install_requires=[
         'annoy',
