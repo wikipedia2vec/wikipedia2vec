@@ -1,0 +1,4 @@
+include README.rst LICENSE requirements.txt
+recursive-include wikipedia2vec *.c
+recursive-include wikipedia2vec *.pxd
+recursive-include wikipedia2vec *.pyx
