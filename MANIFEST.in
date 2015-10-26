@@ -1,0 +1,3 @@
+recursive-include entity_vector *.pxd
+recursive-include entity_vector *.pyx
+recursive-include entity_vector/utils/tokenizer/opennlp *
