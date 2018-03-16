@@ -12,7 +12,6 @@ cimport numpy as np
 cimport cython
 from ctypes import c_float, c_uint32, c_uint64
 from contextlib import closing
-# from itertools import imap
 from libc.math cimport exp
 from libc.string cimport memset
 from multiprocessing.pool import Pool
