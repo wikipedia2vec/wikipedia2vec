@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 import multiprocessing
 import time
@@ -51,7 +52,7 @@ cdef class Word(Item):
             return self._text
 
     def __repr__(self):
-        return '<Word %s>' % (self._text.encode('utf-8'))
+        return '<Word %s>' % (self._text,)
 
     def __reduce__(self):
         return (
@@ -70,7 +71,7 @@ cdef class Entity(Item):
             return self._title
 
     def __repr__(self):
-        return '<Entity %s>' % (self._title.encode('utf-8'))
+        return '<Entity %s>' % (self._title,)
 
     def __reduce__(self):
         return (

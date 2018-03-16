@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import unicode_literals
 import re
 
 # obtained from Wikipedia Miner
 # https://github.com/studio-ousia/wikipedia-miner/blob/master/src/org/wikipedia/miner/extraction/LanguageConfiguration.java
 REDIRECT_REGEXP = re.compile(
-    ur"(?:\#|＃)(?:REDIRECT|転送)[:\s]*(?:\[\[(.*)\]\]|(.*))", re.IGNORECASE
+    r"(?:\#|＃)(?:REDIRECT|転送)[:\s]*(?:\[\[(.*)\]\]|(.*))", re.IGNORECASE
 )
 
 
@@ -28,7 +28,7 @@ cdef class WikiPage:
             return self._wiki_text
 
     def __repr__(self):
-        return '<WikiPage %s>' % (self.title.encode('utf-8'))
+        return '<WikiPage %s>' % (self.title,)
 
     def __reduce__(self):
         return (self.__class__, (self.title, self.language, self.wiki_text))
@@ -54,4 +54,4 @@ cdef class WikiPage:
             return None
 
     cdef inline unicode _normalize_title(self, unicode title):
-        return (title[0].upper() + title[1:]).replace(u'_', u' ')
+        return (title[0].upper() + title[1:]).replace('_', ' ')

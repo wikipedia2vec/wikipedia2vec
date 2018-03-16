@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import click
 import collections
 import logging
@@ -187,8 +188,8 @@ cdef class ClickGraph:
                         if click_type != 'link':
                             continue
 
-                        prev = prev.replace(u'_', u' ')
-                        curr = curr.replace(u'_', u' ')
+                        prev = prev.replace('_', ' ')
+                        curr = curr.replace('_', ' ')
 
                         index1 = dictionary.get_entity_index(prev)
                         if index1 == -1:

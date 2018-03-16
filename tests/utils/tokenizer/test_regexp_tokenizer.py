@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import unittest
 
 from wikipedia2vec.utils.tokenizer.token import Token
@@ -14,7 +14,7 @@ class TestRegexpTokenizer(unittest.TestCase):
         self._tokenizer = RegexpTokenizer()
 
     def test_tokenize(self):
-        text = u'Tokyo is the capital of Japan'
+        text = 'Tokyo is the capital of Japan'
         tokens = self._tokenizer.tokenize(text)
 
         ok_(all([isinstance(t, Token) for t in tokens]))
@@ -22,5 +22,5 @@ class TestRegexpTokenizer(unittest.TestCase):
         eq_([(0, 5), (6, 8), (9, 12), (13, 20), (21, 23), (24, 29)],
             [t.span for t in tokens])
 
-        eq_([u'Tokyo', u'is', u'the', u'capital', u'of', u'Japan'],
+        eq_(['Tokyo', 'is', 'the', 'capital', 'of', 'Japan'],
             [t.text for t in tokens])

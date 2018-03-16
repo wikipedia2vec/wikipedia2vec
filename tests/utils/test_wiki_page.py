@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import pkg_resources
 import unittest
 import six.moves.cPickle as pickle
@@ -22,7 +22,7 @@ class TestWikiPage(unittest.TestCase):
         ok_(self.pages[0].is_redirect)
 
     def test_redirect(self):
-        eq_(u'Computer accessibility', self.pages[0].redirect)
+        eq_('Computer accessibility', self.pages[0].redirect)
 
     def test_page_properties(self):
         page = self.pages[1]

@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+from __future__ import unicode_literals
 
 
 cdef class Token:
@@ -7,7 +8,7 @@ cdef class Token:
         self.span = span
 
     def __repr__(self):
-        return '<Token %s>' % self.text.encode('utf-8')
+        return '<Token %s>' % self.text
 
     def __reduce__(self):
         return (self.__class__, (self.text, self.span))

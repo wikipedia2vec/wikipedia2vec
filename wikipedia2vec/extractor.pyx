@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 import mwparserfromhell
 
@@ -30,8 +31,7 @@ cdef class Paragraph:
             return self._wiki_links
 
     def __repr__(self):
-        return '<Paragraph %s>' % (u' '.join(self._words[:5]).encode('utf-8') +
-                                   '...')
+        return '<Paragraph %s>' % (' '.join(self._words[:5]) + '...')
 
     def __reduce__(self):
         return (self.__class__, (self.text, self._words, self._wiki_links))
@@ -56,8 +56,7 @@ cdef class WikiLink:
             return self._span
 
     def __repr__(self):
-        return '<WikiLink %s->%s>' % (self._text.encode('utf-8'),
-                                      self._title.encode('utf-8'))
+        return '<WikiLink %s->%s>' % (self._text, self._title)
 
     def __reduce__(self):
         return (self.__class__, (self._title, self._text, self._span))
@@ -96,7 +95,7 @@ cdef class Extractor:
                         cur_words += words
                     else:
                         paragraphs.append(
-                            Paragraph(u' '.join(cur_text), cur_words, cur_links)
+                            Paragraph(' '.join(cur_text), cur_words, cur_links)
                         )
                         cur_text = [paragraph]
                         cur_words = words
