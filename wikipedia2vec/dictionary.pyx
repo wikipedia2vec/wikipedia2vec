@@ -52,7 +52,10 @@ cdef class Word(Item):
             return self._text
 
     def __repr__(self):
-        return '<Word %s>' % (self._text,)
+        if six.PY2:
+            return b'<Word %s>' % self._text.encode('utf-8')
+        else:
+            return '<Word %s>' % self._text
 
     def __reduce__(self):
         return (
@@ -71,7 +74,10 @@ cdef class Entity(Item):
             return self._title
 
     def __repr__(self):
-        return '<Entity %s>' % (self._title,)
+        if six.PY2:
+            return b'<Entity %s>' % self._title.encode('utf-8')
+        else:
+            return '<Entity %s>' % self._title
 
     def __reduce__(self):
         return (

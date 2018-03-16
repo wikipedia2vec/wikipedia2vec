@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import re
+import six
 
 # obtained from Wikipedia Miner
 # https://github.com/studio-ousia/wikipedia-miner/blob/master/src/org/wikipedia/miner/extraction/LanguageConfiguration.java
@@ -28,7 +29,10 @@ cdef class WikiPage:
             return self._wiki_text
 
     def __repr__(self):
-        return '<WikiPage %s>' % (self.title,)
+        if six.PY2:
+            return b'<WikiPage %s>' % self.title.encode('utf-8')
+        else:
+            return '<WikiPage %s>' % self.title
 
     def __reduce__(self):
         return (self.__class__, (self.title, self.language, self.wiki_text))

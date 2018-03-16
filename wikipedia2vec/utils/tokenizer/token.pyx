@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from __future__ import unicode_literals
+import six
 
 
 cdef class Token:
@@ -8,7 +9,10 @@ cdef class Token:
         self.span = span
 
     def __repr__(self):
-        return '<Token %s>' % self.text
+        if six.PY2:
+            return b'<Token %s>' % self.text.encode('utf-8')
+        else:
+            return '<Token %s>' % self.text
 
     def __reduce__(self):
         return (self.__class__, (self.text, self.span))

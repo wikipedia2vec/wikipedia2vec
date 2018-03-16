@@ -4,6 +4,7 @@ from __future__ import absolute_import
 from __future__ import unicode_literals
 import logging
 import mwparserfromhell
+import six
 
 from .utils.wiki_page cimport WikiPage
 from .utils.tokenizer import get_tokenizer
@@ -31,7 +32,11 @@ cdef class Paragraph:
             return self._wiki_links
 
     def __repr__(self):
-        return '<Paragraph %s>' % (' '.join(self._words[:5]) + '...')
+        if six.PY2:
+            return ('<Paragraph %s>' % (' '.join(self._words[:5]) + '...')
+                   ).encode('utf-8')
+        else:
+            return '<Paragraph %s>' % (' '.join(self._words[:5]) + '...')
 
     def __reduce__(self):
         return (self.__class__, (self.text, self._words, self._wiki_links))
@@ -56,7 +61,11 @@ cdef class WikiLink:
             return self._span
 
     def __repr__(self):
-        return '<WikiLink %s->%s>' % (self._text, self._title)
+        if six.PY2:
+            return ('<WikiLink %s->%s>' % (self._text, self._title)
+                   ).encode('utf-8')
+        else:
+            return '<WikiLink %s->%s>' % (self._text, self._title)
 
     def __reduce__(self):
         return (self.__class__, (self._title, self._text, self._span))
