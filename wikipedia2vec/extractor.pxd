@@ -17,7 +17,7 @@ cdef class WikiLink:
 
 
 cdef class Extractor:
-    cdef str _language
+    cdef unicode _language
     cdef bint _lowercase
     cdef int _min_paragraph_len
     cdef _tokenizer

@@ -10,7 +10,7 @@ REDIRECT_REGEXP = re.compile(
 
 
 cdef class WikiPage:
-    def __init__(self, unicode title, str language, unicode wiki_text):
+    def __init__(self, unicode title, unicode language, unicode wiki_text):
         self._title = title
         self._language = language
         self._wiki_text = wiki_text

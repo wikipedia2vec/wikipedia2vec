@@ -41,7 +41,7 @@ cdef np.ndarray sample_ints
 cdef np.ndarray link_indices
 cdef np.ndarray click_indices
 cdef Extractor extractor
-cdef str language
+cdef unicode language
 cdef object alpha
 cdef object word_counter
 cdef object link_cursor

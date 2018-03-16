@@ -23,10 +23,7 @@ class WikiDumpReader(object):
         self._ignored_ns = ignored_ns
 
         with bz2.BZ2File(self._dump_file) as f:
-            if six.PY2:
-                self._language = re.search(r'xml:lang="(.*)"', f.readline()).group(1)
-            else:
-                self._language = re.search(r'xml:lang="(.*)"', six.text_type(f.readline())).group(1)
+            self._language = re.search(r'xml:lang="(.*)"', six.text_type(f.readline())).group(1)
 
     @property
     def dump_file(self):

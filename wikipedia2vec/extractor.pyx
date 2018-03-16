@@ -63,7 +63,7 @@ cdef class WikiLink:
 
 
 cdef class Extractor:
-    def __init__(self, str language, bint lowercase=True,
+    def __init__(self, unicode language, bint lowercase=True,
                  int min_paragraph_len=20, PrefixSearchable dictionary=None):
         self._language = language
         self._lowercase = lowercase
