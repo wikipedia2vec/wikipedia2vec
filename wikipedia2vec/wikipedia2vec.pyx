@@ -1,27 +1,28 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import joblib
 import logging
 import multiprocessing
 import os
 import time
-import cPickle as pickle
+import six
+import six.moves.cPickle as pickle
 import numpy as np
 cimport numpy as np
 cimport cython
 from ctypes import c_float, c_uint32, c_uint64
 from contextlib import closing
-from itertools import imap
+# from itertools import imap
 from libc.math cimport exp
 from libc.string cimport memset
 from multiprocessing.pool import Pool
 from scipy.linalg cimport cython_blas as blas
 
-from dictionary cimport Dictionary, Item, Word, Entity
-from extractor cimport Extractor, Paragraph, WikiLink
-from link_graph cimport LinkGraph
-from click_graph cimport ClickGraph
-from utils.wiki_page cimport WikiPage
+from .dictionary cimport Dictionary, Item, Word, Entity
+from .extractor cimport Extractor, Paragraph, WikiLink
+from .link_graph cimport LinkGraph
+from .click_graph cimport ClickGraph
+from .utils.wiki_page cimport WikiPage
 
 logger = logging.getLogger(__name__)
 

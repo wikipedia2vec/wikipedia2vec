@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import bz2
 import logging
 import re
 from gensim.corpora import wikicorpus
 
 from wikipedia2vec.utils.wiki_page import WikiPage
+import six
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +23,10 @@ class WikiDumpReader(object):
         self._ignored_ns = ignored_ns
 
         with bz2.BZ2File(self._dump_file) as f:
-            self._language = re.search(r'xml:lang="(.*)"', f.readline()).group(1)
+            if six.PY2:
+                self._language = re.search(r'xml:lang="(.*)"', f.readline()).group(1)
+            else:
+                self._language = re.search(r'xml:lang="(.*)"', six.text_type(f.readline())).group(1)
 
     @property
     def dump_file(self):
@@ -42,7 +47,7 @@ class WikiDumpReader(object):
                 c += 1
 
                 yield WikiPage(
-                    unicode(title), self._language, unicode(wiki_text)
+                    six.text_type(title), self._language, six.text_type(wiki_text)
                 )
 
                 if c % 10000 == 0:

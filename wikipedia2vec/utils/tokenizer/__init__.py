@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
-from mecab_tokenizer import MeCabTokenizer
-from regexp_tokenizer import RegexpTokenizer
+from __future__ import absolute_import
+from .mecab_tokenizer import MeCabTokenizer
+from .regexp_tokenizer import RegexpTokenizer
 
 
 def get_tokenizer(language):

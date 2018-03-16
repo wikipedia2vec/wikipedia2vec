@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import unittest
 
 from wikipedia2vec.utils.tokenizer.token import Token

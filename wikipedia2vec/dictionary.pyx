@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-
+from __future__ import absolute_import
 import logging
 import multiprocessing
 import time
-import cPickle as pickle
+import six
+import six.moves.cPickle as pickle
 import numpy as np
 from collections import Counter
 from contextlib import closing
@@ -13,8 +14,8 @@ from itertools import chain
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 
-from extractor import Extractor
-from utils.wiki_page cimport WikiPage
+from .extractor import Extractor
+from .utils.wiki_page cimport WikiPage
 
 logger = logging.getLogger(__name__)
 

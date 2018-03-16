@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-
+from __future__ import absolute_import
 import logging
 import mwparserfromhell
 
-from utils.wiki_page cimport WikiPage
-from utils.tokenizer import get_tokenizer
-from utils.tokenizer.token cimport Token
+from .utils.wiki_page cimport WikiPage
+from .utils.tokenizer import get_tokenizer
+from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 

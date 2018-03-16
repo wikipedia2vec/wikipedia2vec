@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 
+from __future__ import absolute_import
 import pkg_resources
 import unittest
-import cPickle as pickle
+import six.moves.cPickle as pickle
 
 from wikipedia2vec.utils.wiki_dump_reader import WikiDumpReader
 
