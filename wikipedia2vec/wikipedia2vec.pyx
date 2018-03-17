@@ -20,7 +20,6 @@ from scipy.linalg cimport cython_blas as blas
 from .dictionary cimport Dictionary, Item, Word, Entity
 from .extractor cimport Extractor, Paragraph, WikiLink
 from .link_graph cimport LinkGraph
-from .click_graph cimport ClickGraph
 from .utils.wiki_page cimport WikiPage
 
 logger = logging.getLogger(__name__)
@@ -31,7 +30,6 @@ cdef int MAX_EXP = 6
 
 cdef Dictionary dictionary
 cdef LinkGraph link_graph
-cdef ClickGraph click_graph
 cdef np.ndarray syn0
 cdef np.ndarray syn1
 cdef np.ndarray work
@@ -39,13 +37,11 @@ cdef np.ndarray word_neg_table
 cdef np.ndarray entity_neg_table
 cdef np.ndarray sample_ints
 cdef np.ndarray link_indices
-cdef np.ndarray click_indices
 cdef Extractor extractor
 cdef unicode language
 cdef object alpha
 cdef object word_counter
 cdef object link_cursor
-cdef object click_cursor
 cdef long total_words
 
 
@@ -60,9 +56,6 @@ cdef class _Parameters:
     cdef public float sample
     cdef public int iteration
     cdef public int links_per_page
-    cdef public int click_len
-    cdef public int click_window
-    cdef public int clicks_per_page
     cdef dict _kwargs
 
     def __init__(self, **kwargs):
@@ -209,10 +202,8 @@ cdef class Wikipedia2Vec:
 
         return ret
 
-    def train(self, dump_reader, link_graph_, click_graph_, pool_size,
-              chunk_size, **kwargs):
-        global dictionary, link_graph, click_graph, word_counter, link_cursor,\
-            click_cursor, extractor, alpha, work, params, total_words
+    def train(self, dump_reader, link_graph_, pool_size, chunk_size, **kwargs):
+        global dictionary, link_graph, word_counter, link_cursor, extractor, alpha, work, params, total_words
 
         start_time = time.time()
 
@@ -254,15 +245,7 @@ cdef class Wikipedia2Vec:
         else:
             link_indices = None
 
-        if click_graph_:
-            click_indices = multiprocessing.RawArray(
-                c_uint32, np.random.permutation(indices)
-            )
-        else:
-            click_indices = None
-
         link_cursor = multiprocessing.Value(c_uint32, 0)
-        click_cursor = multiprocessing.Value(c_uint32, 0)
 
         logger.info('Starting to train an embedding...')
 
@@ -290,7 +273,6 @@ cdef class Wikipedia2Vec:
 
         dictionary = self.dictionary
         link_graph = link_graph_
-        click_graph = click_graph_
 
         extractor = Extractor(dump_reader.language, dictionary.lowercase,
                               dictionary=dictionary)
@@ -299,7 +281,7 @@ cdef class Wikipedia2Vec:
         work = np.zeros(dim_size)
 
         init_args = (syn0_shared, syn1_shared, word_neg_table, entity_neg_table,
-                     sample_ints, link_indices, click_indices)
+                     sample_ints, link_indices)
 
         with closing(Pool(pool_size, initializer=init_worker,
                           initargs=init_args)) as pool:
@@ -322,11 +304,6 @@ cdef class Wikipedia2Vec:
         if link_graph is not None:
             train_params['link_graph'] = dict(
                 build_params=link_graph.build_params
-            )
-
-        if click_graph is not None:
-            train_params['click_graph'] = dict(
-                build_params=click_graph.build_params
             )
 
         self._train_history.append(train_params)
@@ -366,9 +343,9 @@ cdef class Wikipedia2Vec:
 
 
 def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_,
-                link_indices_, click_indices_):
+                link_indices_):
     global syn0, syn1, extractor, sample_ints, word_neg_table,\
-        entity_neg_table, link_indices, click_indices
+        entity_neg_table, link_indices
 
     syn0 = np.frombuffer(syn0_, dtype=np.float32)
     syn0 = syn0.reshape(len(dictionary), params.dim_size)
@@ -382,13 +359,11 @@ def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_,
 
     if link_indices_:
         link_indices = np.frombuffer(link_indices_, dtype=np.uint32)
-    if click_indices_:
-        click_indices = np.frombuffer(click_indices_, dtype=np.uint32)
 
 
 def train_page(WikiPage page):
     cdef int pos, pos2, start, index, total_nodes, word_count, word, word2,\
-        entity, entity2, start_node, clicks_per_page
+        entity, entity2, start_node
     cdef tuple span
     cdef list words, target_words, entities, target_entities
     cdef WikiLink wiki_link
@@ -408,29 +383,6 @@ def train_page(WikiPage page):
             for entity2 in neighbors:
                 _train_pair(entity, entity2, alpha.value, params.negative,
                             entity_neg_table)
-
-    # train using Wikipedia click graph
-    if click_graph is not None:
-        total_nodes = click_indices.shape[0]
-        clicks_per_page = params.clicks_per_page
-
-        with click_cursor.get_lock():
-            start_node = click_cursor.value
-            click_cursor.value = (start_node + clicks_per_page) % total_nodes
-
-        for index in range(start_node, start_node + clicks_per_page):
-            entities = click_graph.random_walk(int(click_indices[start_node]),
-                                               params.click_len,
-                                               return_indices=True)
-            for (pos, entity) in enumerate(entities):
-                start = max(0, pos - params.click_window)
-                target_entities = entities[start:pos + params.click_window + 1]
-                for (pos2, entity2) in enumerate(target_entities, start):
-                    if pos2 == pos:
-                        continue
-
-                    _train_pair(entity, entity2, alpha.value, params.negative,
-                                entity_neg_table)
 
     # train using Wikipedia words and anchors
     for paragraph in extractor.extract_paragraphs(page):
