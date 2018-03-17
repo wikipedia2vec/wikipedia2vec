@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from dictionary cimport PrefixSearchable
+from __future__ import absolute_import
+from .dictionary cimport PrefixSearchable
 
 
 cdef class PhraseDictionary(PrefixSearchable):

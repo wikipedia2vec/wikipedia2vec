@@ -6,3 +6,4 @@ marisa-trie==0.7.2
 mwparserfromhell==0.4.3
 numpy==1.11.1
 scipy==0.17.1
+six>=1.11.0

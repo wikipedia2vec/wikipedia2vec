@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
-from setuptools import setup, Extension
+from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
 
@@ -42,7 +42,7 @@ setup(
     author='Studio Ousia',
     author_email='ikuya@ousia.jp',
     url='http://github.com/studio-ousia/wikipedia2vec',
-    packages=['wikipedia2vec'],
+    packages=find_packages(exclude=('tests*',)),
     cmdclass=dict(build_ext=custom_build_ext),
     ext_modules=[Extension(module_name, [path]) for (module_name, path) in list_c_files()],
     include_package_data=True,
@@ -60,9 +60,10 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
-        # 'Programming Language :: Python :: 3.3',
-        # 'Programming Language :: Python :: 3.4',
-        # 'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.3',
+        'Programming Language :: Python :: 3.4',
+        'Programming Language :: Python :: 3.5',
+        'Programming Language :: Python :: 3.6',
     ],
     install_requires=[
         'click',
@@ -72,6 +73,7 @@ setup(
         'mwparserfromhell',
         'numpy',
         'scipy',
+        'six',
     ],
     setup_requires=['numpy'],
     tests_require=['nose'],

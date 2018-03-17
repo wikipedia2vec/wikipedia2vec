@@ -1,15 +1,15 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import click
 import logging
 import multiprocessing
 
-from dictionary import Dictionary
-from click_graph import ClickGraph
-from link_graph import LinkGraph
-from phrase import PhraseDictionary
-from wikipedia2vec import Wikipedia2Vec
-from utils.wiki_dump_reader import WikiDumpReader
+from .dictionary import Dictionary
+from .click_graph import ClickGraph
+from .link_graph import LinkGraph
+from .phrase import PhraseDictionary
+from .wikipedia2vec import Wikipedia2Vec
+from .utils.wiki_dump_reader import WikiDumpReader
 
 
 @click.group()

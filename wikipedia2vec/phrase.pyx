@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-
+from __future__ import absolute_import
 import logging
 import tempfile
 import time
-import cPickle as pickle
+import six
+import six.moves.cPickle as pickle
 from collections import Counter
 from contextlib import closing
 from functools import partial
 from marisa_trie import Trie
 from multiprocessing.pool import Pool
 
-from extractor cimport Extractor
-from utils.tokenizer import get_tokenizer
+from .extractor cimport Extractor
+from .utils.tokenizer import get_tokenizer
 
 logger = logging.getLogger(__name__)
 

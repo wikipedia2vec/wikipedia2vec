@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import logging
 import time
-import cPickle as pickle
+import six
+import six.moves.cPickle as pickle
 import numpy as np
 cimport cython
 from contextlib import closing
 from multiprocessing.pool import Pool
 from scipy.sparse import csr_matrix, lil_matrix
 
-from dictionary cimport Entity
-from extractor cimport Extractor
+from .dictionary cimport Entity
+from .extractor cimport Extractor
 
 logger = logging.getLogger(__name__)
 

@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
-
-from token cimport Token
+from __future__ import absolute_import
+from .token cimport Token
 
 
 cdef class MeCabTokenizer:

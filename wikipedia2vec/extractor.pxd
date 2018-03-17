@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
-
-from dictionary cimport PrefixSearchable
-from utils.wiki_page cimport WikiPage
+from __future__ import absolute_import
+from .dictionary cimport PrefixSearchable
+from .utils.wiki_page cimport WikiPage
 
 
 cdef class Paragraph:
@@ -17,7 +17,7 @@ cdef class WikiLink:
 
 
 cdef class Extractor:
-    cdef str _language
+    cdef unicode _language
     cdef bint _lowercase
     cdef int _min_paragraph_len
     cdef _tokenizer

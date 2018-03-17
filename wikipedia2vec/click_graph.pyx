@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
-
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import click
 import collections
 import logging
 import time
 import gzip
-import cPickle as pickle
+import six
+import six.moves.cPickle as pickle
 import numpy as np
 cimport numpy as np
 cimport cython
@@ -15,7 +17,7 @@ from functools import partial
 from multiprocessing.pool import Pool
 from scipy.sparse import lil_matrix
 
-from dictionary cimport Dictionary, Entity
+from .dictionary cimport Dictionary, Entity
 
 logger = logging.getLogger(__name__)
 
@@ -186,8 +188,8 @@ cdef class ClickGraph:
                         if click_type != 'link':
                             continue
 
-                        prev = prev.replace(u'_', u' ')
-                        curr = curr.replace(u'_', u' ')
+                        prev = prev.replace('_', ' ')
+                        curr = curr.replace('_', ' ')
 
                         index1 = dictionary.get_entity_index(prev)
                         if index1 == -1:

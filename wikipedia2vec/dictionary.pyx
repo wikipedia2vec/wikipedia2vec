@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-
+from __future__ import absolute_import
+from __future__ import unicode_literals
 import logging
 import multiprocessing
 import time
-import cPickle as pickle
+import six
+import six.moves.cPickle as pickle
 import numpy as np
 from collections import Counter
 from contextlib import closing
@@ -13,8 +15,8 @@ from itertools import chain
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 
-from extractor import Extractor
-from utils.wiki_page cimport WikiPage
+from .extractor import Extractor
+from .utils.wiki_page cimport WikiPage
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +52,10 @@ cdef class Word(Item):
             return self._text
 
     def __repr__(self):
-        return '<Word %s>' % (self._text.encode('utf-8'))
+        if six.PY2:
+            return b'<Word %s>' % self._text.encode('utf-8')
+        else:
+            return '<Word %s>' % self._text
 
     def __reduce__(self):
         return (
@@ -69,7 +74,10 @@ cdef class Entity(Item):
             return self._title
 
     def __repr__(self):
-        return '<Entity %s>' % (self._title.encode('utf-8'))
+        if six.PY2:
+            return b'<Entity %s>' % self._title.encode('utf-8')
+        else:
+            return '<Entity %s>' % self._title
 
     def __reduce__(self):
         return (
