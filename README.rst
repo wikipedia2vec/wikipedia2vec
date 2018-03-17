@@ -9,9 +9,9 @@ This library is developed and maintained by `Studio Ousia <http://www.ousia.jp>`
 
 The main benefits of using Wikipedia2Vec instead of conventional word embedding tools (e.g., Word2Vec, GloVe) are the following:
 
-- Wikipedia2Vec places words and Wikipedia entities into a same vector space, which enables you to easily capture the semantics in a text using words and entities in it, which can be beneficial for various natural language processing tasks.
+- Wikipedia2Vec places words and Wikipedia entities into a same vector space. It enables you to easily model the semantics in a text using words and entities in it, which is beneficial for various natural language processing tasks (e.g., text classification, entity linking, and question answering).
 
-- Conventional word embedding methods learn embeddings based only on contextual words of each word in a corpora. Wikipedia2Vec uses information obtained from entities' link structure in Wikipedia. It is beneficial for improving the quality of embeddings of words and entities.
+- Conventional word embedding models learn embeddings based only on contextual words of each word in a corpora. Wikipedia2Vec uses rich structured information obtained from entities' link structure in Wikipedia.
 
 The embeddings are learned efficiently from a Wikipedia dump.
 The code is implemented in Python and optimized using Cython, multiprocessing, and BLAS.
@@ -88,7 +88,7 @@ link structure of Wikipedia.
 
 There is no specific option in this command.
 
-Building Embeddings
+Learning Embeddings
 ~~~~~~~~~~~~~~~~~~~
 
 ::
