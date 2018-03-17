@@ -48,7 +48,7 @@ setup(
     include_package_data=True,
     entry_points={
         'console_scripts': [
-            'wikipedia2vec=wikipedia2vec:cli',
+            'wikipedia2vec=wikipedia2vec.cli:cli',
         ]
     },
     keywords=['wikipedia', 'embedding', 'wikipedia2vec'],
