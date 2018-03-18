@@ -26,6 +26,8 @@ class TestWikiPage(unittest.TestCase):
 
         ok_(isinstance(paragraphs[0].wiki_links[0], WikiLink))
         eq_(paragraphs[0].wiki_links[0].title, 'Human\u2013computer interaction')
+        eq_(paragraphs[0].wiki_links[0].text, 'human\u2013computer interaction')
+        eq_(paragraphs[0].wiki_links[0].span, (1, 4))
 
         extractor = Extractor('en', lowercase=False)
         paragraphs = extractor.extract_paragraphs(self.page)

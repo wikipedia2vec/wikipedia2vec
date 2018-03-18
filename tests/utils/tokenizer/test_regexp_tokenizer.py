@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 from __future__ import unicode_literals
 import unittest
 
@@ -19,8 +19,6 @@ class TestRegexpTokenizer(unittest.TestCase):
 
         ok_(all([isinstance(t, Token) for t in tokens]))
 
-        eq_([(0, 5), (6, 8), (9, 12), (13, 20), (21, 23), (24, 29)],
-            [t.span for t in tokens])
+        eq_([(0, 5), (6, 8), (9, 12), (13, 20), (21, 23), (24, 29)], [t.span for t in tokens])
 
-        eq_(['Tokyo', 'is', 'the', 'capital', 'of', 'Japan'],
-            [t.text for t in tokens])
+        eq_(['Tokyo', 'is', 'the', 'capital', 'of', 'Japan'], [t.text for t in tokens])
