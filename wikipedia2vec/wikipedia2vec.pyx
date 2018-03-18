@@ -470,7 +470,7 @@ cdef inline _train_pair(
                                      &syn1_[row2], &ONE))
         if f > MAX_EXP:
             g = (label - 1.0) * alpha
-        if f < -MAX_EXP:
+        elif f < -MAX_EXP:
             g = (label - 0.0) * alpha
         else:
             f = 1.0 / (1.0 + exp(-f))
