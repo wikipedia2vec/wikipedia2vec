@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 from .dictionary cimport PrefixSearchable
 from .utils.wiki_page cimport WikiPage
 

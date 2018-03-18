@@ -1,8 +1,7 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 import logging
 import time
-import six
 import six.moves.cPickle as pickle
 import numpy as np
 cimport cython
@@ -19,8 +18,8 @@ _extractor = None
 
 
 cdef class LinkGraph:
-    def __init__(self, Dictionary dictionary, np.ndarray indices,
-                 np.ndarray indptr, dict build_params):
+    def __init__(self, Dictionary dictionary, np.ndarray indices, np.ndarray indptr,
+                 dict build_params):
         self._dictionary = dictionary
         self._indices = indices
         self._indptr = indptr
@@ -73,8 +72,7 @@ cdef class LinkGraph:
 
         index -= self._offset
 
-        return (self._indices[self._indptr[index]:self._indptr[index + 1]] +
-                self._offset)
+        return (self._indices[self._indptr[index]:self._indptr[index + 1]] + self._offset)
 
     @cython.wraparound(False)
     cpdef list random_walk(self, item, int length=10,
@@ -112,7 +110,7 @@ cdef class LinkGraph:
     def save(self, out_file):
         np.save(out_file + '_indices.npy', self._indices)
         np.save(out_file + '_indptr.npy', self._indptr)
-        with open(out_file + '_meta.pickle', 'w') as f:
+        with open(out_file + '_meta.pickle', 'wb') as f:
             pickle.dump(dict(build_params=self._build_params), f)
 
     @staticmethod
@@ -124,7 +122,7 @@ cdef class LinkGraph:
             indices = np.load(in_file + '_indices.npy')
             indptr = np.load(in_file + '_indptr.npy')
 
-        with open(in_file + '_meta.pickle') as f:
+        with open(in_file + '_meta.pickle', 'rb') as f:
             meta = pickle.load(f)
 
         return LinkGraph(dictionary, indices, indptr, meta['build_params'])
@@ -146,9 +144,8 @@ cdef class LinkGraph:
         with closing(Pool(pool_size)) as pool:
             matrix = lil_matrix((num_entities, num_entities), dtype=np.bool)
 
-            for (page, paragraphs) in pool.imap_unordered(
-                _extract_paragraphs, dump_reader, chunksize=chunk_size
-            ):
+            for (page, paragraphs) in pool.imap_unordered(_extract_paragraphs, dump_reader,
+                                                          chunksize=chunk_size):
                 ind1 = dictionary.get_entity_index(page.title)
                 if ind1 == -1:
                     continue
@@ -172,11 +169,9 @@ cdef class LinkGraph:
         logger.info('Step 2/2: Converting matrix...')
         matrix = matrix.tocsr()
 
-        build_params = dict(dump_file=dump_reader.dump_file,
-                            build_time=time.time() - start_time)
+        build_params = dict(dump_file=dump_reader.dump_file, build_time=time.time() - start_time)
 
-        return LinkGraph(dictionary, matrix.indices, matrix.indptr,
-                         build_params)
+        return LinkGraph(dictionary, matrix.indices, matrix.indptr, build_params)
 
 
 def _extract_paragraphs(page):

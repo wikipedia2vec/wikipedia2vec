@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-from __future__ import absolute_import
+
 from __future__ import unicode_literals
 import logging
 import mwparserfromhell
@@ -33,8 +33,7 @@ cdef class Paragraph:
 
     def __repr__(self):
         if six.PY2:
-            return ('<Paragraph %s>' % (' '.join(self._words[:5]) + '...')
-                   ).encode('utf-8')
+            return ('<Paragraph %s>' % (' '.join(self._words[:5]) + '...')).encode('utf-8')
         else:
             return '<Paragraph %s>' % (' '.join(self._words[:5]) + '...')
 
@@ -62,8 +61,7 @@ cdef class WikiLink:
 
     def __repr__(self):
         if six.PY2:
-            return ('<WikiLink %s->%s>' % (self._text, self._title)
-                   ).encode('utf-8')
+            return ('<WikiLink %s->%s>' % (self._text, self._title)).encode('utf-8')
         else:
             return '<WikiLink %s->%s>' % (self._text, self._title)
 
@@ -72,8 +70,8 @@ cdef class WikiLink:
 
 
 cdef class Extractor:
-    def __init__(self, unicode language, bint lowercase=True,
-                 int min_paragraph_len=20, PrefixSearchable dictionary=None):
+    def __init__(self, unicode language, bint lowercase=True, int min_paragraph_len=20,
+                 PrefixSearchable dictionary=None):
         self._language = language
         self._lowercase = lowercase
         self._min_paragraph_len = min_paragraph_len
@@ -103,9 +101,7 @@ cdef class Extractor:
                         cur_text.append(paragraph)
                         cur_words += words
                     else:
-                        paragraphs.append(
-                            Paragraph(' '.join(cur_text), cur_words, cur_links)
-                        )
+                        paragraphs.append(Paragraph(' '.join(cur_text), cur_words, cur_links))
                         cur_text = [paragraph]
                         cur_words = words
                         cur_links = []
@@ -125,9 +121,7 @@ cdef class Extractor:
                 start = len(cur_words)
                 cur_words += words
                 end = len(cur_words)
-                cur_links.append(
-                    WikiLink(self._normalize_title(title), text, (start, end))
-                )
+                cur_links.append(WikiLink(self._normalize_title(title), text, (start, end)))
 
             elif isinstance(node, mwparserfromhell.nodes.Tag):
                 if node.tag not in ('b', 'i'):
@@ -139,9 +133,8 @@ cdef class Extractor:
                 cur_text.append(text)
                 cur_words += self._extract_words(text)
 
-        return [p for p in paragraphs
-                if (p.words and (p.words[0] not in ('|', '!', '{')) and
-                    len(p.words) >= self._min_paragraph_len)]
+        return [p for p in paragraphs if (p.words and (p.words[0] not in ('|', '!', '{')) and
+                                          len(p.words) >= self._min_paragraph_len)]
 
     cpdef list _extract_words(self, unicode text):
         cdef int start, end, cur

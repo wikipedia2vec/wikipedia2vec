@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-from __future__ import absolute_import
+
 from __future__ import unicode_literals
 import logging
 import multiprocessing
@@ -58,10 +58,7 @@ cdef class Word(Item):
             return '<Word %s>' % self._text
 
     def __reduce__(self):
-        return (
-            self.__class__,
-            (self._text, self._index, self._count, self._doc_count)
-        )
+        return (self.__class__, (self._text, self._index, self._count, self._doc_count))
 
 
 cdef class Entity(Item):
@@ -80,10 +77,7 @@ cdef class Entity(Item):
             return '<Entity %s>' % self._title
 
     def __reduce__(self):
-        return (
-            self.__class__,
-            (self._title, self._index, self._count, self._doc_count)
-        )
+        return (self.__class__, (self._title, self._index, self._count, self._doc_count))
 
 
 cdef class PrefixSearchable:
@@ -92,9 +86,8 @@ cdef class PrefixSearchable:
 
 
 cdef class Dictionary(PrefixSearchable):
-    def __init__(self, word_dict, entity_dict, redirect_dict,
-                 np.ndarray word_stats, np.ndarray entity_stats,
-                 bint lowercase, dict build_params):
+    def __init__(self, word_dict, entity_dict, redirect_dict, np.ndarray word_stats,
+                 np.ndarray entity_stats, bint lowercase, dict build_params):
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
@@ -183,8 +176,7 @@ cdef class Dictionary(PrefixSearchable):
         return Entity(title, index, *self._entity_stats[dict_index])
 
     cpdef list prefix_search(self, unicode text, int start=0):
-        return sorted(self._word_dict.prefixes(text[start:]), key=len,
-                      reverse=True)
+        return sorted(self._word_dict.prefixes(text[start:]), key=len, reverse=True)
 
     def __len__(self):
         return len(self._word_dict) + len(self._entity_dict)
@@ -196,16 +188,15 @@ cdef class Dictionary(PrefixSearchable):
         cdef unicode word
         cdef int index
 
-        for (word, index) in self._word_dict.iteritems():
+        for (word, index) in six.iteritems(self._word_dict):
             yield Word(word, index, *self._word_stats[index])
 
     def entities(self):
         cdef unicode title
         cdef int index
 
-        for (title, index) in self._entity_dict.iteritems():
-            yield Entity(title, index + self._entity_offset,
-                         *self._entity_stats[index])
+        for (title, index) in six.iteritems(self._entity_dict):
+            yield Entity(title, index + self._entity_offset, *self._entity_stats[index])
 
     @staticmethod
     def build(dump_reader, phrase_dict, lowercase, min_word_count,
@@ -227,13 +218,11 @@ cdef class Dictionary(PrefixSearchable):
         logger.info('Step 1/3: Processing Wikipedia pages...')
 
         global _extractor
-        _extractor = Extractor(dump_reader.language, lowercase=lowercase,
-                               dictionary=phrase_dict)
+        _extractor = Extractor(dump_reader.language, lowercase=lowercase, dictionary=phrase_dict)
 
         with closing(Pool(pool_size)) as pool:
-            for (page, paragraphs) in pool.imap_unordered(
-                _extract_paragraphs, dump_reader, chunksize=chunk_size
-            ):
+            for (page, paragraphs) in pool.imap_unordered(_extract_paragraphs, dump_reader,
+                                                          chunksize=chunk_size):
                 if page.is_redirect:
                     entity_redirects[page.title] = page.redirect
 
@@ -253,7 +242,7 @@ cdef class Dictionary(PrefixSearchable):
 
         logger.info('Step 2/3: Processing Wikipedia redirects...')
 
-        for (title, dest_title) in entity_redirects.iteritems():
+        for (title, dest_title) in six.iteritems(entity_redirects):
             entity_counter[dest_title] += entity_counter[title]
             del entity_counter[title]
 
@@ -262,20 +251,19 @@ cdef class Dictionary(PrefixSearchable):
 
         logger.info('Step 3/3: Building dictionary...')
 
-        word_dict = Trie([w for (w, c) in word_counter.iteritems()
-                          if c >= min_word_count])
+        word_dict = Trie([w for (w, c) in six.iteritems(word_counter) if c >= min_word_count])
         word_stats = np.zeros((len(word_counter), 2), dtype=np.int)
-        for (word, index) in word_dict.iteritems():
+        for (word, index) in six.iteritems(word_dict):
             word_stats[index][0] = word_counter[word]
             word_stats[index][1] = word_doc_counter[word]
 
         del word_counter
         del word_doc_counter
 
-        entity_dict = Trie([e for (e, c) in entity_counter.iteritems()
+        entity_dict = Trie([e for (e, c) in six.iteritems(entity_counter)
                             if c >= min_entity_count])
         entity_stats = np.zeros((len(entity_counter), 2), dtype=np.int)
-        for (entity, index) in entity_dict.iteritems():
+        for (entity, index) in six.iteritems(entity_dict):
             entity_stats[index][0] = entity_counter[entity]
             entity_stats[index][1] = entity_doc_counter[entity]
 
@@ -283,7 +271,7 @@ cdef class Dictionary(PrefixSearchable):
         del entity_doc_counter
 
         redirect_items = []
-        for (title, dest_title) in entity_redirects.iteritems():
+        for (title, dest_title) in six.iteritems(entity_redirects):
             if dest_title in entity_dict:
                 redirect_items.append((title, (entity_dict[dest_title],)))
 
@@ -302,8 +290,8 @@ cdef class Dictionary(PrefixSearchable):
             build_time=time.time() - start_time,
         )
 
-        return Dictionary(word_dict, entity_dict, redirect_dict,
-                          word_stats, entity_stats, lowercase, build_params)
+        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
+                          lowercase, build_params)
 
     def save(self, out_file):
         self._word_dict.save(out_file + '_word.trie')
@@ -311,9 +299,8 @@ cdef class Dictionary(PrefixSearchable):
         self._redirect_dict.save(out_file + '_redirect.trie')
         np.save(out_file + '_word.npy', self._word_stats)
         np.save(out_file + '_entity.npy', self._entity_stats)
-        with open(out_file + '_meta.pickle', 'w') as f:
-            pickle.dump(dict(lowercase=self._lowercase,
-                             build_params=self._build_params), f)
+        with open(out_file + '_meta.pickle', 'wb') as f:
+            pickle.dump(dict(lowercase=self._lowercase, build_params=self._build_params), f)
 
     def serialize(self):
         return dict(
@@ -322,10 +309,7 @@ cdef class Dictionary(PrefixSearchable):
             redirect_dict=self._redirect_dict.tobytes(),
             word_stats=self._word_stats,
             entity_stats=self._entity_stats,
-            meta=dict(
-                lowercase=self._lowercase,
-                build_params=self._build_params
-            )
+            meta=dict(lowercase=self._lowercase, build_params=self._build_params)
         )
 
     @staticmethod
@@ -356,11 +340,10 @@ cdef class Dictionary(PrefixSearchable):
                 word_stats = np.load(target + '_word.npy')
                 entity_stats = np.load(target + '_entity.npy')
 
-            with open(target + '_meta.pickle') as f:
+            with open(target + '_meta.pickle', 'rb') as f:
                 meta = pickle.load(f)
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats,
-                          entity_stats, **meta)
+        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats, **meta)
 
 
 def _extract_paragraphs(WikiPage page):

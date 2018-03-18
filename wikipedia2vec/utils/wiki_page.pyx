@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
+
 from __future__ import unicode_literals
 import re
 import six
 
 # obtained from Wikipedia Miner
 # https://github.com/studio-ousia/wikipedia-miner/blob/master/src/org/wikipedia/miner/extraction/LanguageConfiguration.java
-REDIRECT_REGEXP = re.compile(
-    r"(?:\#|＃)(?:REDIRECT|転送)[:\s]*(?:\[\[(.*)\]\]|(.*))", re.IGNORECASE
-)
+REDIRECT_REGEXP = re.compile(r"(?:\#|＃)(?:REDIRECT|転送)[:\s]*(?:\[\[(.*)\]\]|(.*))",
+                             re.IGNORECASE)
 
 
 cdef class WikiPage:

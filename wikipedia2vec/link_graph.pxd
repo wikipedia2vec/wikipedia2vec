@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 cimport numpy as np
 
 from .dictionary cimport Dictionary

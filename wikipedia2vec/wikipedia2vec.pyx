@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import absolute_import
+
 import joblib
 import logging
 import multiprocessing
@@ -91,8 +91,7 @@ cdef class Wikipedia2Vec:
     cpdef get_word(self, unicode word, default=None):
         return self._dictionary.get_word(word, default)
 
-    cpdef get_entity(self, unicode title, bint resolve_redirect=True,
-                     default=None):
+    cpdef get_entity(self, unicode title, bint resolve_redirect=True, default=None):
         return self._dictionary.get_entity(title, resolve_redirect, default)
 
     cpdef np.ndarray get_word_vector(self, unicode word):
@@ -107,8 +106,7 @@ cdef class Wikipedia2Vec:
                                        bint resolve_redirect=True):
         cdef Entity obj
 
-        obj = self._dictionary.get_entity(title,
-                                          resolve_redirect=resolve_redirect)
+        obj = self._dictionary.get_entity(title, resolve_redirect=resolve_redirect)
         if obj is None:
             raise KeyError()
         return self.syn0[obj.index]
@@ -123,12 +121,10 @@ cdef class Wikipedia2Vec:
         return self.most_similar_by_vector(vec, count)
 
     cpdef list most_similar_by_vector(self, np.ndarray vec, int count=100):
-        dst = (np.dot(self.syn0, vec) / np.linalg.norm(self.syn0, axis=1) /
-               np.linalg.norm(vec))
+        dst = (np.dot(self.syn0, vec) / np.linalg.norm(self.syn0, axis=1) / np.linalg.norm(vec))
         indexes = np.argsort(-dst)
 
-        return [(self._dictionary.get_item_by_index(ind), dst[ind])
-                for ind in indexes[:count]]
+        return [(self._dictionary.get_item_by_index(ind), dst[ind]) for ind in indexes[:count]]
 
     def init_sims(self):
         for i in xrange(self.syn0.shape[0]):
@@ -146,7 +142,7 @@ cdef class Wikipedia2Vec:
             self._dictionary.save(out_file + '_dict')
             np.save(out_file + '_syn0.npy', self.syn0)
             np.save(out_file + '_syn1.npy', self.syn1)
-            with open(out_file + '_meta.pickle', 'w') as f:
+            with open(out_file + '_meta.pickle', 'wb') as f:
                 pickle.dump(dict(train_history=self._train_history), f)
 
     def save_word2vec_format(self, out_file, vocab_file=None):
@@ -193,7 +189,7 @@ cdef class Wikipedia2Vec:
                 syn1 = np.load(in_file + '_syn1.npy', mmap_mode=numpy_mmap_mode)
                 ret.syn1 = syn1
 
-            with open(in_file + '_meta.pickle') as f:
+            with open(in_file + '_meta.pickle', 'rb') as f:
                 obj = pickle.load(f)
                 train_history = obj['train_history']
 
@@ -381,8 +377,7 @@ def train_page(WikiPage page):
             entity = link_indices[index % total_nodes]
             neighbors = link_graph.neighbor_indices(entity)
             for entity2 in neighbors:
-                _train_pair(entity, entity2, alpha.value, params.negative,
-                            entity_neg_table)
+                _train_pair(entity, entity2, alpha.value, params.negative, entity_neg_table)
 
     # train using Wikipedia words and anchors
     for paragraph in extractor.extract_paragraphs(page):
@@ -406,8 +401,7 @@ def train_page(WikiPage page):
                 if sample_ints[word2] < np.random.rand() * 2 ** 31:
                     continue
 
-                _train_pair(word, word2, alpha.value, params.negative,
-                            word_neg_table)
+                _train_pair(word, word2, alpha.value, params.negative, word_neg_table)
 
         entity2 = dictionary.get_entity_index(page.title)
 
@@ -427,8 +421,7 @@ def train_page(WikiPage page):
                 if sample_ints[word2] < np.random.rand() * 2 ** 31:
                     continue
 
-                _train_pair(entity, word2, alpha.value, params.negative,
-                            word_neg_table)
+                _train_pair(entity, word2, alpha.value, params.negative, word_neg_table)
 
         with word_counter.get_lock():
             word_counter.value += word_count  # lock is required since += is not an atomic operation

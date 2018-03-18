@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
-from __future__ import absolute_import
+
 import logging
+import six
 import tempfile
 import time
-import six
 import six.moves.cPickle as pickle
 from collections import Counter
 from contextlib import closing
@@ -40,7 +40,7 @@ cdef class PhraseDictionary(PrefixSearchable):
         return len(self._phrase_dict)
 
     def __iter__(self):
-        for phrase in self._phrase_dict.iterkeys():
+        for phrase in six.iterkeys(self._phrase_dict):
             yield phrase
 
     def __contains__(self, key):
@@ -50,12 +50,11 @@ cdef class PhraseDictionary(PrefixSearchable):
         return self._phrase_dict.keys()
 
     cpdef list prefix_search(self, unicode text, int start=0):
-        return sorted(self._phrase_dict.prefixes(text[start:]), key=len,
-                      reverse=True)
+        return sorted(self._phrase_dict.prefixes(text[start:]), key=len, reverse=True)
 
     @staticmethod
-    def build(dump_reader, min_link_count, min_link_prob, lowercase, max_len,
-              pool_size, chunk_size):
+    def build(dump_reader, min_link_count, min_link_prob, lowercase, max_len, pool_size,
+              chunk_size):
         global _extractor, _tokenizer
 
         start_time = time.time()
@@ -63,35 +62,29 @@ cdef class PhraseDictionary(PrefixSearchable):
         _extractor = Extractor(dump_reader.language, lowercase)
         _tokenizer = get_tokenizer(dump_reader.language)
 
-        logger.info('Starting to build an anchor DB')
-
         phrase_counter = Counter()
-        logger.info('Step 1/3: Counting anchors...')
+        logger.info('Step 1/3: Counting anchor links...')
 
         with closing(Pool(pool_size)) as pool:
             f = partial(_extract_phrases, lowercase=lowercase, max_len=max_len)
-            for counter in pool.imap_unordered(f, dump_reader,
-                                               chunksize=chunk_size):
+            for counter in pool.imap_unordered(f, dump_reader, chunksize=chunk_size):
                 phrase_counter.update(counter)
 
-            phrase_counter = {w: c for (w, c) in phrase_counter.iteritems()
-                              if c >= min_link_count}
+            phrase_counter = {w: c for (w, c) in six.iteritems(phrase_counter) if c >= min_link_count}
 
             logger.info('Step 2/3: Counting occurrences...')
 
             with tempfile.NamedTemporaryFile() as f:
-                Trie(phrase_counter.iterkeys()).save(f.name)
+                Trie(six.iterkeys(phrase_counter)).save(f.name)
 
                 occ_counter = Counter()
 
-                f = partial(_count_occurrences, lowercase=lowercase,
-                            trie_file=f.name)
-                for counter in pool.imap_unordered(f, dump_reader,
-                                                   chunksize=chunk_size):
+                f = partial(_count_occurrences, lowercase=lowercase, trie_file=f.name)
+                for counter in pool.imap_unordered(f, dump_reader, chunksize=chunk_size):
                     occ_counter.update(counter)
 
         logger.info('Step 3/3: Building TRIE...')
-        phrase_dict = Trie(w for (w, c) in occ_counter.iteritems()
+        phrase_dict = Trie(w for (w, c) in six.iteritems(occ_counter)
                            if float(phrase_counter[w]) / c >= min_link_prob)
 
         build_params = dict(
@@ -105,9 +98,8 @@ cdef class PhraseDictionary(PrefixSearchable):
 
     def save(self, out_file):
         self._phrase_dict.save(out_file + '.trie')
-        with open(out_file + '_meta.pickle', 'w') as f:
-            pickle.dump(dict(lowercase=self._lowercase,
-                             build_params=self._build_params), f)
+        with open(out_file + '_meta.pickle', 'wb') as f:
+            pickle.dump(dict(lowercase=self._lowercase, build_params=self._build_params), f)
 
     @staticmethod
     def load(in_file, mmap=True):
@@ -117,7 +109,7 @@ cdef class PhraseDictionary(PrefixSearchable):
         else:
             phrase_dict.load(in_file + '.trie')
 
-        with open(in_file + '_meta.pickle') as f:
+        with open(in_file + '_meta.pickle', 'rb') as f:
             kwargs = pickle.load(f)
 
         return PhraseDictionary(phrase_dict, **kwargs)
