@@ -1,3 +1,5 @@
+[![Fury badge](https://badge.fury.io/py/wikipedia2vec.png)](http://badge.fury.io/py/wikipedia2vec)
+
 Introduction
 ------------
 
