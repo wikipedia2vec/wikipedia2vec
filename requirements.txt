@@ -1,9 +1,9 @@
-Cython==0.24
-click==6.6
-gensim==0.12.4
+Cython==0.28
+click==6.7
+gensim==3.4.0
 joblib==0.11
-marisa-trie==0.7.2
-mwparserfromhell==0.4.3
-numpy==1.11.1
-scipy==0.17.1
-six>=1.11.0
+marisa-trie==0.7.4
+mwparserfromhell==0.5.1
+numpy==1.14.2
+scipy==1.0.0
+six==1.11.0
