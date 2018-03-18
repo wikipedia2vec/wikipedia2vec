@@ -20,10 +20,10 @@ def cli():
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--min-link-count', type=int, default=30)
+@click.option('--min-link-count', type=int, default=10)
 @click.option('--min-link-prob', type=float, default=0.1)
 @click.option('--lowercase/--no-lowercase', default=True)
-@click.option('--max-len', default=3)
+@click.option('--max-len', default=4)
 @click.option('--pool-size', type=int, default=multiprocessing.cpu_count())
 @click.option('--chunk-size', type=int, default=30)
 def build_phrase_dictionary(dump_file, out_file, **kwargs):
@@ -85,7 +85,7 @@ def build_link_graph(dump_file, dictionary_file, out_file, **kwargs):
 @click.option('--iteration', type=int, default=5)
 @click.option('--pool-size', type=int, default=multiprocessing.cpu_count())
 @click.option('--chunk-size', type=int, default=100)
-def build_embedding(dump_file, dictionary_file, link_graph, out_file, bundle, **kwargs):
+def train_embedding(dump_file, dictionary_file, link_graph, out_file, bundle, **kwargs):
     dump_reader = WikiDumpReader(dump_file)
     dictionary = Dictionary.load(dictionary_file)
 

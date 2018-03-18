@@ -23,14 +23,14 @@ Installation
 % pip install Wikipedia2Vec
 ```
 
-Building Embeddings
--------------------
+Learning Embeddings from a Wikipedia Dump
+-----------------------------------------
 
 First, you need to download a Wikipedia dump file from [Wikimedia Downloads](https://dumps.wikimedia.org/).
 
 Most of the commands explained below have two options *\--pool-size* and *\--chunk-size*, which are used for controling [multiprocessing](https://docs.python.org/2/library/multiprocessing.html).
 
-### Extracting Phrases (Optional)
+### Building Phrase Dictionary (Optional)
 
 *build\_phrase\_dictionary* constructs a dictionary consisting of phrases extracted from Wikipedia.
 
@@ -72,7 +72,7 @@ There is no specific option in this command.
 ### Learning Embeddings
 
 ```
-% wikipedia2vec build_embedding DUMP_FILE DIC_FILE OUT_FILE
+% wikipedia2vec train_embedding DUMP_FILE DIC_FILE OUT_FILE
 ```
 
 -   *\--link-graph*: The link graph file generated using *build\_link\_graph*
