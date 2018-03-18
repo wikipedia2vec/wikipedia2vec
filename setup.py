@@ -42,12 +42,12 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='0.1.4',
+    version='0.1.6',
     description='A tool for learning vector representations of words and entities from Wikipedia',
     long_description=long_description,
     author='Studio Ousia',
     author_email='ikuya@ousia.jp',
-    url='http://github.com/studio-ousia/wikipedia2vec',
+    url='http://studio-ousia.github.io/wikipedia2vec/',
     packages=find_packages(exclude=('tests*',)),
     cmdclass=dict(build_ext=custom_build_ext),
     ext_modules=[Extension(module_name, [path]) for (module_name, path) in list_c_files()],
