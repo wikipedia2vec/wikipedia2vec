@@ -10,8 +10,8 @@ The main benefits of using Wikipedia2Vec instead of conventional word embedding 
 
 -   Wikipedia2Vec places words and Wikipedia entities into a same vector space.
     It enables you to easily model the semantics in a text using words and entities in it, which is beneficial for various natural language processing tasks (e.g., text classification, entity linking, and question answering).
--   Conventional word embedding models learn embeddings based only on contextual words of each word in a corpora.
-    Wikipedia2Vec uses rich structured information obtained from entities\' link structure in Wikipedia.
+-   Conventional word embedding models learn embeddings based only on contextual words of each word in a corpus.
+    Wikipedia2Vec uses rich structured information obtained from the internal link structure of Wikipedia entities.
 
 The embeddings are learned efficiently from a Wikipedia dump.
 The code is implemented in Python and optimized using Cython, multiprocessing, and BLAS.
@@ -30,7 +30,7 @@ Learning Embeddings from a Wikipedia Dump
 
 First, you need to download a Wikipedia dump file from [Wikimedia Downloads](https://dumps.wikimedia.org/).
 
-Most of the commands explained below have two options *\--pool-size* and *\--chunk-size*, which are used for controling [multiprocessing](https://docs.python.org/2/library/multiprocessing.html).
+Most of the commands explained below have two options *\--pool-size* and *\--chunk-size*, which are used to control [multiprocessing](https://docs.python.org/2/library/multiprocessing.html).
 
 ### Building Phrase Dictionary (Optional)
 
