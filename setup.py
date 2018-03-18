@@ -4,6 +4,12 @@ import os
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
+try:
+    import pypandoc
+    long_description = pypandoc.convert('README.md', 'rst')
+except(IOError, ImportError):
+    long_description = open('README.md').read()
+
 
 def list_c_files(package_dir='wikipedia2vec'):
     ret = []
@@ -36,9 +42,9 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='0.1',
+    version='0.1.4',
     description='A tool for learning vector representations of words and entities from Wikipedia',
-    long_description=open('README.rst').read(),
+    long_description=long_description,
     author='Studio Ousia',
     author_email='ikuya@ousia.jp',
     url='http://github.com/studio-ousia/wikipedia2vec',
