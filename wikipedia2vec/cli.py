@@ -71,7 +71,6 @@ def build_link_graph(dump_file, dictionary_file, out_file, **kwargs):
 @click.argument('dump_file', type=click.Path(exists=True))
 @click.argument('dictionary_file', type=click.Path())
 @click.argument('out_file', type=click.Path())
-@click.option('--bundle/--no-bundle', default=True)
 @click.option('--link-graph', type=click.Path())
 @click.option('--dim-size', type=int, default=300)
 @click.option('--init-alpha', type=float, default=0.025)
@@ -85,7 +84,7 @@ def build_link_graph(dump_file, dictionary_file, out_file, **kwargs):
 @click.option('--iteration', type=int, default=5)
 @click.option('--pool-size', type=int, default=multiprocessing.cpu_count())
 @click.option('--chunk-size', type=int, default=100)
-def train_embedding(dump_file, dictionary_file, link_graph, out_file, bundle, **kwargs):
+def train_embedding(dump_file, dictionary_file, link_graph, out_file, **kwargs):
     dump_reader = WikiDumpReader(dump_file)
     dictionary = Dictionary.load(dictionary_file)
 
@@ -95,13 +94,12 @@ def train_embedding(dump_file, dictionary_file, link_graph, out_file, bundle, **
     wiki2vec = Wikipedia2Vec(dictionary)
     wiki2vec.train(dump_reader, link_graph, **kwargs)
 
-    wiki2vec.save(out_file, bundle)
+    wiki2vec.save(out_file)
 
 
 @cli.command()
 @click.argument('model_file', type=click.Path())
 @click.argument('out_file', type=click.File(mode='w'))
-@click.argument('vocab_file', type=click.File(mode='w'))
-def save_word2vec_format(model_file, out_file, vocab_file):
+def save_word2vec_format(model_file, out_file):
     wiki2vec = Wikipedia2Vec.load(model_file)
-    wiki2vec.save_word2vec_format(out_file, vocab_file)
+    wiki2vec.save_word2vec_format(out_file)

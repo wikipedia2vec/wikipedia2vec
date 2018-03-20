@@ -2,6 +2,7 @@
 # cython: profile=False
 
 from __future__ import unicode_literals
+import joblib
 import logging
 import multiprocessing
 import time
@@ -199,8 +200,8 @@ cdef class Dictionary(PrefixSearchable):
             yield Entity(title, index + self._entity_offset, *self._entity_stats[index])
 
     @staticmethod
-    def build(dump_reader, phrase_dict, lowercase, min_word_count,
-              min_entity_count, pool_size, chunk_size):
+    def build(dump_reader, phrase_dict, lowercase, min_word_count, min_entity_count, pool_size,
+              chunk_size):
         logger.info('Starting to build a dictionary')
 
         start_time = time.time()
@@ -294,13 +295,7 @@ cdef class Dictionary(PrefixSearchable):
                           lowercase, build_params)
 
     def save(self, out_file):
-        self._word_dict.save(out_file + '_word.trie')
-        self._entity_dict.save(out_file + '_entity.trie')
-        self._redirect_dict.save(out_file + '_redirect.trie')
-        np.save(out_file + '_word.npy', self._word_stats)
-        np.save(out_file + '_entity.npy', self._entity_stats)
-        with open(out_file + '_meta.pickle', 'wb') as f:
-            pickle.dump(dict(lowercase=self._lowercase, build_params=self._build_params), f)
+        joblib.dump(self.serialize(), out_file)
 
     def serialize(self):
         return dict(
@@ -318,32 +313,18 @@ cdef class Dictionary(PrefixSearchable):
         entity_dict = Trie()
         redirect_dict = RecordTrie('<I')
 
-        if isinstance(target, dict):
-            word_dict.frombytes(target['word_dict'])
-            entity_dict.frombytes(target['entity_dict'])
-            redirect_dict.frombytes(target['redirect_dict'])
-            word_stats = target['word_stats']
-            entity_stats = target['entity_stats']
-            meta = target['meta']
-
-        else:
+        if not isinstance(target, dict):
             if mmap:
-                word_dict.mmap(target + '_word.trie')
-                entity_dict.mmap(target + '_entity.trie')
-                redirect_dict.mmap(target + '_redirect.trie')
-                word_stats = np.load(target + '_word.npy', mmap_mode='r')
-                entity_stats = np.load(target + '_entity.npy', mmap_mode='r')
+                target = joblib.load(target, mmap_mode='r')
             else:
-                word_dict.load(target + '_word.trie')
-                entity_dict.load(target + '_entity.trie')
-                redirect_dict.load(target + '_redirect.trie')
-                word_stats = np.load(target + '_word.npy')
-                entity_stats = np.load(target + '_entity.npy')
+                target = joblib.load(target)
 
-            with open(target + '_meta.pickle', 'rb') as f:
-                meta = pickle.load(f)
+        word_dict.frombytes(target['word_dict'])
+        entity_dict.frombytes(target['entity_dict'])
+        redirect_dict.frombytes(target['redirect_dict'])
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats, **meta)
+        return Dictionary(word_dict, entity_dict, redirect_dict, target['word_stats'],
+                          target['entity_stats'], **target['meta'])
 
 
 def _extract_paragraphs(WikiPage page):

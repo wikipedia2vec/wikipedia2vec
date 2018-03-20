@@ -130,32 +130,17 @@ cdef class Wikipedia2Vec:
         for i in xrange(self.syn0.shape[0]):
             self.syn0[i, :] /= np.sqrt((self.syn0[i, :] ** 2).sum(-1))
 
-    def save(self, out_file, bundle=True):
-        if bundle:
-            joblib.dump(dict(
-                syn0=self.syn0,
-                syn1=self.syn1,
-                dictionary=self._dictionary.serialize(),
-                train_history=self._train_history
-            ), out_file)
-        else:
-            self._dictionary.save(out_file + '_dict')
-            np.save(out_file + '_syn0.npy', self.syn0)
-            np.save(out_file + '_syn1.npy', self.syn1)
-            with open(out_file + '_meta.pickle', 'wb') as f:
-                pickle.dump(dict(train_history=self._train_history), f)
+    def save(self, out_file):
+        joblib.dump(dict(
+            syn0=self.syn0,
+            syn1=self.syn1,
+            dictionary=self._dictionary.serialize(),
+            train_history=self._train_history
+        ), out_file)
 
-    def save_word2vec_format(self, out_file, vocab_file=None):
-        if vocab_file:
-            for item in sorted(self.dictionary, key=lambda o: o.doc_count, reverse=True):
-                if isinstance(item, Word):
-                    text = item.text.encode('utf-8').replace(' ', '_')
-                else:
-                    text = 'ENTITY/' + item.title.encode('utf-8').replace(' ', '_')
-
-                vocab_file.write('%s %d\n' % (text, item.doc_count))
-
+    def save_word2vec_format(self, out_file):
         out_file.write('%d %d\n' % (self.syn0.shape[0], self.syn0.shape[1]))
+
         for item in sorted(self.dictionary, key=lambda o: o.doc_count, reverse=True):
             vec_str = ' '.join('%.4f' % v for v in self.get_vector(item))
             if isinstance(item, Word):
@@ -167,34 +152,16 @@ cdef class Wikipedia2Vec:
 
     @staticmethod
     def load(in_file, numpy_mmap_mode='c'):
-        try:
-            # detect whether the input file is a bundle format
-            obj = joblib.load(in_file, mmap_mode=numpy_mmap_mode)
-            if isinstance(obj['dictionary'], dict):
-                dictionary = Dictionary.load(obj['dictionary'])
-            else:
-                dictionary = obj['dictionary']  # for backward compatibilit
+        obj = joblib.load(in_file, mmap_mode=numpy_mmap_mode)
+        if isinstance(obj['dictionary'], dict):
+            dictionary = Dictionary.load(obj['dictionary'])
+        else:
+            dictionary = obj['dictionary']  # for backward compatibilit
 
-            ret = Wikipedia2Vec(dictionary)
-            ret.syn0 = obj['syn0']
-            ret.syn1 = obj['syn1']
-            ret._train_history = obj['train_history']
-
-        except:
-            dictionary = Dictionary.load(in_file + '_dict')
-            ret = Wikipedia2Vec(dictionary)
-
-            syn0 = np.load(in_file + '_syn0.npy', mmap_mode=numpy_mmap_mode)
-            if os.path.exists(in_file + '_syn1.npy'):
-                syn1 = np.load(in_file + '_syn1.npy', mmap_mode=numpy_mmap_mode)
-                ret.syn1 = syn1
-
-            with open(in_file + '_meta.pickle', 'rb') as f:
-                obj = pickle.load(f)
-                train_history = obj['train_history']
-
-            ret.syn0 = syn0
-            ret._train_history = train_history
+        ret = Wikipedia2Vec(dictionary)
+        ret.syn0 = obj['syn0']
+        ret.syn1 = obj['syn1']
+        ret._train_history = obj['train_history']
 
         return ret
 

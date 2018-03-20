@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 
+import joblib
 import logging
 import six
 import tempfile
@@ -97,22 +98,18 @@ cdef class PhraseDictionary(PrefixSearchable):
         return PhraseDictionary(phrase_dict, lowercase, build_params)
 
     def save(self, out_file):
-        self._phrase_dict.save(out_file + '.trie')
-        with open(out_file + '_meta.pickle', 'wb') as f:
-            pickle.dump(dict(lowercase=self._lowercase, build_params=self._build_params), f)
+        joblib.dump(dict(
+            phrase_dict=self._phrase_dict.tobytes(),
+            kwargs=dict(lowercase=self._lowercase, build_params=self._build_params),
+        ), out_file)
 
     @staticmethod
-    def load(in_file, mmap=True):
+    def load(in_file):
+        obj = joblib.load(in_file)
+
         phrase_dict = Trie()
-        if mmap:
-            phrase_dict.mmap(in_file + '.trie')
-        else:
-            phrase_dict.load(in_file + '.trie')
-
-        with open(in_file + '_meta.pickle', 'rb') as f:
-            kwargs = pickle.load(f)
-
-        return PhraseDictionary(phrase_dict, **kwargs)
+        phrase_dict.frombytes(obj['phrase_dict'])
+        return PhraseDictionary(phrase_dict, **obj['kwargs'])
 
 
 def _extract_phrases(page, lowercase, max_len):

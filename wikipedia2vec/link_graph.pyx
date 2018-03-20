@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import joblib
 import logging
 import time
 import six.moves.cPickle as pickle
@@ -108,24 +109,18 @@ cdef class LinkGraph:
         return ret
 
     def save(self, out_file):
-        np.save(out_file + '_indices.npy', self._indices)
-        np.save(out_file + '_indptr.npy', self._indptr)
-        with open(out_file + '_meta.pickle', 'wb') as f:
-            pickle.dump(dict(build_params=self._build_params), f)
+        joblib.dump(dict(
+            indices=self._indices, indptr=self._indptr, build_params=self._build_params
+        ), out_file)
 
     @staticmethod
     def load(in_file, dictionary, mmap=True):
         if mmap:
-            indices = np.load(in_file + '_indices.npy', mmap_mode='r')
-            indptr = np.load(in_file + '_indptr.npy', mmap_mode='r')
+            obj = joblib.load(in_file, mmap_mode='r')
         else:
-            indices = np.load(in_file + '_indices.npy')
-            indptr = np.load(in_file + '_indptr.npy')
+            obj = joblib.load(in_file)
 
-        with open(in_file + '_meta.pickle', 'rb') as f:
-            meta = pickle.load(f)
-
-        return LinkGraph(dictionary, indices, indptr, meta['build_params'])
+        return LinkGraph(dictionary, obj['indices'], obj['indptr'], obj['build_params'])
 
     @staticmethod
     def build(dump_reader, dictionary, pool_size, chunk_size):
