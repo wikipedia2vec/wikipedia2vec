@@ -32,7 +32,7 @@ Learning Embeddings from a Wikipedia Dump
 First, you need to download a Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
 
 We currently support only English and Japanese, and more languages will be supported in the near future.
-Note that, to process Japanese Wikipedia dumps, you need to to install [*mecab-python*](https://pypi.python.org/pypi/mecab-python) package.
+Note that, to process Japanese Wikipedia dumps, you need to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
 
 Most of the commands explained below have two options *\--pool-size* and *\--chunk-size*, which are used to control [multiprocessing](https://docs.python.org/2/library/multiprocessing.html).
 
