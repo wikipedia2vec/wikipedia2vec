@@ -1,0 +1,98 @@
+version: 2
+jobs:
+  build_with_python2:
+    docker:
+      - image: circleci/python:2.7.14
+    working_directory: ~/repo_python2
+    steps:
+      - checkout
+      - run: mkdir test-results
+      - run:
+          name: install mecab
+          command: |
+            sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: install requirements
+          command: |
+            virtualenv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+            pip install mecab-python nose
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: cythonize
+          command: |
+            . venv/bin/activate
+            sh cythonize.sh
+
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            python setup.py develop
+            nosetests --with-xunit --xunit-file=test-results/results.xml
+
+      - store_test_results:
+          path: test-results
+
+  build_with_python3:
+    docker:
+      - image: circleci/python:3.6.4
+    working_directory: ~/repo_python3
+    steps:
+      - checkout
+      - run: mkdir test-results
+      - run:
+          name: install mecab
+          command: |
+            sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8
+
+      - restore_cache:
+          keys:
+          - v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: install requirements
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install -r requirements.txt
+            pip install mecab-python3 nose
+
+      - save_cache:
+          paths:
+            - ./venv
+          key: v1-dependencies-{{ checksum "requirements.txt" }}
+
+      - run:
+          name: cythonize
+          command: |
+            . venv/bin/activate
+            sh cythonize.sh
+
+      - run:
+          name: run tests
+          command: |
+            . venv/bin/activate
+            python setup.py develop
+            nosetests --with-xunit --xunit-file=test-results/results.xml
+
+      - store_test_results:
+          path: test-results
+
+workflows:
+  version: 2
+  python_2_and_3:
+    jobs:
+      - build_with_python2
+      - build_with_python3
