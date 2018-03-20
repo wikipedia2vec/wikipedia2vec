@@ -28,7 +28,10 @@ Installation
 Learning Embeddings from a Wikipedia Dump
 -----------------------------------------
 
-First, you need to download a Wikipedia dump file from [Wikimedia Downloads](https://dumps.wikimedia.org/).
+First, you need to download a Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
+
+We currently support only English and Japanese, and more languages will be supported in the near future.
+Note that, to process Japanese Wikipedia dumps, you need to to install [*mecab-python*](https://pypi.python.org/pypi/mecab-python) package.
 
 Most of the commands explained below have two options *\--pool-size* and *\--chunk-size*, which are used to control [multiprocessing](https://docs.python.org/2/library/multiprocessing.html).
 
@@ -42,14 +45,14 @@ Most of the commands explained below have two options *\--pool-size* and *\--chu
 
 The following options can be specified:
 
--   *\--min-link-count*: The minimum number of occurrences of the target phrase as links in Wikipedia (default: 50)
+-   *\--min-link-count*: The minimum number of occurrences of the target phrase as links in Wikipedia (default: 10)
 -   *\--min-link-prob*: The minimum probability that the target phrase appears as a link in Wikipedia (default: 0.1)
 -   *\--lowercase/\--no-lowercase*: Whether phrases are lowercased (default: True)
--   *\--max-len*: The maximum number of words in a target phrase (default: 3)
+-   *\--max-len*: The maximum number of words in a target phrase (default: 4)
 
 ### Building Dictionary
 
-*build\_dictionary* builds a dictionary of target words and entities.
+*build\_dictionary* builds a dictionary of words and entities.
 
 ```
 % wikipedia2vec build_dictionary DUMP_FILE DIC_FILE
@@ -57,7 +60,8 @@ The following options can be specified:
 
 This command has the following options:
 
--   *\--phrase*: The dictionary file generated using *build\_phrase\_dictionary* command -   *\--lowercase/\--no-lowercase*: Whether words are lowercased (default: True)
+-   *\--phrase*: The phrase dictionary file generated using *build\_phrase\_dictionary* command
+-   *\--lowercase/\--no-lowercase*: Whether words are lowercased (default: True)
 -   *\--min-word-count*: The minimum number of occurrences of the target word in Wikipedia (default: 10)
 -   *\--min-entity-count*: The minimum number of occurrences of the target entity as links in Wikipedia (default: 5)
 
@@ -81,10 +85,11 @@ There is no specific option in this command.
 -   *\--dim-size*: The number of dimensions of the embeddings (default: 300)
 -   *\--init-alpha*: The initial learning rate (default: 0.025)
 -   *\--min-alpha*: The minimum learning rate (default: 0.0001)
--   *\--window*: The maximum distance between the target and the predicted word within a text (default: 10)
+-   *\--window*: The maximum distance between the target item (word or entity) and the predicted word within a text (default: 10)
 -   *\--links-per-page*: The number of entities per page used to generate contextual link neighbors (default: 10)
 -   *\--negative*: The number of negative samples (default: 5)
 -   *\--iteration*: The number of iterations over the Wikipedia (default: 3)
+-   *\--sample*: The parameter for downsampling high frequency words (default: 1e-4)
 
 Sample Usage
 ------------
