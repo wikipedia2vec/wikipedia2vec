@@ -35,7 +35,7 @@ def build_phrase_dictionary(dump_file, out_file, **kwargs):
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--phrase', type=click.Path())
+@click.option('--phrase', type=click.Path(exists=True))
 @click.option('--lowercase/--no-lowercase', default=True)
 @click.option('--min-word-count', type=int, default=10)
 @click.option('--min-entity-count', type=int, default=5)
@@ -55,7 +55,7 @@ def build_dictionary(dump_file, out_file, phrase, **kwargs):
 
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
-@click.argument('dictionary_file', type=click.Path())
+@click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--pool-size', type=int, default=multiprocessing.cpu_count())
 @click.option('--chunk-size', type=int, default=30)
@@ -69,9 +69,9 @@ def build_link_graph(dump_file, dictionary_file, out_file, **kwargs):
 
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
-@click.argument('dictionary_file', type=click.Path())
+@click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--link-graph', type=click.Path())
+@click.option('--link-graph', type=click.Path(exists=True))
 @click.option('--dim-size', type=int, default=300)
 @click.option('--init-alpha', type=float, default=0.025)
 @click.option('--min-alpha', type=float, default=0.0001)
@@ -98,8 +98,8 @@ def train_embedding(dump_file, dictionary_file, link_graph, out_file, **kwargs):
 
 
 @cli.command()
-@click.argument('model_file', type=click.Path())
-@click.argument('out_file', type=click.File(mode='w'))
-def save_word2vec_format(model_file, out_file):
+@click.argument('model_file', type=click.Path(exists=True))
+@click.argument('out_file', type=click.Path())
+def save_text(model_file, out_file):
     wiki2vec = Wikipedia2Vec.load(model_file)
-    wiki2vec.save_word2vec_format(out_file)
+    wiki2vec.save_text(out_file)

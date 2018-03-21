@@ -28,7 +28,7 @@ cdef class Dictionary(PrefixSearchable):
     cdef np.ndarray _word_stats
     cdef np.ndarray _entity_stats
     cdef int _entity_offset
-    cdef bint _lowercase
+    cdef _lowercase
     cdef dict _build_params
 
     cpdef get_word(self, unicode, default=?)

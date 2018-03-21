@@ -10,10 +10,12 @@ import six.moves.cPickle as pickle
 import numpy as np
 cimport numpy as np
 cimport cython
+from collections import defaultdict
 from ctypes import c_float, c_uint32, c_uint64
 from contextlib import closing
 from libc.math cimport exp
 from libc.string cimport memset
+from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 from scipy.linalg cimport cython_blas as blas
 
@@ -138,17 +140,16 @@ cdef class Wikipedia2Vec:
             train_history=self._train_history
         ), out_file)
 
-    def save_word2vec_format(self, out_file):
-        out_file.write('%d %d\n' % (self.syn0.shape[0], self.syn0.shape[1]))
+    def save_text(self, out_file):
+        with open(out_file, 'wb') as f:
+            for item in sorted(self.dictionary, key=lambda o: o.doc_count, reverse=True):
+                vec_str = ' '.join('%.4f' % v for v in self.get_vector(item))
+                if isinstance(item, Word):
+                    text = item.text.replace('\t', ' ')
+                else:
+                    text = 'ENTITY/' + item.title.replace('\t', ' ')
 
-        for item in sorted(self.dictionary, key=lambda o: o.doc_count, reverse=True):
-            vec_str = ' '.join('%.4f' % v for v in self.get_vector(item))
-            if isinstance(item, Word):
-                text = item.text.encode('utf-8').replace(' ', '_')
-            else:
-                text = 'ENTITY/' + item.title.encode('utf-8').replace(' ', '_')
-
-            out_file.write('%s %s\n' % (text, vec_str))
+                f.write(('%s\t%s\n' % (text, vec_str)).encode('utf-8'))
 
     @staticmethod
     def load(in_file, numpy_mmap_mode='c'):
@@ -162,6 +163,47 @@ cdef class Wikipedia2Vec:
         ret.syn0 = obj['syn0']
         ret.syn1 = obj['syn1']
         ret._train_history = obj['train_history']
+
+        return ret
+
+    @staticmethod
+    def load_text(in_file):
+        words = defaultdict(int)
+        entities = defaultdict(int)
+        vectors = []
+
+        with open(in_file, 'rb') as f:
+            for (n, line) in enumerate(f):
+                (item_str, vec_str) = line.decode('utf-8').split('\t')
+                if item_str.startswith('ENTITY/'):
+                    entities[item_str[7:]] = n
+                else:
+                    words[item_str] = n
+
+                vectors.append(np.array([float(s) for s in vec_str.split(' ')], dtype=np.float32))
+
+        syn0 = np.empty((len(vectors), vectors[0].size))
+
+        word_dict = Trie(words.keys())
+        entity_dict = Trie(entities.keys())
+        redirect_dict = RecordTrie('<I')
+
+        for (word, ind) in six.iteritems(word_dict):
+            syn0[ind] = vectors[words[word]]
+
+        entity_offset = len(word_dict)
+        for (title, ind) in six.iteritems(entity_dict):
+            syn0[ind + entity_offset] = vectors[entities[title]]
+
+        word_stats = np.zeros((len(word_dict), 2), dtype=np.int)
+        entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int)
+
+        dictionary = Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
+                                None, dict())
+        ret = Wikipedia2Vec(dictionary)
+        ret.syn0 = syn0
+        ret.syn1 = None
+        ret._train_history = []
 
         return ret
 

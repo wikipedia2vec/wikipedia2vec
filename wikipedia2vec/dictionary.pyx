@@ -88,7 +88,7 @@ cdef class PrefixSearchable:
 
 cdef class Dictionary(PrefixSearchable):
     def __init__(self, word_dict, entity_dict, redirect_dict, np.ndarray word_stats,
-                 np.ndarray entity_stats, bint lowercase, dict build_params):
+                 np.ndarray entity_stats, lowercase, dict build_params):
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
