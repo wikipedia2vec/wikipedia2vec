@@ -1,10 +1,13 @@
+Wikipedia2Vec
+=============
+
 [![Fury badge](https://badge.fury.io/py/wikipedia2vec.png)](http://badge.fury.io/py/wikipedia2vec)
 [![CircleCI](https://circleci.com/gh/studio-ousia/wikipedia2vec/tree/master.svg?style=svg)](https://circleci.com/gh/studio-ousia/wikipedia2vec/tree/master)
 
 Introduction
 ------------
 
-Wikipedia2Vec is a tool for obtaining quality vector representations (embeddings) of words and Wikipedia entities from a Wikipedia dump.
+Wikipedia2Vec is a tool for obtaining quality embeddings (vector representations) of words and Wikipedia entities from a Wikipedia dump.
 This tool is developed and maintained by [Studio Ousia](http://www.ousia.jp).
 
 The main benefits of using Wikipedia2Vec instead of conventional word embedding tools (e.g., Word2Vec, GloVe) are the following:
@@ -17,7 +20,20 @@ The main benefits of using Wikipedia2Vec instead of conventional word embedding 
 The embeddings are learned efficiently from a Wikipedia dump.
 The code is implemented in Python and optimized using Cython, multiprocessing, and BLAS.
 
-This tool is based on the model proposed in this paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
+How It Works
+------------
+
+<img src="http://studio-ousia.github.io/wikipedia2vec/img/model.png" width="600" />
+
+Wikipedia2Vec extends the [Word2vec's skip-gram model](https://en.wikipedia.org/wiki/Word2vec) to jointly learn the embeddings of words and entities.
+The model consists of the following three sub-models:
+
+- *The word-based skip-gram model* learns to predict neighboring words given the target word in Wikipedia articles.
+- *The link graph model* learns to estimate neighboring entities given the target entity in the link graph of Wikipedia entities.
+- *The anchor context model* learns to predict neighboring words given the target entity using anchor links and their context words in Wikipedia.
+
+By jointly optimizing above three sub-models, the model simultaneously learns the embedding of words and entities.
+For further details, please refer this paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
 
 Installation
 ------------
@@ -92,6 +108,12 @@ There is no specific option in this command.
 -   *\--iteration*: The number of iterations over the Wikipedia (default: 3)
 -   *\--sample*: The parameter for downsampling high frequency words (default: 1e-4)
 
+### Saving Embeddings in Text Format
+
+```
+% wikipedia2vec save_text MODEL_FILE OUT_FILE
+```
+
 Sample Usage
 ------------
 
@@ -124,3 +146,18 @@ memmap([-0.19793572,  0.30861306,  0.29620451, -0.01193621,  0.18228433,
  (<Entity Emma Stone>, 0.72868186),
  (<Entity Cameron Diaz>, 0.72390842)]
 ```
+
+## Reference
+
+If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
+
+    @InProceedings{yamada-EtAl:2016:CoNLL,
+      author    = {Yamada, Ikuya  and  Shindo, Hiroyuki  and  Takeda, Hideaki  and  Takefuji, Yoshiyasu},
+      title     = {Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
+      booktitle = {Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
+      month     = {August},
+      year      = {2016},
+      address   = {Berlin, Germany},
+      pages     = {250--259},
+      publisher = {Association for Computational Linguistics}
+    }
