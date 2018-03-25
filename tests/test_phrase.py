@@ -19,7 +19,7 @@ class TestPhraseDictionary(unittest.TestCase):
 
     def test_phrase_dictionary(self):
         phrase_dic = PhraseDictionary.build(self.dump_reader, min_link_count=0, min_link_prob=0.1,
-                                            lowercase=True, max_len=4, pool_size=1, chunk_size=1)
+                                            lowercase=True, max_phrase_len=4, pool_size=1, chunk_size=1)
         ok_(len(phrase_dic) > 0)
         ok_('computer system' in phrase_dic)
         eq_(phrase_dic.prefix_search('web accessibility initiative'),
