@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from .mecab_tokenizer import MeCabTokenizer
-from .regexp_tokenizer import RegexpTokenizer
-
 
 def get_tokenizer(language):
-    if language == 'en':
-        return RegexpTokenizer()
-    elif language == 'ja':
+    if language == 'ja':
+        from .mecab_tokenizer import MeCabTokenizer
         return MeCabTokenizer()
+    elif language == 'zh':
+        from .jieba_tokenizer import JiebaTokenizer
+        return JiebaTokenizer()
     else:
-        raise NotImplementedError('Unsupported language')
+        from .regexp_tokenizer import RegexpTokenizer
+        return RegexpTokenizer()

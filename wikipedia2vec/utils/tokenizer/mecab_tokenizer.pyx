@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 from __future__ import unicode_literals
+import MeCab
 import six
 
 from .token cimport Token
@@ -10,7 +11,6 @@ cdef class MeCabTokenizer:
     cdef object _tagger
 
     def __init__(self):
-        import MeCab
         if six.PY2:
             self._tagger = MeCab.Tagger(''.encode('utf-8'))
         else:
