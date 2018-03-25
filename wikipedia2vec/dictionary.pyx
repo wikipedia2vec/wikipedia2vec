@@ -202,8 +202,6 @@ cdef class Dictionary(PrefixSearchable):
     @staticmethod
     def build(dump_reader, phrase_dict, lowercase, min_word_count, min_entity_count, pool_size,
               chunk_size):
-        logger.info('Starting to build a dictionary')
-
         start_time = time.time()
 
         if phrase_dict:

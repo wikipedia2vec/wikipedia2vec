@@ -65,7 +65,7 @@ The following options can be specified:
 -   *\--min-link-count*: The minimum number of occurrences of the target phrase as links in Wikipedia (default: 10)
 -   *\--min-link-prob*: The minimum probability that the target phrase appears as a link in Wikipedia (default: 0.1)
 -   *\--lowercase/\--no-lowercase*: Whether phrases are lowercased (default: True)
--   *\--max-len*: The maximum number of words in a target phrase (default: 4)
+-   *\--max-phrase-len*: The maximum number of words in a target phrase (default: 4)
 
 ### Building Dictionary
 

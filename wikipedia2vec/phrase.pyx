@@ -54,7 +54,7 @@ cdef class PhraseDictionary(PrefixSearchable):
         return sorted(self._phrase_dict.prefixes(text[start:]), key=len, reverse=True)
 
     @staticmethod
-    def build(dump_reader, min_link_count, min_link_prob, lowercase, max_len, pool_size,
+    def build(dump_reader, min_link_count, min_link_prob, lowercase, max_phrase_len, pool_size,
               chunk_size):
         global _extractor, _tokenizer
 
@@ -67,7 +67,7 @@ cdef class PhraseDictionary(PrefixSearchable):
         logger.info('Step 1/3: Counting anchor links...')
 
         with closing(Pool(pool_size)) as pool:
-            f = partial(_extract_phrases, lowercase=lowercase, max_len=max_len)
+            f = partial(_extract_phrases, lowercase=lowercase, max_len=max_phrase_len)
             for counter in pool.imap_unordered(f, dump_reader, chunksize=chunk_size):
                 phrase_counter.update(counter)
 
@@ -87,6 +87,7 @@ cdef class PhraseDictionary(PrefixSearchable):
         logger.info('Step 3/3: Building TRIE...')
         phrase_dict = Trie(w for (w, c) in six.iteritems(occ_counter)
                            if float(phrase_counter[w]) / c >= min_link_prob)
+        logger.info('%d phrases are successfully extracted', len(phrase_dict))
 
         build_params = dict(
             dump_file=dump_reader.dump_file,

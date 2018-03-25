@@ -76,8 +76,7 @@ cdef class LinkGraph:
         return (self._indices[self._indptr[index]:self._indptr[index + 1]] + self._offset)
 
     @cython.wraparound(False)
-    cpdef list random_walk(self, item, int length=10,
-                           bint return_indices=False):
+    cpdef list random_walk(self, item, int length=10, bint return_indices=False):
         cdef int index, neighbor
         cdef list ret
         cdef np.ndarray[np.int32_t, ndim=1] indices, indptr, neighbors
@@ -124,8 +123,6 @@ cdef class LinkGraph:
 
     @staticmethod
     def build(dump_reader, dictionary, pool_size, chunk_size):
-        logger.info('Starting to build a Wikipedia link graph...')
-
         start_time = time.time()
 
         offset = dictionary.entity_offset

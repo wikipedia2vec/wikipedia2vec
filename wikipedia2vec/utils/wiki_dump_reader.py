@@ -40,5 +40,5 @@ class WikiDumpReader(object):
 
                 yield WikiPage(six.text_type(title), self._language, six.text_type(wiki_text))
 
-                if c % 10000 == 0:
+                if c % 100000 == 0:
                     logger.info('Processed: %d', c)
