@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# cython: profile=False
 
 import joblib
 import logging

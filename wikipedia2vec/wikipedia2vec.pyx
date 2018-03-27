@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# cython: profile=False
 
 import joblib
 import logging
@@ -14,10 +15,16 @@ from collections import defaultdict
 from ctypes import c_float, c_uint32, c_uint64
 from contextlib import closing
 from libc.math cimport exp
+from libc.stdlib cimport rand
 from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 from scipy.linalg cimport cython_blas as blas
+
+try:
+    import itertools.imap as map  # for Python 2
+except ImportError:
+    pass
 
 from .dictionary cimport Dictionary, Item, Word, Entity
 from .extractor cimport Extractor, Paragraph, WikiLink
@@ -279,26 +286,31 @@ cdef class Wikipedia2Vec:
         dictionary = self.dictionary
         link_graph = link_graph_
 
-        extractor = Extractor(dump_reader.language, dictionary.lowercase,
-                              dictionary=dictionary)
+        extractor = Extractor(dump_reader.language, dictionary.lowercase, dictionary=dictionary)
         word_counter = multiprocessing.Value(c_uint64, 0)
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
         work = np.zeros(dim_size)
 
-        init_args = (syn0_shared, syn1_shared, word_neg_table, entity_neg_table,
-                     sample_ints, link_indices)
+        init_args = (syn0_shared, syn1_shared, word_neg_table, entity_neg_table, sample_ints,
+                     link_indices)
 
-        with closing(Pool(pool_size, initializer=init_worker,
-                          initargs=init_args)) as pool:
-            for (n, _) in enumerate(pool.imap_unordered(
-                train_page, iter_dump_reader(), chunksize=chunk_size
-            )):
+        if pool_size == 1:
+            init_worker(*init_args)
+            for (n, _) in enumerate(map(train_page, iter_dump_reader())):
                 if n % 10000 == 0:
                     prog = float(word_counter.value) / total_words
-                    logger.info('Proccessing page #%d progress: %.1f%% '
-                                'alpha: %.3f', n, prog * 100, alpha.value)
+                    logger.info('Proccessing page #%d progress: %.1f%% alpha: %.3f',
+                                n, prog * 100, alpha.value)
+        else:
+            with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
+                for (n, _) in enumerate(pool.imap_unordered(train_page, iter_dump_reader(),
+                                                            chunksize=chunk_size)):
+                    if n % 10000 == 0:
+                        prog = float(word_counter.value) / total_words
+                        logger.info('Proccessing page #%d progress: %.1f%% alpha: %.3f',
+                                    n, prog * 100, alpha.value)
 
-        logger.info('Terminated pool workers...')
+            logger.info('Terminated pool workers...')
 
         train_params = dict(
             dump_file=dump_reader.dump_file,
@@ -307,9 +319,7 @@ cdef class Wikipedia2Vec:
         train_params.update(params.to_dict())
 
         if link_graph is not None:
-            train_params['link_graph'] = dict(
-                build_params=link_graph.build_params
-            )
+            train_params['link_graph'] = dict(build_params=link_graph.build_params)
 
         self._train_history.append(train_params)
 
@@ -349,8 +359,7 @@ cdef class Wikipedia2Vec:
 
 def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_,
                 link_indices_):
-    global syn0, syn1, extractor, sample_ints, word_neg_table,\
-        entity_neg_table, link_indices
+    global syn0, syn1, extractor, sample_ints, word_neg_table, entity_neg_table, link_indices
 
     syn0 = np.frombuffer(syn0_, dtype=np.float32)
     syn0 = syn0.reshape(len(dictionary), params.dim_size)
@@ -367,11 +376,24 @@ def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_,
 
 
 def train_page(WikiPage page):
-    cdef int pos, pos2, start, index, total_nodes, word_count, word, word2,\
-        entity, entity2, start_node
+    cdef int pos, pos2, start, index, total_nodes, word_count, word, word2, entity, entity2,\
+        start_node
     cdef tuple span
     cdef list words, target_words, entities, target_entities
     cdef WikiLink wiki_link
+    cdef unsigned long word_neg_table_size, entity_neg_table_size
+
+    cdef np.float32_t alpha_ = alpha.value
+
+    cdef np.uint32_t *word_neg_table_ = <np.uint32_t *>(np.PyArray_DATA(word_neg_table))
+    cdef np.uint32_t *entity_neg_table_ = <np.uint32_t *>(np.PyArray_DATA(entity_neg_table))
+
+    cdef np.float32_t *syn0_ = <np.float32_t *>(np.PyArray_DATA(syn0))
+    cdef np.float32_t *syn1_ = <np.float32_t *>(np.PyArray_DATA(syn1))
+    cdef np.float32_t *work_ = <np.float32_t *>(np.PyArray_DATA(work))
+
+    word_neg_table_size = word_neg_table.size
+    entity_neg_table_size = entity_neg_table.size
 
     # train using Wikipedia link graph
     if link_graph is not None:
@@ -386,7 +408,8 @@ def train_page(WikiPage page):
             entity = link_indices[index % total_nodes]
             neighbors = link_graph.neighbor_indices(entity)
             for entity2 in neighbors:
-                _train_pair(entity, entity2, alpha.value, params.negative, entity_neg_table)
+                _train_pair(entity, entity2, alpha_, params.negative, syn0_, syn1_, work_,
+                            entity_neg_table_, entity_neg_table_size)
 
     # train using Wikipedia words and anchors
     for paragraph in extractor.extract_paragraphs(page):
@@ -410,7 +433,8 @@ def train_page(WikiPage page):
                 if sample_ints[word2] < np.random.rand() * 2 ** 31:
                     continue
 
-                _train_pair(word, word2, alpha.value, params.negative, word_neg_table)
+                _train_pair(word, word2, alpha_, params.negative, syn0_, syn1_, work_,
+                            word_neg_table_, word_neg_table_size)
 
         entity2 = dictionary.get_entity_index(page.title)
 
@@ -430,7 +454,8 @@ def train_page(WikiPage page):
                 if sample_ints[word2] < np.random.rand() * 2 ** 31:
                     continue
 
-                _train_pair(entity, word2, alpha.value, params.negative, word_neg_table)
+                _train_pair(entity, word2, alpha_, params.negative, syn0_, syn1_, work_,
+                            word_neg_table_, word_neg_table_size)
 
         with word_counter.get_lock():
             word_counter.value += word_count  # lock is required since += is not an atomic operation
@@ -442,34 +467,30 @@ def train_page(WikiPage page):
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 @cython.cdivision(True)
-cdef inline _train_pair(
-    int index1, int index2, np.float32_t alpha, int negative,
-    np.ndarray[np.uint32_t, ndim=1] neg_table
-):
+cdef void _train_pair(int index1, int index2, np.float32_t alpha, int negative, np.float32_t *syn0_,
+                      np.float32_t *syn1_, np.float32_t *work_, np.uint32_t *neg_table,
+                      unsigned long neg_table_size) nogil:
     cdef np.float32_t label, f, g
-    cdef int d, index
+    cdef int d, index, neg_index
     cdef unsigned long row1, row2
-
-    cdef np.float32_t *syn0_ = <np.float32_t *>(np.PyArray_DATA(syn0))
-    cdef np.float32_t *syn1_ = <np.float32_t *>(np.PyArray_DATA(syn1))
-    cdef np.float32_t *work_ = <np.float32_t *>(np.PyArray_DATA(work))
 
     memset(work_, 0, params.dim_size * cython.sizeof(np.float32_t))
 
     row1 = <unsigned long>index1 * params.dim_size
+
     for d in range(negative + 1):
         if d == 0:
             index = index2
             label = 1.0
         else:
-            index = neg_table[np.random.randint(neg_table.shape[0])]
+            neg_index = rand() % neg_table_size
+            index = neg_table[neg_index]
             if index == index2:
                 continue
             label = 0.0
 
         row2 = <unsigned long>index * params.dim_size
-        f = <np.float32_t>(blas.sdot(&params.dim_size, &syn0_[row1], &ONE,
-                                     &syn1_[row2], &ONE))
+        f = <np.float32_t>(blas.sdot(&params.dim_size, &syn0_[row1], &ONE, &syn1_[row2], &ONE))
         if f > MAX_EXP:
             g = (label - 1.0) * alpha
         elif f < -MAX_EXP:

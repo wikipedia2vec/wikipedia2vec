@@ -1,4 +1,6 @@
 # -*- coding: utf-8 -*-
+# cython: profile=False
+
 from __future__ import unicode_literals
 import six
 
