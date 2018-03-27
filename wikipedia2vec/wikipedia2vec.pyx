@@ -376,10 +376,9 @@ def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_,
 
 
 def train_page(WikiPage page):
-    cdef int pos, pos2, start, index, total_nodes, word_count, word, word2, entity, entity2,\
-        start_node
+    cdef int pos, pos2, start, index, total_nodes, word_count, word, word2, entity, entity2
     cdef tuple span
-    cdef list words, target_words, entities, target_entities
+    cdef list words, target_words
     cdef WikiLink wiki_link
     cdef unsigned long word_neg_table_size, entity_neg_table_size
 

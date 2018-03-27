@@ -126,7 +126,6 @@ cdef class Dictionary(PrefixSearchable):
             return Word(word, index, *self._word_stats[index])
 
     cpdef int get_word_index(self, unicode word):
-        cdef int index
         try:
             return self._word_dict[word]
         except KeyError:
@@ -145,8 +144,6 @@ cdef class Dictionary(PrefixSearchable):
             return Entity(title, index, *self._entity_stats[dict_index])
 
     cpdef int get_entity_index(self, unicode title, bint resolve_redirect=True):
-        cdef int index
-
         if resolve_redirect:
             try:
                 return self._redirect_dict[title][0][0] + self._entity_offset

@@ -78,7 +78,7 @@ cdef class LinkGraph:
 
     @cython.wraparound(False)
     cpdef list random_walk(self, item, int length=10, bint return_indices=False):
-        cdef int index, neighbor
+        cdef int index
         cdef list ret
         cdef np.ndarray[np.int32_t, ndim=1] indices, indptr, neighbors
 
