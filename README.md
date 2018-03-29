@@ -39,7 +39,7 @@ Pretrained Embeddings
 Installation
 ------------
 
-Before installing Wikipedia2Vec, it is required to install a BLAS library.
+If you want to train embeddings on your machine, it is highly recommended to install a BLAS library before installing this tool.
 We recommend to use [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
 
 Wikipedia2Vec can be installed from PyPI:
@@ -60,9 +60,9 @@ The English dump file can be obtained by:
 % wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 ```
 
-Note that, you do not need to decompress the file.
+Note that, you do not need to decompress the dump file.
 
-Then, the embeddings can be built from a Wikipedia dump by using the *train* command:
+Then, the embeddings can be built from a Wikipedia dump using the *train* command:
 
 ```
 % wikipedia2vec train DUMP_FILE MODEL_FILE
@@ -72,27 +72,27 @@ Then, the embeddings can be built from a Wikipedia dump by using the *train* com
 
 - *--dim-size*: The number of dimensions of the embeddings (default: 100)
 - *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
-- *--iteration*: The number of iterations for Wikipedia documents (default: 3)
+- *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
 - *--lowercase/--no-lowercase*: Whether to lowercase words and phrases (default: True)
 - *--min-word-count*: A word is ignored if the total frequency of the word is lower than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is lower than this value (default: 5)
-- *--link-graph/--no-link-graph*: Whether to learn from the KB's link graph (default: True)
-- *--links-per-page*: The number of contextual entities to be generated for processing each page (default: 10)
+- *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
+- *--links-per-page*: The number of contextual entities to be generated from the link graph for processing each page (default: 10)
 - *--phrase/--no-phrase*: Whether to learn the embeddings of phrases (default: True)
 - *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is lower than this value (default: 10)
-- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this probability (default: 0.1)
+- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this value (default: 0.1)
 - *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls downsampling of high frequency words (default: 1e-4)
 
-This command internally runs the four commands described below (i.e., *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
+The *train* command internally runs the four commands described below (i.e., *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
 
 ### Building Phrase Dictionary
 
-*build_phrase_dictionary* constructs a dictionary consisting of phrases extracted from Wikipedia.
-We extract all phrases that appear as an anchor link in Wikipedia, and reduce them using three thresholds (i.e., *min_link_count*, *min_link_prob*, and *max_phrase_len*).
+The *build_phrase_dictionary* command constructs a dictionary consisting of phrases extracted from Wikipedia.
+We extract all phrases that appear as an anchor link in Wikipedia, and reduce them using the three thresholds such as *min_link_count*, *min_link_prob*, and *max_phrase_len*.
 Detected phrases are treated as words in the subsequent steps.
 
 ```
@@ -103,12 +103,12 @@ Detected phrases are treated as words in the subsequent steps.
 
 - *--lowercase/--no-lowercase*: Whether to lowercase phrases (default: True)
 - *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is lower than this value (default: 10)
-- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this probability (default: 0.1)
+- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this value (default: 0.1)
 - *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 
 ### Building Dictionary
 
-*build\_dictionary* builds a dictionary of words and entities.
+The *build\_dictionary* command builds a dictionary of words and entities.
 
 ```
 % wikipedia2vec build_dictionary DUMP_FILE DIC_FILE
@@ -123,7 +123,7 @@ Detected phrases are treated as words in the subsequent steps.
 
 ### Building Link Graph
 
-*build\_link\_graph* generates a large sparse matrix representing the link structure of Wikipedia.
+The *build\_link\_graph* command generates a sparse matrix representing the link structure between Wikipedia entities.
 
 ```
 % wikipedia2vec build_link_graph DUMP_FILE DIC_FILE LINK_GRAPH_FILE
@@ -133,7 +133,7 @@ There is no option in this command.
 
 ### Learning Embeddings
 
-*train_embedding* runs the training of the embeddings.
+The *train_embedding* command runs the training of the embeddings.
 
 ```
 % wikipedia2vec train_embedding DUMP_FILE DIC_FILE MODEL_FILE
@@ -144,9 +144,9 @@ There is no option in this command.
 - *--link-graph*: The link graph file generated using the *build\_link\_graph* command
 - *--dim-size*: The number of dimensions of the embeddings (default: 100)
 - *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
-- *--iteration*: The number of iterations for Wikipedia documents (default: 3)
+- *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
-- *--links-per-page*: The number of contextual entities to be generated for processing each page (default: 10)
+- *--links-per-page*: The number of contextual entities to be generated from the link graph for processing each page (default: 10)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls downsampling of high frequency words (default: 1e-4)
