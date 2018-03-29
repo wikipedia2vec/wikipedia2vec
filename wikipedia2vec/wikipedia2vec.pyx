@@ -11,16 +11,17 @@ import six.moves.cPickle as pickle
 import numpy as np
 cimport numpy as np
 cimport cython
+from cpython cimport array
 from collections import defaultdict
-from ctypes import c_float, c_uint32, c_uint64
+from ctypes import c_float, c_int32, c_uint32, c_uint64
 from contextlib import closing
 from libc.math cimport exp
-from libc.stdlib cimport rand
+from libc.stdint cimport int32_t, uint32_t, uint64_t
+from libc.stdlib cimport rand, RAND_MAX
 from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 from scipy.linalg cimport cython_blas as blas
-
 try:
     import itertools.imap as map  # for Python 2
 except ImportError:
@@ -31,40 +32,40 @@ from .extractor cimport Extractor, Paragraph, WikiLink
 from .link_graph cimport LinkGraph
 from .utils.wiki_page cimport WikiPage
 
-logger = logging.getLogger(__name__)
+ctypedef np.float32_t float32_t
 
-cdef int ONE = 1
-cdef np.float32_t ONEF = <np.float32_t>1.0
-cdef int MAX_EXP = 6
+cdef float32_t MAX_EXP = 6.0
+
+logger = logging.getLogger(__name__)
 
 cdef Dictionary dictionary
 cdef LinkGraph link_graph
-cdef np.ndarray syn0
-cdef np.ndarray syn1
-cdef np.ndarray work
-cdef np.ndarray word_neg_table
-cdef np.ndarray entity_neg_table
-cdef np.ndarray sample_ints
-cdef np.ndarray link_indices
+cdef float32_t [:, :] syn0
+cdef float32_t [:, :] syn1
+cdef float32_t [:] work
+cdef uint32_t [:] word_neg_table
+cdef uint32_t [:] entity_neg_table
+cdef uint32_t [:] sample_ints
+cdef int32_t [:] link_indices
 cdef Extractor extractor
 cdef unicode language
 cdef object alpha
 cdef object word_counter
 cdef object link_cursor
-cdef long total_words
+cdef uint64_t total_words
 
 
 cdef class _Parameters:
-    cdef public int dim_size
-    cdef public float init_alpha
-    cdef public float min_alpha
-    cdef public int window
-    cdef public int negative
-    cdef public float word_neg_power
-    cdef public float entity_neg_power
-    cdef public float sample
-    cdef public int iteration
-    cdef public int links_per_page
+    cdef public uint32_t dim_size
+    cdef public float32_t init_alpha
+    cdef public float32_t min_alpha
+    cdef public uint32_t window
+    cdef public uint32_t negative
+    cdef public float32_t word_neg_power
+    cdef public float32_t entity_neg_power
+    cdef public float32_t sample
+    cdef public uint32_t iteration
+    cdef public uint32_t links_per_page
     cdef dict _kwargs
 
     def __init__(self, **kwargs):
@@ -111,8 +112,7 @@ cdef class Wikipedia2Vec:
             raise KeyError()
         return self.syn0[obj.index]
 
-    cpdef np.ndarray get_entity_vector(self, unicode title,
-                                       bint resolve_redirect=True):
+    cpdef np.ndarray get_entity_vector(self, unicode title, bint resolve_redirect=True):
         cdef Entity obj
 
         obj = self._dictionary.get_entity(title, resolve_redirect=resolve_redirect)
@@ -123,13 +123,13 @@ cdef class Wikipedia2Vec:
     cpdef np.ndarray get_vector(self, Item item):
         return self.syn0[item.index]
 
-    cpdef list most_similar(self, Item item, int count=100):
+    cpdef list most_similar(self, Item item, count=100):
         cdef np.ndarray vec
 
         vec = self.get_vector(item)
         return self.most_similar_by_vector(vec, count)
 
-    cpdef list most_similar_by_vector(self, np.ndarray vec, int count=100):
+    cpdef list most_similar_by_vector(self, np.ndarray vec, count=100):
         dst = (np.dot(self.syn0, vec) / np.linalg.norm(self.syn0, axis=1) / np.linalg.norm(vec))
         indexes = np.argsort(-dst)
 
@@ -202,8 +202,8 @@ cdef class Wikipedia2Vec:
         for (title, ind) in six.iteritems(entity_dict):
             syn0[ind + entity_offset] = vectors[entities[title]]
 
-        word_stats = np.zeros((len(word_dict), 2), dtype=np.int)
-        entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int)
+        word_stats = np.zeros((len(word_dict), 2), dtype=np.uint32)
+        entity_stats = np.zeros((len(entity_dict), 2), dtype=np.uint32)
 
         dictionary = Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
                                 None, dict())
@@ -215,7 +215,8 @@ cdef class Wikipedia2Vec:
         return ret
 
     def train(self, dump_reader, link_graph_, pool_size, chunk_size, **kwargs):
-        global dictionary, link_graph, word_counter, link_cursor, extractor, alpha, work, params, total_words
+        global dictionary, link_graph, word_counter, link_cursor, extractor, alpha, work, params,\
+            total_words
 
         start_time = time.time()
 
@@ -236,9 +237,8 @@ cdef class Wikipedia2Vec:
             if params.sample == 0:
                 word_prob = 1.0
             else:
-                word_prob = min(1.0,
-                                (np.sqrt(cnt / thresh) + 1) * (thresh / cnt))
-            sample_ints[word.index] = int(round(word_prob * 2 ** 31))
+                word_prob = min(1.0, (np.sqrt(cnt / thresh) + 1) * (thresh / cnt))
+            sample_ints[word.index] = int(round(word_prob * RAND_MAX))
 
         logger.info('Building tables for negative sampling...')
 
@@ -248,12 +248,9 @@ cdef class Wikipedia2Vec:
         logger.info('Building tables for iterating nodes...')
 
         offset = self.dictionary.entity_offset
-        indices = np.arange(offset,
-                            offset + len(list(self.dictionary.entities())))
+        indices = np.arange(offset, offset + len(list(self.dictionary.entities())))
         if link_graph_:
-            link_indices = multiprocessing.RawArray(
-                c_uint32, np.random.permutation(indices)
-            )
+            link_indices = multiprocessing.RawArray(c_int32, np.random.permutation(indices))
         else:
             link_indices = None
 
@@ -289,7 +286,7 @@ cdef class Wikipedia2Vec:
         extractor = Extractor(dump_reader.language, dictionary.lowercase, dictionary=dictionary)
         word_counter = multiprocessing.Value(c_uint64, 0)
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
-        work = np.zeros(dim_size)
+        work = np.zeros(dim_size, dtype=np.float32)
 
         init_args = (syn0_shared, syn1_shared, word_neg_table, entity_neg_table, sample_ints,
                      link_indices)
@@ -357,85 +354,80 @@ cdef class Wikipedia2Vec:
         return neg_table
 
 
-def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_,
-                link_indices_):
-    global syn0, syn1, extractor, sample_ints, word_neg_table, entity_neg_table, link_indices
+def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_, link_indices_):
+    global syn0, syn1, word_neg_table, entity_neg_table, sample_ints, link_indices
 
-    syn0 = np.frombuffer(syn0_, dtype=np.float32)
-    syn0 = syn0.reshape(len(dictionary), params.dim_size)
-    syn1 = np.frombuffer(syn1_, dtype=np.float32)
-    syn1 = syn1.reshape(len(dictionary), params.dim_size)
+    syn0 = np.frombuffer(syn0_, dtype=np.float32).reshape(len(dictionary), params.dim_size)
+    syn1 = np.frombuffer(syn1_, dtype=np.float32).reshape(len(dictionary), params.dim_size)
 
-    word_neg_table = np.frombuffer(word_neg_table_, dtype=np.uint32)
-    entity_neg_table = np.frombuffer(entity_neg_table_, dtype=np.uint32)
+    word_neg_table = word_neg_table_
+    entity_neg_table = entity_neg_table_
 
-    sample_ints = np.frombuffer(sample_ints_, dtype=np.uint32)
+    sample_ints = sample_ints_
 
     if link_indices_:
-        link_indices = np.frombuffer(link_indices_, dtype=np.uint32)
+        link_indices = np.frombuffer(link_indices_, dtype=np.int32)
 
 
+@cython.boundscheck(False)
+@cython.wraparound(False)
+@cython.initializedcheck(False)
+@cython.cdivision(True)
 def train_page(WikiPage page):
-    cdef int pos, pos2, start, index, total_nodes, word_count, word, word2, entity, entity2
-    cdef tuple span
-    cdef list words, target_words
+    cdef uint32_t i, j, start, end, span_start, span_end, word_count, total_nodes
+    cdef int32_t word, word2, entity
+    cdef int32_t [:] words
+    cdef const int32_t [:] neighbors
+    cdef unicode word_str
+    cdef list word_list
     cdef WikiLink wiki_link
-    cdef unsigned long word_neg_table_size, entity_neg_table_size
 
-    cdef np.float32_t alpha_ = alpha.value
-
-    cdef np.uint32_t *word_neg_table_ = <np.uint32_t *>(np.PyArray_DATA(word_neg_table))
-    cdef np.uint32_t *entity_neg_table_ = <np.uint32_t *>(np.PyArray_DATA(entity_neg_table))
-
-    cdef np.float32_t *syn0_ = <np.float32_t *>(np.PyArray_DATA(syn0))
-    cdef np.float32_t *syn1_ = <np.float32_t *>(np.PyArray_DATA(syn1))
-    cdef np.float32_t *work_ = <np.float32_t *>(np.PyArray_DATA(work))
-
-    word_neg_table_size = word_neg_table.size
-    entity_neg_table_size = entity_neg_table.size
+    cdef float32_t alpha_, p
+    alpha_ = alpha.value
 
     # train using Wikipedia link graph
     if link_graph is not None:
-        total_nodes = link_indices.shape[0]
-        links_per_page = params.links_per_page
+        total_nodes = link_indices.size
 
         with link_cursor.get_lock():
             start = link_cursor.value
-            link_cursor.value = (start + links_per_page) % total_nodes
+            link_cursor.value = (start + params.links_per_page) % total_nodes
 
-        for index in range(start, start + links_per_page):
-            entity = link_indices[index % total_nodes]
+        for i in range(start, start + params.links_per_page):
+            entity = link_indices[i % total_nodes]
             neighbors = link_graph.neighbor_indices(entity)
-            for entity2 in neighbors:
-                _train_pair(entity, entity2, alpha_, params.negative, syn0_, syn1_, work_,
-                            entity_neg_table_, entity_neg_table_size)
+            for j in range(len(neighbors)):
+                _train_pair(entity, neighbors[j], alpha_, params.negative, entity_neg_table)
 
     # train using Wikipedia words and anchors
     for paragraph in extractor.extract_paragraphs(page):
-        words = [dictionary.get_word_index(w) for w in paragraph.words]
+        word_list = paragraph.words
+        words = cython.view.array(shape=(len(word_list),), itemsize=sizeof(int32_t), format='i')
+        for (i, word_str) in enumerate(word_list):
+            words[i] = dictionary.get_word_index(word_str)
         word_count = 0
-        for (pos, word) in enumerate(words):
+        for i in range(len(words)):
+            word = words[i]
             if word == -1:
                 continue
 
             word_count += 1
 
-            if sample_ints[word] < np.random.rand() * 2 ** 31:
+            if sample_ints[word] < rand():
                 continue
 
-            start = max(0, pos - params.window)
-            target_words = words[start:pos + params.window + 1]
-            for (pos2, word2) in enumerate(target_words, start):
-                if word2 == -1 or pos2 == pos:
+            start = max(0, i - params.window)
+            end = min(len(words), i + params.window + 1)
+            for j in range(start, end):
+                word2 = words[j]
+
+                if word2 == -1 or i == j:
                     continue
 
-                if sample_ints[word2] < np.random.rand() * 2 ** 31:
+                if sample_ints[word2] < rand():
                     continue
 
-                _train_pair(word, word2, alpha_, params.negative, syn0_, syn1_, work_,
-                            word_neg_table_, word_neg_table_size)
-
-        entity2 = dictionary.get_entity_index(page.title)
+                _train_pair(word, word2, alpha_, params.negative, word_neg_table)
 
         # train using word-entity co-occurrences
         for wiki_link in paragraph.wiki_links:
@@ -443,22 +435,23 @@ def train_page(WikiPage page):
             if entity == -1:
                 continue
 
-            span = wiki_link.span
-            start = max(0, span[0] - params.window)
-            target_words = words[start:span[1] + params.window]
-            for (pos2, word2) in enumerate(target_words, start):
-                if word2 == -1 or pos2 in range(span[0], span[1]):
+            (span_start, span_end) = wiki_link.span
+
+            start = max(0, span_start - params.window)
+            end = min(len(words), span_end + params.window)
+            for j in range(start, end):
+                word2 = words[j]
+                if word2 == -1 or span_start <= j < span_end:
                     continue
 
-                if sample_ints[word2] < np.random.rand() * 2 ** 31:
+                if sample_ints[word2] < rand():
                     continue
 
-                _train_pair(entity, word2, alpha_, params.negative, syn0_, syn1_, work_,
-                            word_neg_table_, word_neg_table_size)
+                _train_pair(entity, word2, alpha_, params.negative, word_neg_table)
 
         with word_counter.get_lock():
             word_counter.value += word_count  # lock is required since += is not an atomic operation
-            p = 1 - float(word_counter.value) / total_words
+            p = 1.0 - float(word_counter.value) / total_words
             alpha.value = max(params.min_alpha, params.init_alpha * p)
 
 
@@ -466,16 +459,18 @@ def train_page(WikiPage page):
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 @cython.cdivision(True)
-cdef void _train_pair(int index1, int index2, np.float32_t alpha, int negative, np.float32_t *syn0_,
-                      np.float32_t *syn1_, np.float32_t *work_, np.uint32_t *neg_table,
-                      unsigned long neg_table_size) nogil:
-    cdef np.float32_t label, f, g
-    cdef int d, index, neg_index
-    cdef unsigned long row1, row2
+cdef inline void _train_pair(int32_t index1, int32_t index2, float32_t alpha, uint32_t negative,
+                             uint32_t [:] neg_table) nogil:
+    cdef float32_t label, f, g
+    cdef int32_t index, neg_index
+    cdef uint32_t d
 
-    memset(work_, 0, params.dim_size * cython.sizeof(np.float32_t))
+    cdef int one = 1
+    cdef int dim_size = params.dim_size
+    cdef float32_t onef = <float32_t>1.0
+    cdef int32_t neg_table_size = len(neg_table)
 
-    row1 = <unsigned long>index1 * params.dim_size
+    memset(&work[0], 0, dim_size * cython.sizeof(float32_t))
 
     for d in range(negative + 1):
         if d == 0:
@@ -488,8 +483,7 @@ cdef void _train_pair(int index1, int index2, np.float32_t alpha, int negative, 
                 continue
             label = 0.0
 
-        row2 = <unsigned long>index * params.dim_size
-        f = <np.float32_t>(blas.sdot(&params.dim_size, &syn0_[row1], &ONE, &syn1_[row2], &ONE))
+        f = <float32_t>(blas.sdot(&dim_size, &syn0[index1, 0], &one, &syn1[index, 0], &one))
         if f > MAX_EXP:
             g = (label - 1.0) * alpha
         elif f < -MAX_EXP:
@@ -498,7 +492,7 @@ cdef void _train_pair(int index1, int index2, np.float32_t alpha, int negative, 
             f = 1.0 / (1.0 + exp(-f))
             g = (label - f) * alpha
 
-        blas.saxpy(&params.dim_size, &g, &syn1_[row2], &ONE, work_, &ONE)
-        blas.saxpy(&params.dim_size, &g, &syn0_[row1], &ONE, &syn1_[row2], &ONE)
+        blas.saxpy(&dim_size, &g, &syn1[index, 0], &one, &work[0], &one)
+        blas.saxpy(&dim_size, &g, &syn0[index1, 0], &one, &syn1[index, 0], &one)
 
-    blas.saxpy(&params.dim_size, &ONEF, work_, &ONE, &syn0_[row1], &ONE)
+    blas.saxpy(&dim_size, &onef, &work[0], &one, &syn0[index1, 0], &one)

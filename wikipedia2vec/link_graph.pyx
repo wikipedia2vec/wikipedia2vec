@@ -23,90 +23,26 @@ cdef class LinkGraph:
     def __init__(self, Dictionary dictionary, np.ndarray indices, np.ndarray indptr,
                  dict build_params):
         self._dictionary = dictionary
-        self._indices = indices
-        self._indptr = indptr
         self._build_params = build_params
+        self._indptr = indptr
+
         self._offset = self._dictionary.entity_offset
+        indices = indices + self._offset
+        self._indices = indices
 
     property build_params:
         def __get__(self):
             return self._build_params
 
-    cpdef bint has_edge(self, item1, item2):
-        cdef int index1, index2
-        cdef np.ndarray[np.int32_t, ndim=1] indices
+    cpdef list neighbors(self, Entity item):
+        return [self._dictionary.get_entity_by_index(i) for i in self.neighbor_indices(item.index)]
 
-        if isinstance(item1, int):
-            index1 = item1
-            index2 = item2
-        elif isinstance(item1, Entity):
-            index1 = item1.index
-            index2 = item2.index
-        elif isinstance(item1, unicode):
-            index1 = self._dictionary.get_entity_index(item1)
-            index2 = self._dictionary.get_entity_index(item2)
-        else:
-            raise TypeError()
-
-        index1 -= self._offset
-        index2 -= self._offset
-
-        indices = self._indices[self._indptr[index1]:self._indptr[index1 + 1]]
-        return index2 in indices
-
-    cpdef list neighbors(self, item):
-        cdef int index
-
-        return [self._dictionary.get_entity_by_index(index)
-                for index in self.neighbor_indices(item)]
-
-    cpdef np.ndarray neighbor_indices(self, item):
-        cdef int index
-
-        if isinstance(item, int):
-            index = item
-        elif isinstance(item, Entity):
-            index = item.index
-        elif isinstance(item, unicode):
-            index = self._dictionary.get_entity_index(item)
-        else:
-            raise TypeError()
-
-        index -= self._offset
-
-        return (self._indices[self._indptr[index]:self._indptr[index + 1]] + self._offset)
-
+    @cython.boundscheck(False)
+    @cython.initializedcheck(False)
     @cython.wraparound(False)
-    cpdef list random_walk(self, item, int length=10, bint return_indices=False):
-        cdef int index
-        cdef list ret
-        cdef np.ndarray[np.int32_t, ndim=1] indices, indptr, neighbors
-
-        indices = self._indices
-        indptr = self._indptr
-
-        if isinstance(item, int):
-            index = item
-        elif isinstance(item, Entity):
-            index = item.index
-        elif isinstance(item, unicode):
-            index = self._dictionary.get_entity_index(item)
-        else:
-            raise TypeError()
-
+    cdef const int32_t [:] neighbor_indices(self, int32_t index) nogil:
         index -= self._offset
-        ret = []
-        for _ in range(length):
-            neighbors = indices[indptr[index]:indptr[index + 1]]
-            if neighbors.size == 0:
-                break
-            index = np.random.choice(neighbors)
-            ret.append(index + self._offset)
-
-        if not return_indices:
-            ret = [self._dictionary.get_entity_by_index(index) for index in ret]
-
-        return ret
+        return self._indices[self._indptr[index]:self._indptr[index + 1]]
 
     def save(self, out_file):
         joblib.dump(dict(

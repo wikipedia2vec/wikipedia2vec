@@ -50,8 +50,10 @@ cdef class PhraseDictionary(PrefixSearchable):
     cpdef list keys(self):
         return self._phrase_dict.keys()
 
-    cpdef list prefix_search(self, unicode text, int start=0):
-        return sorted(self._phrase_dict.prefixes(text[start:]), key=len, reverse=True)
+    cpdef list prefix_search(self, unicode text, int32_t start=0):
+        if start != 0:
+            text = text[start:]
+        return sorted(self._phrase_dict.prefixes(text), key=len, reverse=True)
 
     @staticmethod
     def build(dump_reader, min_link_count, min_link_prob, lowercase, max_phrase_len, pool_size,

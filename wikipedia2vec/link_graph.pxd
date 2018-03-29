@@ -1,17 +1,16 @@
 # -*- coding: utf-8 -*-
 
 cimport numpy as np
+from libc.stdint cimport int32_t, uint32_t
 
-from .dictionary cimport Dictionary
+from .dictionary cimport Dictionary, Entity
 
 cdef class LinkGraph:
     cdef Dictionary _dictionary
-    cdef np.ndarray _indices
-    cdef np.ndarray _indptr
+    cdef const int32_t [:] _indices
+    cdef const int32_t [:] _indptr
     cdef dict _build_params
-    cdef int _offset
+    cdef int32_t _offset
 
-    cpdef bint has_edge(self, object, object)
-    cpdef list neighbors(self, object)
-    cpdef np.ndarray neighbor_indices(self, object)
-    cpdef list random_walk(self, object, int length=?, bint return_indices=?)
+    cpdef list neighbors(self, Entity)
+    cdef const int32_t [:] neighbor_indices(self, int32_t) nogil

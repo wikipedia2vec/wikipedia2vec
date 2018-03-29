@@ -70,7 +70,7 @@ cdef class WikiLink:
 
 
 cdef class Extractor:
-    def __init__(self, unicode language, bint lowercase=True, int min_paragraph_len=20,
+    def __init__(self, unicode language, bint lowercase=True, uint32_t min_paragraph_len=20,
                  PrefixSearchable dictionary=None):
         self._language = language
         self._lowercase = lowercase
@@ -79,7 +79,7 @@ cdef class Extractor:
         self._tokenizer = get_tokenizer(language)
 
     cpdef list extract_paragraphs(self, WikiPage page):
-        cdef int start, end
+        cdef uint32_t start, end
         cdef list paragraphs, cur_text, cur_words, cur_links, words
         cdef unicode title, text
         cdef Paragraph p
@@ -137,7 +137,7 @@ cdef class Extractor:
                                           len(p.words) >= self._min_paragraph_len)]
 
     cpdef list _extract_words(self, unicode text):
-        cdef int start, end, cur
+        cdef uint32_t start, end, cur
         cdef bint matched
         cdef frozenset end_offsets
         cdef list words, tokens

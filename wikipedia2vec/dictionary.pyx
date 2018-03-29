@@ -25,7 +25,7 @@ _extractor = None
 
 
 cdef class Item:
-    def __init__(self, int index, int count, int doc_count):
+    def __init__(self, int32_t index, uint32_t count, uint32_t doc_count):
         self._index = index
         self._count = count
         self._doc_count = doc_count
@@ -44,7 +44,7 @@ cdef class Item:
 
 
 cdef class Word(Item):
-    def __init__(self, unicode text, int index, int count, int doc_count):
+    def __init__(self, unicode text, int32_t index, uint32_t count, uint32_t doc_count):
         super(Word, self).__init__(index, count, doc_count)
         self._text = text
 
@@ -63,7 +63,7 @@ cdef class Word(Item):
 
 
 cdef class Entity(Item):
-    def __init__(self, unicode title, int index, int count, int doc_count):
+    def __init__(self, unicode title, int32_t index, uint32_t count, uint32_t doc_count):
         super(Entity, self).__init__(index, count, doc_count)
         self._title = title
 
@@ -82,7 +82,7 @@ cdef class Entity(Item):
 
 
 cdef class PrefixSearchable:
-    cpdef list prefix_search(self, unicode text, int start=0):
+    cpdef list prefix_search(self, unicode text, int32_t start=0):
         raise NotImplementedError()
 
 
@@ -118,22 +118,20 @@ cdef class Dictionary(PrefixSearchable):
         ))
 
     cpdef get_word(self, unicode word, default=None):
-        cdef int index
-        index = self.get_word_index(word)
+        cdef int32_t index = self.get_word_index(word)
         if index == -1:
             return default
         else:
             return Word(word, index, *self._word_stats[index])
 
-    cpdef int get_word_index(self, unicode word):
+    cpdef int32_t get_word_index(self, unicode word):
         try:
             return self._word_dict[word]
         except KeyError:
             return -1
 
-    cpdef get_entity(self, unicode title, bint resolve_redirect=True,
-                     default=None):
-        cdef int index, dict_index
+    cpdef get_entity(self, unicode title, bint resolve_redirect=True, default=None):
+        cdef int32_t index, dict_index
 
         index = self.get_entity_index(title, resolve_redirect=resolve_redirect)
         if index == -1:
@@ -143,38 +141,44 @@ cdef class Dictionary(PrefixSearchable):
             title = self._entity_dict.restore_key(dict_index)
             return Entity(title, index, *self._entity_stats[dict_index])
 
-    cpdef int get_entity_index(self, unicode title, bint resolve_redirect=True):
+    cpdef int32_t get_entity_index(self, unicode title, bint resolve_redirect=True):
+        cdef int32_t index
+
         if resolve_redirect:
             try:
-                return self._redirect_dict[title][0][0] + self._entity_offset
+                index = self._redirect_dict[title][0][0]
+                return index + self._entity_offset
             except KeyError:
                 pass
         try:
-            return self._entity_dict[title] + self._entity_offset
+            index = self._entity_dict[title]
+            return index + self._entity_offset
         except KeyError:
             return -1
 
-    cpdef Item get_item_by_index(self, int index):
+    cpdef Item get_item_by_index(self, int32_t index):
         if index < self._entity_offset:
             return self.get_word_by_index(index)
         else:
             return self.get_entity_by_index(index)
 
-    cpdef Word get_word_by_index(self, int index):
+    cpdef Word get_word_by_index(self, int32_t index):
         cdef unicode word
         word = self._word_dict.restore_key(index)
         return Word(word, index, *self._word_stats[index])
 
-    cpdef Entity get_entity_by_index(self, int index):
+    cpdef Entity get_entity_by_index(self, int32_t index):
         cdef unicode title
-        cdef int dict_index
+        cdef int32_t dict_index
 
         dict_index = index - self._entity_offset
         title = self._entity_dict.restore_key(dict_index)
         return Entity(title, index, *self._entity_stats[dict_index])
 
-    cpdef list prefix_search(self, unicode text, int start=0):
-        return sorted(self._word_dict.prefixes(text[start:]), key=len, reverse=True)
+    cpdef list prefix_search(self, unicode text, int32_t start=0):
+        if start != 0:
+            text = text[start:]
+        return sorted(self._word_dict.prefixes(text), key=len, reverse=True)
 
     def __len__(self):
         return len(self._word_dict) + len(self._entity_dict)
@@ -184,14 +188,14 @@ cdef class Dictionary(PrefixSearchable):
 
     def words(self):
         cdef unicode word
-        cdef int index
+        cdef int32_t index
 
         for (word, index) in six.iteritems(self._word_dict):
             yield Word(word, index, *self._word_stats[index])
 
     def entities(self):
         cdef unicode title
-        cdef int index
+        cdef int32_t index
 
         for (title, index) in six.iteritems(self._entity_dict):
             yield Entity(title, index + self._entity_offset, *self._entity_stats[index])
@@ -248,7 +252,7 @@ cdef class Dictionary(PrefixSearchable):
         logger.info('Step 3/3: Building dictionary...')
 
         word_dict = Trie([w for (w, c) in six.iteritems(word_counter) if c >= min_word_count])
-        word_stats = np.zeros((len(word_counter), 2), dtype=np.int)
+        word_stats = np.zeros((len(word_counter), 2), dtype=np.uint32)
         for (word, index) in six.iteritems(word_dict):
             word_stats[index][0] = word_counter[word]
             word_stats[index][1] = word_doc_counter[word]
@@ -258,7 +262,7 @@ cdef class Dictionary(PrefixSearchable):
 
         entity_dict = Trie([e for (e, c) in six.iteritems(entity_counter)
                             if c >= min_entity_count])
-        entity_stats = np.zeros((len(entity_counter), 2), dtype=np.int)
+        entity_stats = np.zeros((len(entity_counter), 2), dtype=np.uint32)
         for (entity, index) in six.iteritems(entity_dict):
             entity_stats[index][0] = entity_counter[entity]
             entity_stats[index][1] = entity_doc_counter[entity]

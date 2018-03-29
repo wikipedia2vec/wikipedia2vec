@@ -1,5 +1,8 @@
 # -*- coding: utf-8 -*-
 
+cimport numpy as np
+from libc.stdint cimport int32_t, uint32_t
+
 from .dictionary cimport PrefixSearchable
 from .utils.wiki_page cimport WikiPage
 
@@ -19,7 +22,7 @@ cdef class WikiLink:
 cdef class Extractor:
     cdef unicode _language
     cdef bint _lowercase
-    cdef int _min_paragraph_len
+    cdef uint32_t _min_paragraph_len
     cdef _tokenizer
     cdef PrefixSearchable _dictionary
 

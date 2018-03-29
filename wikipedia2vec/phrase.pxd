@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from libc.stdint cimport int32_t
+
 from .dictionary cimport PrefixSearchable
 
 
@@ -9,4 +11,4 @@ cdef class PhraseDictionary(PrefixSearchable):
     cdef dict _build_params
 
     cpdef list keys(self)
-    cpdef list prefix_search(self, unicode, int start=?)
+    cpdef list prefix_search(self, unicode, int32_t start=?)
