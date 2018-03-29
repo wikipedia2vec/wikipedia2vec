@@ -185,7 +185,7 @@ cdef class Extractor:
         try:
             return mwparserfromhell.parse(page.wiki_text)
         except Exception:
-            logger.exception('Failed to parse wiki text: %s', page.title)
+            logger.warn('Failed to parse wiki text: %s', page.title)
             return mwparserfromhell.parse('')
 
     cdef inline unicode _normalize_title(self, unicode title):
