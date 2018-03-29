@@ -34,7 +34,8 @@ from .utils.wiki_page cimport WikiPage
 
 ctypedef np.float32_t float32_t
 
-cdef float32_t MAX_EXP = 6.0
+DEF MAX_EXP = 6
+DEF EXP_TABLE_SIZE = 1000
 
 logger = logging.getLogger(__name__)
 
@@ -45,6 +46,7 @@ cdef float32_t [:, :] syn1
 cdef float32_t [:] work
 cdef uint32_t [:] word_neg_table
 cdef uint32_t [:] entity_neg_table
+cdef float32_t [:] exp_table
 cdef uint32_t [:] sample_ints
 cdef int32_t [:] link_indices
 cdef Extractor extractor
@@ -215,8 +217,8 @@ cdef class Wikipedia2Vec:
         return ret
 
     def train(self, dump_reader, link_graph_, pool_size, chunk_size, **kwargs):
-        global dictionary, link_graph, word_counter, link_cursor, extractor, alpha, work, params,\
-            total_words
+        global dictionary, link_graph, word_counter, link_cursor, extractor, alpha, work,\
+            exp_table, params, total_words
 
         start_time = time.time()
 
@@ -245,7 +247,7 @@ cdef class Wikipedia2Vec:
         word_neg_table = self._build_word_neg_table(params.word_neg_power)
         entity_neg_table = self._build_entity_neg_table(params.entity_neg_power)
 
-        logger.info('Building tables for iterating nodes...')
+        logger.info('Building tables for link indices...')
 
         offset = self.dictionary.entity_offset
         indices = np.arange(offset, offset + len(list(self.dictionary.entities())))
@@ -256,7 +258,7 @@ cdef class Wikipedia2Vec:
 
         link_cursor = multiprocessing.Value(c_uint32, 0)
 
-        logger.info('Starting to train an embedding...')
+        logger.info('Starting to train embeddings...')
 
         def iter_dump_reader():
             for n in range(params.iteration):
@@ -287,6 +289,11 @@ cdef class Wikipedia2Vec:
         word_counter = multiprocessing.Value(c_uint64, 0)
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
         work = np.zeros(dim_size, dtype=np.float32)
+
+        exp_table = np.empty(EXP_TABLE_SIZE, dtype=np.float32)
+        for i in range(EXP_TABLE_SIZE):
+            exp_table[i] = <float32_t>exp((i / <float32_t>EXP_TABLE_SIZE * 2 - 1) * MAX_EXP)
+            exp_table[i] = <float32_t>(exp_table[i] / (exp_table[i] + 1))
 
         init_args = (syn0_shared, syn1_shared, word_neg_table, entity_neg_table, sample_ints,
                      link_indices)
@@ -461,7 +468,7 @@ def train_page(WikiPage page):
 @cython.cdivision(True)
 cdef inline void _train_pair(int32_t index1, int32_t index2, float32_t alpha, uint32_t negative,
                              uint32_t [:] neg_table) nogil:
-    cdef float32_t label, f, g
+    cdef float32_t label, f, g, f_dot
     cdef int32_t index, neg_index
     cdef uint32_t d
 
@@ -483,14 +490,11 @@ cdef inline void _train_pair(int32_t index1, int32_t index2, float32_t alpha, ui
                 continue
             label = 0.0
 
-        f = <float32_t>(blas.sdot(&dim_size, &syn0[index1, 0], &one, &syn1[index, 0], &one))
-        if f > MAX_EXP:
-            g = (label - 1.0) * alpha
-        elif f < -MAX_EXP:
-            g = (label - 0.0) * alpha
-        else:
-            f = 1.0 / (1.0 + exp(-f))
-            g = (label - f) * alpha
+        f_dot = <float32_t>(blas.sdot(&dim_size, &syn0[index1, 0], &one, &syn1[index, 0], &one))
+        if f_dot >= MAX_EXP or f_dot <= -MAX_EXP:
+            continue
+        f = exp_table[<int>((f_dot + MAX_EXP) * (EXP_TABLE_SIZE / MAX_EXP / 2))]
+        g = (label - f) * alpha
 
         blas.saxpy(&dim_size, &g, &syn1[index, 0], &one, &work[0], &one)
         blas.saxpy(&dim_size, &g, &syn0[index1, 0], &one, &syn1[index, 0], &one)
