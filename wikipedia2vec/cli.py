@@ -50,10 +50,10 @@ def build_dictionary_options(func):
 
 
 def train_embedding_options(func):
-    @click.option('--dim-size', type=int, default=300)
+    @click.option('--dim-size', type=int, default=100)
     @click.option('--init-alpha', type=float, default=0.025)
     @click.option('--min-alpha', type=float, default=0.0001)
-    @click.option('--window', type=int, default=10)
+    @click.option('--window', type=int, default=5)
     @click.option('--links-per-page', type=int, default=10)
     @click.option('--negative', type=int, default=15)
     @click.option('--word-neg-power', type=float, default=0.75)
