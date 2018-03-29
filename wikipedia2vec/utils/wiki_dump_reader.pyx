@@ -61,7 +61,7 @@ def get_namespace(tag):
 
 # obtained from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/corpora/wikicorpus.py
 def extract_pages(in_file):
-    elems = (elem for (_, elem) in iterparse(in_file, events=('end',)))
+    elems = (elem for (_, elem) in iterparse(in_file, events=(b'end',)))
     elem = next(elems)
 
     namespace = get_namespace(elem.tag)
