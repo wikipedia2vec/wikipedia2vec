@@ -7,65 +7,104 @@ Wikipedia2Vec
 Introduction
 ------------
 
-Wikipedia2Vec is a tool for obtaining quality embeddings (vector representations) of words and Wikipedia entities from a Wikipedia dump.
-This tool is developed and maintained by [Studio Ousia](http://www.ousia.jp).
+Wikipedia2Vec is a tool for obtaining quality embeddings (vector representations) of words and Wikipedia entities from  Wikipedia.
+It is developed and maintained by [Studio Ousia](http://www.ousia.jp).
 
-The main benefits of using Wikipedia2Vec instead of conventional word embedding tools (e.g., Word2Vec, GloVe) are the following:
+This tool enables you to learn embeddings that map words and entities into a unified continuous vector space.
+The embeddings can be used as word embeddings, entity embeddings, and the unified embeddings of words and entities.
+They are used in the state-of-the-art models of various tasks such as [entity linking](https://arxiv.org/abs/1601.01343), [named entity recognition](http://www.aclweb.org/anthology/I17-2017), [entity relatedness](https://arxiv.org/abs/1601.01343), and [question answering](https://arxiv.org/abs/1803.08652).
 
--   Wikipedia2Vec places words and Wikipedia entities into a same vector space.
-    It enables you to easily model the semantics in a text using words and entities in it, which is beneficial for various natural language processing tasks (e.g., text classification, entity linking, and question answering).
--   Conventional word embedding models learn embeddings based only on contextual words of each word in a corpus.
-    Wikipedia2Vec uses rich structured information obtained from the internal link structure of Wikipedia entities.
-
-The embeddings are learned efficiently from a Wikipedia dump.
-The code is implemented in Python and optimized using Cython, multiprocessing, and BLAS.
+The embeddings can be easily built from a publicly available Wikipedia dump.
+The code is implemented in Python, and optimized using Cython and BLAS.
 
 How It Works
 ------------
 
 <img src="http://studio-ousia.github.io/wikipedia2vec/img/model.png" width="600" />
 
-Wikipedia2Vec extends the [Word2vec's skip-gram model](https://en.wikipedia.org/wiki/Word2vec) to jointly learn the embeddings of words and entities.
-The model consists of the following three sub-models:
+Wikipedia2Vec is based on the [Word2vec's skip-gram model](https://en.wikipedia.org/wiki/Word2vec) that learns to predict neighboring words given each word in corpora.
+We extend the skip-gram model by adding the following two sub-models:
 
-- *The word-based skip-gram model* learns to predict neighboring words given the target word in Wikipedia articles.
-- *The link graph model* learns to estimate neighboring entities given the target entity in the link graph of Wikipedia entities.
-- *The anchor context model* learns to predict neighboring words given the target entity using anchor links and their context words in Wikipedia.
+- *The KB link graph model* that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities.
+- *The anchor context model* that learns to predict neighboring words given an entity using an anchor link pointing to the entity and their neighboring words.
 
-By jointly optimizing above three sub-models, the model simultaneously learns the embedding of words and entities.
-For further details, please refer this paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
+By jointly optimizing the skip-gram model and these two sub-models, our model simultaneously learns the embedding of words and entities from Wikipedia.
+For further details, please refer to our paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
+
+Pretrained Embeddings
+---------------------
+
+(coming soon)
 
 Installation
 ------------
+
+Before installing Wikipedia2Vec, it is required to install a BLAS library.
+We recommend to use [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
+
+Wikipedia2Vec can be installed from PyPI:
 
 ```
 % pip install Wikipedia2Vec
 ```
 
-Learning Embeddings from a Wikipedia Dump
------------------------------------------
+To process Japanese Wikipedia dumps, it is also required to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
 
-First, you need to download a Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
+Learning Embeddings
+-------------------
 
-We currently support only English and Japanese, and more languages will be supported in the near future.
-Note that, to process Japanese Wikipedia dumps, you need to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
+First, you need to download a source Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
+The English dump file can be obtained by:
 
-Most of the commands explained below have two options *\--pool-size* and *\--chunk-size*, which are used to control [multiprocessing](https://docs.python.org/2/library/multiprocessing.html).
+```
+% wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+```
 
-### Building Phrase Dictionary (Optional)
+Note that, you do not need to decompress the file.
 
-*build\_phrase\_dictionary* constructs a dictionary consisting of phrases extracted from Wikipedia.
+Then, the embeddings can be built from a Wikipedia dump by using the *train* command:
+
+```
+% wikipedia2vec train DUMP_FILE MODEL_FILE
+```
+
+*Options:*
+
+- *--dim-size*: The number of dimensions of the embeddings (default: 100)
+- *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
+- *--iteration*: The number of iterations for Wikipedia documents (default: 3)
+- *--negative*: The number of negative samples (default: 5)
+- *--lowercase/--no-lowercase*: Whether to lowercase words and phrases (default: True)
+- *--min-word-count*: A word is ignored if the total frequency of the word is lower than this value (default: 10)
+- *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is lower than this value (default: 5)
+- *--link-graph/--no-link-graph*: Whether to learn from the KB's link graph (default: True)
+- *--links-per-page*: The number of contextual entities to be generated for processing each page (default: 10)
+- *--phrase/--no-phrase*: Whether to learn the embeddings of phrases (default: True)
+- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is lower than this value (default: 10)
+- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this probability (default: 0.1)
+- *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
+- *--init-alpha*: The initial learning rate (default: 0.025)
+- *--min-alpha*: The minimum learning rate (default: 0.0001)
+- *--sample*: The parameter that controls downsampling of high frequency words (default: 1e-4)
+
+This command internally runs the four commands described below (i.e., *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
+
+### Building Phrase Dictionary
+
+*build_phrase_dictionary* constructs a dictionary consisting of phrases extracted from Wikipedia.
+We extract all phrases that appear as an anchor link in Wikipedia, and reduce them using three thresholds (i.e., *min_link_count*, *min_link_prob*, and *max_phrase_len*).
+Detected phrases are treated as words in the subsequent steps.
 
 ```
 % wikipedia2vec build_phrase_dictionary DUMP_FILE PHRASE_DIC_NAME
 ```
 
-The following options can be specified:
+*Options:*
 
--   *\--min-link-count*: The minimum number of occurrences of the target phrase as links in Wikipedia (default: 10)
--   *\--min-link-prob*: The minimum probability that the target phrase appears as a link in Wikipedia (default: 0.1)
--   *\--lowercase/\--no-lowercase*: Whether phrases are lowercased (default: True)
--   *\--max-phrase-len*: The maximum number of words in a target phrase (default: 4)
+- *--lowercase/--no-lowercase*: Whether to lowercase phrases (default: True)
+- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is lower than this value (default: 10)
+- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this probability (default: 0.1)
+- *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 
 ### Building Dictionary
 
@@ -75,14 +114,14 @@ The following options can be specified:
 % wikipedia2vec build_dictionary DUMP_FILE DIC_FILE
 ```
 
-This command has the following options:
+*Options:*
 
--   *\--phrase*: The phrase dictionary file generated using *build\_phrase\_dictionary* command
--   *\--lowercase/\--no-lowercase*: Whether words are lowercased (default: True)
--   *\--min-word-count*: The minimum number of occurrences of the target word in Wikipedia (default: 10)
--   *\--min-entity-count*: The minimum number of occurrences of the target entity as links in Wikipedia (default: 5)
+- *--phrase*: The phrase dictionary file generated using the *build\_phrase\_dictionary* command
+- *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
+- *--min-word-count*: A word is ignored if the total frequency of the word is lower than this value (default: 10)
+- *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is lower than this value (default: 5)
 
-### Building Link Graph (Optional)
+### Building Link Graph
 
 *build\_link\_graph* generates a large sparse matrix representing the link structure of Wikipedia.
 
@@ -90,25 +129,31 @@ This command has the following options:
 % wikipedia2vec build_link_graph DUMP_FILE DIC_FILE LINK_GRAPH_FILE
 ```
 
-There is no specific option in this command.
+There is no option in this command.
 
 ### Learning Embeddings
 
+*train_embedding* runs the training of the embeddings.
+
 ```
-% wikipedia2vec train_embedding DUMP_FILE DIC_FILE OUT_FILE
+% wikipedia2vec train_embedding DUMP_FILE DIC_FILE MODEL_FILE
 ```
 
--   *\--link-graph*: The link graph file generated using *build\_link\_graph*
--   *\--dim-size*: The number of dimensions of the embeddings (default: 300)
--   *\--init-alpha*: The initial learning rate (default: 0.025)
--   *\--min-alpha*: The minimum learning rate (default: 0.0001)
--   *\--window*: The maximum distance between the target item (word or entity) and the predicted word within a text (default: 10)
--   *\--links-per-page*: The number of entities per page used to generate contextual link neighbors (default: 10)
--   *\--negative*: The number of negative samples (default: 5)
--   *\--iteration*: The number of iterations over the Wikipedia (default: 3)
--   *\--sample*: The parameter for downsampling high frequency words (default: 1e-4)
+*Options:*
+
+- *--link-graph*: The link graph file generated using the *build\_link\_graph* command
+- *--dim-size*: The number of dimensions of the embeddings (default: 100)
+- *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
+- *--iteration*: The number of iterations for Wikipedia documents (default: 3)
+- *--negative*: The number of negative samples (default: 5)
+- *--links-per-page*: The number of contextual entities to be generated for processing each page (default: 10)
+- *--init-alpha*: The initial learning rate (default: 0.025)
+- *--min-alpha*: The minimum learning rate (default: 0.0001)
+- *--sample*: The parameter that controls downsampling of high frequency words (default: 1e-4)
 
 ### Saving Embeddings in Text Format
+
+*save\_text* outputs a model in a text format.
 
 ```
 % wikipedia2vec save_text MODEL_FILE OUT_FILE
@@ -147,7 +192,8 @@ memmap([-0.19793572,  0.30861306,  0.29620451, -0.01193621,  0.18228433,
  (<Entity Cameron Diaz>, 0.72390842)]
 ```
 
-## Reference
+Reference
+---------
 
 If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
 
@@ -161,3 +207,8 @@ If you use Wikipedia2Vec in a scientific publication, please cite the following 
       pages     = {250--259},
       publisher = {Association for Computational Linguistics}
     }
+
+License
+-------
+
+[Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
