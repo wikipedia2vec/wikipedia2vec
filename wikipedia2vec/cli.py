@@ -23,7 +23,7 @@ def cli():
 
 def common_options(func):
     @click.option('--pool-size', type=int, default=multiprocessing.cpu_count())
-    @click.option('--chunk-size', type=int, default=30)
+    @click.option('--chunk-size', type=int, default=100)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
