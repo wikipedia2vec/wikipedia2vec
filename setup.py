@@ -73,7 +73,6 @@ setup(
     ],
     install_requires=[
         'click',
-        'gensim',
         'jieba',
         'joblib',
         'marisa-trie',
