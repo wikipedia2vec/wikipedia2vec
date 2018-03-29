@@ -217,8 +217,9 @@ cdef class Wikipedia2Vec:
         return ret
 
     def train(self, dump_reader, link_graph_, pool_size, chunk_size, **kwargs):
-        global dictionary, link_graph, word_counter, link_cursor, extractor, alpha, work,\
-            exp_table, params, total_words
+        global dictionary, link_graph, syn0, syn1, work, word_neg_table, entity_neg_table,\
+            exp_table, sample_ints, link_indices, word_counter, link_cursor, extractor, alpha,\
+            params, total_words
 
         start_time = time.time()
 
@@ -274,10 +275,10 @@ cdef class Wikipedia2Vec:
         syn1_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
 
         self.syn0 = np.frombuffer(syn0_shared, dtype=np.float32)
-        self.syn0 = self.syn0.reshape(vocab_size, dim_size)
+        syn0 = self.syn0 = self.syn0.reshape(vocab_size, dim_size)
 
         self.syn1 = np.frombuffer(syn1_shared, dtype=np.float32)
-        self.syn1 = self.syn1.reshape(vocab_size, dim_size)
+        syn1 = self.syn1 = self.syn1.reshape(vocab_size, dim_size)
 
         self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
         self.syn1[:] = np.zeros((vocab_size, dim_size))
@@ -290,23 +291,19 @@ cdef class Wikipedia2Vec:
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
         work = np.zeros(dim_size, dtype=np.float32)
 
-        exp_table = np.empty(EXP_TABLE_SIZE, dtype=np.float32)
+        exp_table = multiprocessing.RawArray(c_float, EXP_TABLE_SIZE)
         for i in range(EXP_TABLE_SIZE):
             exp_table[i] = <float32_t>exp((i / <float32_t>EXP_TABLE_SIZE * 2 - 1) * MAX_EXP)
             exp_table[i] = <float32_t>(exp_table[i] / (exp_table[i] + 1))
 
-        init_args = (syn0_shared, syn1_shared, word_neg_table, entity_neg_table, sample_ints,
-                     link_indices)
-
         if pool_size == 1:
-            init_worker(*init_args)
             for (n, _) in enumerate(map(train_page, iter_dump_reader())):
                 if n % 10000 == 0:
                     prog = float(word_counter.value) / total_words
                     logger.info('Proccessing page #%d progress: %.1f%% alpha: %.3f',
                                 n, prog * 100, alpha.value)
         else:
-            with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
+            with closing(Pool(pool_size)) as pool:
                 for (n, _) in enumerate(pool.imap_unordered(train_page, iter_dump_reader(),
                                                             chunksize=chunk_size)):
                     if n % 10000 == 0:
@@ -359,21 +356,6 @@ cdef class Wikipedia2Vec:
                 cur += items[index].count ** power / items_pow
 
         return neg_table
-
-
-def init_worker(syn0_, syn1_, word_neg_table_, entity_neg_table_, sample_ints_, link_indices_):
-    global syn0, syn1, word_neg_table, entity_neg_table, sample_ints, link_indices
-
-    syn0 = np.frombuffer(syn0_, dtype=np.float32).reshape(len(dictionary), params.dim_size)
-    syn1 = np.frombuffer(syn1_, dtype=np.float32).reshape(len(dictionary), params.dim_size)
-
-    word_neg_table = word_neg_table_
-    entity_neg_table = entity_neg_table_
-
-    sample_ints = sample_ints_
-
-    if link_indices_:
-        link_indices = np.frombuffer(link_indices_, dtype=np.int32)
 
 
 @cython.boundscheck(False)
