@@ -45,9 +45,9 @@ cdef class LinkGraph:
         return self._indices[self._indptr[index]:self._indptr[index + 1]]
 
     def save(self, out_file):
-        joblib.dump(dict(
-            indices=self._indices, indptr=self._indptr, build_params=self._build_params
-        ), out_file)
+        joblib.dump(dict(indices=np.asarray(self._indices, dtype=np.int32),
+                         indptr=np.asarray(self._indptr, dtype=np.int32),
+                         build_params=self._build_params), out_file)
 
     @staticmethod
     def load(in_file, dictionary, mmap=True):
