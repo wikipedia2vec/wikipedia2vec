@@ -25,8 +25,8 @@ How It Works
 Wikipedia2Vec is based on the [Word2vec's skip-gram model](https://en.wikipedia.org/wiki/Word2vec) that learns to predict neighboring words given each word in corpora.
 We extend the skip-gram model by adding the following two sub-models:
 
-- *The KB link graph model* that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities.
-- *The anchor context model* that learns to predict neighboring words given an entity using an anchor link pointing to the entity and their neighboring words.
+- *The KB link graph model* that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities
+- *The anchor context model* that learns to predict neighboring words given an entity using an anchor link pointing to the entity and their neighboring words
 
 By jointly optimizing the skip-gram model and these two sub-models, our model simultaneously learns the embedding of words and entities from Wikipedia.
 For further details, please refer to our paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
@@ -40,7 +40,7 @@ Installation
 ------------
 
 If you want to train embeddings on your machine, it is highly recommended to install a BLAS library before installing this tool.
-We recommend to use [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
+We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
 
 Wikipedia2Vec can be installed from PyPI:
 
@@ -79,24 +79,24 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
 - *--lowercase/--no-lowercase*: Whether to lowercase words and phrases (default: True)
-- *--min-word-count*: A word is ignored if the total frequency of the word is lower than this value (default: 10)
-- *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is lower than this value (default: 5)
+- *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
+- *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--links-per-page*: The number of contextual entities to be generated from the link graph for processing each page (default: 10)
 - *--phrase/--no-phrase*: Whether to learn the embeddings of phrases (default: True)
-- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is lower than this value (default: 10)
-- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this value (default: 0.1)
+- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is less than this value (default: 10)
+- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is less than this value (default: 0.1)
 - *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
-- *--sample*: The parameter that controls downsampling of high frequency words (default: 1e-4)
+- *--sample*: The parameter that controls downsampling of frequent words (default: 1e-4)
 
 The *train* command internally calls the four commands described below (i.e., *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
 
 ### Building Phrase Dictionary
 
 The *build_phrase_dictionary* command constructs a dictionary consisting of phrases extracted from Wikipedia.
-We extract all phrases that appear as an anchor link in Wikipedia, and reduce them using the three thresholds such as *min_link_count*, *min_link_prob*, and *max_phrase_len*.
+This command extracts all phrases that appear as an anchor link in Wikipedia, and reduces them using the three configurable thresholds such as *min_link_count*, *min_link_prob*, and *max_phrase_len*.
 Detected phrases are treated as words in the subsequent steps.
 
 ```
@@ -110,8 +110,8 @@ Detected phrases are treated as words in the subsequent steps.
 **Options:**
 
 - *--lowercase/--no-lowercase*: Whether to lowercase phrases (default: True)
-- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is lower than this value (default: 10)
-- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is lower than this value (default: 0.1)
+- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is less than this value (default: 10)
+- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is less than this value (default: 0.1)
 - *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 
 ### Building Dictionary
@@ -130,8 +130,8 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 
 - *--phrase*: The phrase dictionary file generated using the *build\_phrase\_dictionary* command
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
-- *--min-word-count*: A word is ignored if the total frequency of the word is lower than this value (default: 10)
-- *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is lower than this value (default: 5)
+- *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
+- *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 
 ### Building Link Graph
 
