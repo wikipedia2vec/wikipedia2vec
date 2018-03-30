@@ -3,11 +3,12 @@
 
 from __future__ import unicode_literals
 import jieba
+import logging
 import six
 
 from .token cimport Token
 
-jieba.initialize()
+jieba.setLogLevel(logging.WARN)
 
 
 cdef class JiebaTokenizer:
