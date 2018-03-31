@@ -31,7 +31,7 @@ def common_options(func):
 
 
 def build_phrase_dictionary_options(func):
-    @click.option('--min-link-count', type=int, default=10)
+    @click.option('--min-link-count', type=int, default=30)
     @click.option('--min-link-prob', type=float, default=0.1)
     @click.option('--max-phrase-len', default=4)
     @functools.wraps(func)
