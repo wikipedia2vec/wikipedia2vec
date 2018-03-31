@@ -388,13 +388,13 @@ def train_page(WikiPage page):
             for j in range(len(neighbors)):
                 _train_pair(entity, neighbors[j], alpha_, params.negative, entity_neg_table)
 
+    word_count = 0
     # train using Wikipedia words and anchors
     for paragraph in extractor.extract_paragraphs(page):
         word_list = paragraph.words
         words = cython.view.array(shape=(len(word_list),), itemsize=sizeof(int32_t), format='i')
         for (i, word_str) in enumerate(word_list):
             words[i] = dictionary.get_word_index(word_str)
-        word_count = 0
         for i in range(len(words)):
             word = words[i]
             if word == -1:
@@ -438,10 +438,10 @@ def train_page(WikiPage page):
 
                 _train_pair(entity, word2, alpha_, params.negative, word_neg_table)
 
-        with word_counter.get_lock():
-            word_counter.value += word_count  # lock is required since += is not an atomic operation
-            p = 1.0 - float(word_counter.value) / total_words
-            alpha.value = max(params.min_alpha, params.init_alpha * p)
+    with word_counter.get_lock():
+        word_counter.value += word_count  # lock is required since += is not an atomic operation
+        p = 1.0 - float(word_counter.value) / total_words
+        alpha.value = max(params.min_alpha, params.init_alpha * p)
 
 
 @cython.boundscheck(False)
