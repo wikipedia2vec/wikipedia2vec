@@ -6,6 +6,7 @@ import logging
 import multiprocessing
 import os
 
+from .dump_db import DumpDB
 from .dictionary import Dictionary
 from .link_graph import LinkGraph
 from .phrase import PhraseDictionary
@@ -115,6 +116,15 @@ def train(ctx, out_file, phrase, link_graph, **kwargs):
 
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
+@click.argument('out_file', type=click.Path())
+@common_options
+def build_dump_db(dump_file, out_file, **kwargs):
+    dump_reader = WikiDumpReader(dump_file)
+    DumpDB.build(dump_reader, out_file, **kwargs)
+
+
+@cli.command()
+@click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--lowercase/--no-lowercase', default=True)
 @build_phrase_dictionary_options
