@@ -7,7 +7,7 @@ Wikipedia2Vec
 Introduction
 ------------
 
-Wikipedia2Vec is a tool for obtaining quality embeddings (vector representations) of words and Wikipedia entities from  Wikipedia.
+Wikipedia2Vec is a tool used for obtaining quality embeddings (vector representations) of words and entities from  Wikipedia.
 It is developed and maintained by [Studio Ousia](http://www.ousia.jp).
 
 This tool enables you to learn embeddings that map words and entities into a unified continuous vector space.
@@ -23,12 +23,12 @@ How It Works
 <img src="http://studio-ousia.github.io/wikipedia2vec/img/model.png" width="600" />
 
 Wikipedia2Vec is based on the [Word2vec's skip-gram model](https://en.wikipedia.org/wiki/Word2vec) that learns to predict neighboring words given each word in corpora.
-We extend the skip-gram model by adding the following two sub-models:
+We extend the skip-gram model by adding the following two submodels:
 
-- *The KB link graph model* that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities
-- *The anchor context model* that learns to predict neighboring words given an entity using an anchor link pointing to the entity and their neighboring words
+- *The KB link graph model* that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities.
+- *The anchor context model* that learns to predict neighboring words given an entity by using an anchor link that points to the entity and its neighboring words.
 
-By jointly optimizing the skip-gram model and these two sub-models, our model simultaneously learns the embedding of words and entities from Wikipedia.
+By jointly optimizing the skip-gram model and these two submodels, our model simultaneously learns the embedding of words and entities from Wikipedia.
 For further details, please refer to our paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
 
 Pretrained Embeddings
@@ -54,15 +54,15 @@ Learning Embeddings
 -------------------
 
 First, you need to download a source Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
-The English dump file can be obtained by:
+The English dump file can be obtained by running the following command.
 
 ```
 % wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 ```
 
-Note that, you do not need to decompress the dump file.
+Note that you do not need to decompress the dump file.
 
-Then, the embeddings can be trained from a Wikipedia dump using the *train* command:
+Then, the embeddings can be trained from a Wikipedia dump using the *train* command.
 
 ```
 % wikipedia2vec train DUMP_FILE OUT_FILE
@@ -89,14 +89,14 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
-- *--sample*: The parameter that controls downsampling of frequent words (default: 1e-4)
+- *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
 
-The *train* command internally calls the four commands described below (i.e., *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
+The *train* command internally calls the four commands described below (namely, *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
 
 ### Building Phrase Dictionary
 
 The *build_phrase_dictionary* command constructs a dictionary consisting of phrases extracted from Wikipedia.
-This command extracts all phrases that appear as an anchor link in Wikipedia, and reduces them using the three configurable thresholds such as *min_link_count*, *min_link_prob*, and *max_phrase_len*.
+This command extracts all phrases that appear as an anchor link in Wikipedia, and reduces them using three configurable thresholds, namely *min_link_count*, *min_link_prob*, and *max_phrase_len*.
 Detected phrases are treated as words in the subsequent steps.
 
 ```
@@ -110,7 +110,7 @@ Detected phrases are treated as words in the subsequent steps.
 **Options:**
 
 - *--lowercase/--no-lowercase*: Whether to lowercase phrases (default: True)
-- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is less than this value (default: 10)
+- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is less than this value (default: 30)
 - *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is less than this value (default: 0.1)
 - *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 
@@ -171,7 +171,7 @@ The *train_embedding* command runs the training of the embeddings.
 - *--links-per-page*: The number of contextual entities to be generated from the link graph for processing each page (default: 10)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
-- *--sample*: The parameter that controls downsampling of high frequency words (default: 1e-4)
+- *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
 
 ### Saving Embeddings in Text Format
 
