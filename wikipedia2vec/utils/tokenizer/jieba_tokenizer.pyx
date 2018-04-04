@@ -6,11 +6,11 @@ import jieba
 import logging
 import six
 
-from .token cimport Token
+from .base_tokenizer cimport BaseTokenizer
 
 jieba.setLogLevel(logging.WARN)
 
 
-cdef class JiebaTokenizer:
-    cpdef list tokenize(self, unicode text):
-        return [Token(w, (s, e)) for (w, s, e) in jieba.tokenize(text)]
+cdef class JiebaTokenizer(BaseTokenizer):
+    cdef list _span_tokenize(self, unicode text):
+        return [(start, end) for (_, start, end) in jieba.tokenize(text)]

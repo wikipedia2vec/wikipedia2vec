@@ -6,9 +6,14 @@ import six
 
 
 cdef class Token:
-    def __init__(self, unicode text, tuple span):
+    def __init__(self, unicode text, uint32_t start, uint32_t end):
         self.text = text
-        self.span = span
+        self.start = start
+        self.end = end
+
+    @property
+    def span(self):
+        return (self.start, self.end)
 
     def __repr__(self):
         if six.PY2:
@@ -17,4 +22,4 @@ cdef class Token:
             return '<Token %s>' % self.text
 
     def __reduce__(self):
-        return (self.__class__, (self.text, self.span))
+        return (self.__class__, (self.text, self.start, self.end))
