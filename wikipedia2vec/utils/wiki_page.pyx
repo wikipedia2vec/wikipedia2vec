@@ -13,21 +13,9 @@ REDIRECT_REGEXP = re.compile(r"(?:\#|＃)(?:REDIRECT|転送)[:\s]*(?:\[\[(.*)\]\
 
 cdef class WikiPage:
     def __init__(self, unicode title, unicode language, unicode wiki_text):
-        self._title = title
-        self._language = language
-        self._wiki_text = wiki_text
-
-    property title:
-        def __get__(self):
-            return self._title
-
-    property language:
-        def __get__(self):
-            return self._language
-
-    property wiki_text:
-        def __get__(self):
-            return self._wiki_text
+        self.title = title
+        self.language = language
+        self.wiki_text = wiki_text
 
     def __repr__(self):
         if six.PY2:

@@ -8,7 +8,7 @@ import re
 import six
 from xml.etree.cElementTree import iterparse
 
-from .wiki_page import WikiPage
+from .wiki_page cimport WikiPage
 
 logger = logging.getLogger(__name__)
 
@@ -36,35 +36,25 @@ class WikiDumpReader(object):
     def __iter__(self):
         with bz2.BZ2File(self._dump_file) as f:
             c = 0
-            for (title, wiki_text) in extract_pages(f):
-                if any([title.lower().startswith(ns) for ns in self._ignored_ns]):
+            for (title, wiki_text) in _extract_pages(f):
+                lower_title = title.lower()
+                if any([lower_title.startswith(ns) for ns in self._ignored_ns]):
                     continue
                 c += 1
 
-                yield WikiPage(six.text_type(title), self._language, six.text_type(wiki_text))
+                yield WikiPage(title, self._language, wiki_text)
 
                 if c % 100000 == 0:
-                    logger.info('Processed: %d', c)
+                    logger.info('Processed: %d pages', c)
 
 
 # obtained from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/corpora/wikicorpus.py
-def get_namespace(tag):
-    match_obj = NAMESPACE_RE.match(tag)
-    if match_obj:
-        namespace = match_obj.group(1)
-        if not namespace.startswith("http://www.mediawiki.org/xml/export-"):
-            raise ValueError("%s not recognized as MediaWiki dump namespace" % namespace)
-        return namespace
-    else:
-        return ''
-
-
-# obtained from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/corpora/wikicorpus.py
-def extract_pages(in_file):
+def _extract_pages(in_file):
     elems = (elem for (_, elem) in iterparse(in_file, events=(b'end',)))
     elem = next(elems)
 
-    namespace = get_namespace(elem.tag)
+    tag = six.text_type(elem.tag)
+    namespace = _get_namespace(tag)
     page_tag = '{%s}page' % namespace
     text_path = './{%s}revision/{%s}text' % (namespace, namespace)
     title_path = './{%s}title' % namespace
@@ -72,8 +62,26 @@ def extract_pages(in_file):
     for elem in elems:
         if elem.tag == page_tag:
             title = elem.find(title_path).text
-            text = elem.find(text_path).text
+            text = elem.find(text_path).text or ''
 
-            yield title, text or ''
+            yield _to_unicode(title), _to_unicode(text)
 
             elem.clear()
+
+
+# obtained from https://github.com/RaRe-Technologies/gensim/blob/develop/gensim/corpora/wikicorpus.py
+cdef unicode _get_namespace(unicode tag):
+    match_obj = NAMESPACE_RE.match(tag)
+    if match_obj:
+        namespace = match_obj.group(1)
+        if not namespace.startswith('http://www.mediawiki.org/xml/export-'):
+            raise ValueError('%s not recognized as MediaWiki dump namespace' % namespace)
+        return namespace
+    else:
+        return ''
+
+
+cdef unicode _to_unicode(basestring s):
+    if isinstance(s, unicode):
+        return s
+    return s.decode('utf-8')

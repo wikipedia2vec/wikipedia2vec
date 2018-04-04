@@ -2,8 +2,8 @@
 
 
 cdef class WikiPage:
-    cdef unicode _title
-    cdef unicode _language
-    cdef unicode _wiki_text
+    cdef readonly unicode title
+    cdef readonly unicode language
+    cdef readonly unicode wiki_text
 
     cdef inline unicode _normalize_title(self, unicode)
