@@ -124,14 +124,14 @@ def build_dump_db(dump_file, out_file, **kwargs):
 
 
 @cli.command()
-@click.argument('dump_file', type=click.Path(exists=True))
+@click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--lowercase/--no-lowercase', default=True)
 @build_phrase_dictionary_options
 @common_options
-def build_phrase_dictionary(dump_file, out_file, **kwargs):
-    dump_reader = WikiDumpReader(dump_file)
-    phrase_dict = PhraseDictionary.build(dump_reader, **kwargs)
+def build_phrase_dictionary(dump_db_file, out_file, **kwargs):
+    dump_db = DumpDB(dump_db_file)
+    phrase_dict = PhraseDictionary.build(dump_db, **kwargs)
     phrase_dict.save(out_file)
 
 

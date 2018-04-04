@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 
+cimport cython
 import joblib
 import logging
 import six
@@ -12,68 +13,75 @@ from contextlib import closing
 from functools import partial
 from marisa_trie import Trie
 from multiprocessing.pool import Pool
+from tqdm import tqdm
 
-from .extractor cimport Extractor
+from .dump_db cimport DumpDB, Paragraph, WikiLink
 from .utils.tokenizer import get_tokenizer
+from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
+from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 
-_extractor = None
-_tokenizer = None
-_phrase_trie = None
+cdef DumpDB _dump_db = None
+cdef BaseTokenizer _tokenizer = None
+cdef _phrase_trie = None
 
 
-cdef class PhraseDictionary(PrefixSearchable):
-    def __init__(self, phrase_dict, bint lowercase, dict build_params):
-        self._phrase_dict = phrase_dict
+cdef class PhraseDictionary:
+    def __init__(self, phrase_trie, bint lowercase, dict build_params):
+        self.phrase_trie = phrase_trie
         self._lowercase = lowercase
         self._build_params = build_params
 
-    property lowercase:
-        def __get__(self):
-            return self._lowercase
+    @property
+    def lowercase(self):
+        return self._lowercase
 
-    property build_params:
-        def __get__(self):
-            return self._build_params
+    @property
+    def build_params(self):
+        return self._build_params
 
     def __len__(self):
-        return len(self._phrase_dict)
+        return len(self.phrase_trie)
 
     def __iter__(self):
-        for phrase in six.iterkeys(self._phrase_dict):
+        for phrase in six.iterkeys(self.phrase_trie):
             yield phrase
 
-    def __contains__(self, key):
-        return key in self._phrase_dict
+    def __contains__(self, unicode key):
+        return key in self.phrase_trie
 
     cpdef list keys(self):
-        return self._phrase_dict.keys()
+        return self.phrase_trie.keys()
 
-    cpdef list prefix_search(self, unicode text, int32_t start=0):
-        if start != 0:
-            text = text[start:]
-        return sorted(self._phrase_dict.prefixes(text), key=len, reverse=True)
+    @cython.wraparound(False)
+    cpdef list prefix_search(self, unicode text, uint32_t start=0, uint32_t max_len=50):
+        cdef list ret = self.phrase_trie.prefixes(text[start:start+max_len])
+        ret.sort(key=len, reverse=True)
+        return ret
 
     @staticmethod
-    def build(dump_reader, min_link_count, min_link_prob, lowercase, max_phrase_len, pool_size,
-              chunk_size):
-        global _extractor, _tokenizer
+    def build(dump_db, min_link_count, min_link_prob, lowercase, max_phrase_len, pool_size,
+              chunk_size, progressbar=True):
+        global _dump_db, _tokenizer
 
         start_time = time.time()
 
-        _extractor = Extractor(dump_reader.language, lowercase)
-        _tokenizer = get_tokenizer(dump_reader.language)
+        _dump_db = dump_db
+        _tokenizer = get_tokenizer(dump_db.language)
 
         phrase_counter = Counter()
         logger.info('Step 1/3: Counting anchor links...')
 
         with closing(Pool(pool_size)) as pool:
             f = partial(_extract_phrases, lowercase=lowercase, max_len=max_phrase_len)
-            for counter in pool.imap_unordered(f, dump_reader, chunksize=chunk_size):
-                phrase_counter.update(counter)
+            with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+                for counter in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
+                    phrase_counter.update(counter)
+                    bar.update(1)
 
-            phrase_counter = {w: c for (w, c) in six.iteritems(phrase_counter) if c >= min_link_count}
+            phrase_counter = {w: c for (w, c) in six.iteritems(phrase_counter)
+                              if c >= min_link_count}
 
             logger.info('Step 2/3: Counting occurrences...')
 
@@ -83,79 +91,87 @@ cdef class PhraseDictionary(PrefixSearchable):
                 occ_counter = Counter()
 
                 f = partial(_count_occurrences, lowercase=lowercase, trie_file=f.name)
-                for counter in pool.imap_unordered(f, dump_reader, chunksize=chunk_size):
-                    occ_counter.update(counter)
+                with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+                    for counter in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
+                        occ_counter.update(counter)
+                        bar.update(1)
 
         logger.info('Step 3/3: Building TRIE...')
-        phrase_dict = Trie(w for (w, c) in six.iteritems(occ_counter)
+        phrase_trie = Trie(w for (w, c) in six.iteritems(occ_counter)
                            if float(phrase_counter[w]) / c >= min_link_prob)
-        logger.info('%d phrases are successfully extracted', len(phrase_dict))
+        logger.info('%d phrases are successfully extracted', len(phrase_trie))
 
         build_params = dict(
-            dump_file=dump_reader.dump_file,
+            dump_file=dump_db.dump_file,
             min_link_count=min_link_count,
             min_link_prob=min_link_prob,
             build_time=time.time() - start_time,
         )
 
-        return PhraseDictionary(phrase_dict, lowercase, build_params)
+        return PhraseDictionary(phrase_trie, lowercase, build_params)
+
+    def serialize(self):
+        return dict(phrase_trie=self.phrase_trie.tobytes(),
+                    kwargs=dict(lowercase=self._lowercase, build_params=self._build_params))
 
     def save(self, out_file):
-        joblib.dump(dict(
-            phrase_dict=self._phrase_dict.tobytes(),
-            kwargs=dict(lowercase=self._lowercase, build_params=self._build_params),
-        ), out_file)
+        joblib.dump(self.serialize(), out_file)
 
     @staticmethod
-    def load(in_file):
-        obj = joblib.load(in_file)
+    def load(target):
+        if not isinstance(target, dict):
+            target = joblib.load(target)
 
-        phrase_dict = Trie()
-        phrase_dict.frombytes(obj['phrase_dict'])
-        return PhraseDictionary(phrase_dict, **obj['kwargs'])
-
-
-def _extract_phrases(page, lowercase, max_len):
-    counter = Counter()
-    try:
-        for paragraph in _extractor.extract_paragraphs(page):
-            for wiki_link in paragraph.wiki_links:
-                text = wiki_link.text
-                if 1 < len(_tokenizer.tokenize(text)) <= max_len:
-                    if lowercase:
-                        counter[text.lower()] += 1
-                    else:
-                        counter[text] += 1
-    except:
-        logging.exception('Unknown exception')
-        raise
-
-    return counter
+        phrase_trie = Trie()
+        phrase_trie.frombytes(target['phrase_trie'])
+        return PhraseDictionary(phrase_trie, **target['kwargs'])
 
 
-def _count_occurrences(page, trie_file, lowercase):
+def _extract_phrases(unicode title, bint lowercase, int max_len):
+    cdef unicode text
+    cdef Paragraph paragraph
+    cdef WikiLink wiki_link
+
+    ret = Counter()
+
+    for paragraph in _dump_db.get_paragraphs(title):
+        for wiki_link in paragraph.wiki_links:
+            text = wiki_link.text
+            if 1 < len(_tokenizer.tokenize(text)) <= max_len:
+                if lowercase:
+                    ret[text.lower()] += 1
+                else:
+                    ret[text] += 1
+
+    return ret
+
+
+def _count_occurrences(unicode title, trie_file, bint lowercase):
     global _phrase_trie
+
+    cdef unicode text, prefix
+    cdef list tokens
+    cdef frozenset end_offsets
+    cdef Token token
+    cdef Paragraph paragraph
+    cdef WikiLink wiki_link
 
     if _phrase_trie is None:
         _phrase_trie = Trie()
         _phrase_trie.mmap(trie_file)
 
     ret = Counter()
-    try:
-        for paragraph in _extractor.extract_paragraphs(page):
-            tokens = _tokenizer.tokenize(paragraph.text)
-            text = paragraph.text
-            if lowercase:
-                text = text.lower()
-            end_offsets = frozenset(t.span[1] for t in tokens)
 
-            for token in tokens:
-                start = token.span[0]
-                for prefix in _phrase_trie.prefixes(text[start:]):
-                    if (start + len(prefix)) in end_offsets:
-                        ret[prefix] += 1
-    except:
-        logging.exception('Unknown exception')
-        raise
+    for paragraph in _dump_db.get_paragraphs(title):
+        text = paragraph.text
+        tokens = _tokenizer.tokenize(text)
+        if lowercase:
+            text = text.lower()
+        end_offsets = frozenset(token.end for token in tokens)
+
+        for token in tokens:
+            for prefix in _phrase_trie.prefixes(text[token.start:]):
+                if (token.start + len(prefix)) in end_offsets:
+                    ret[prefix] += 1
 
     return ret
