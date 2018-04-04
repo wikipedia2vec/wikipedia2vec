@@ -81,6 +81,7 @@ setup(
         'numpy',
         'scipy',
         'six',
+        'tqdm',
     ],
     setup_requires=['numpy'],
     tests_require=['nose'],
