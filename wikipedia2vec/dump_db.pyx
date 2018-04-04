@@ -77,18 +77,24 @@ cdef class DumpDB:
             return txn.stat()['entries']
 
     def titles(self):
+        cdef bytes key
+
         with self._env.begin(db=self._page_db) as txn:
             cur = txn.cursor()
             for key in cur.iternext(values=False):
                 yield key.decode('utf-8')
 
     def redirects(self):
+        cdef bytes key, value
+
         with self._env.begin(db=self._redirect_db) as txn:
             cur = txn.cursor()
             for (key, value) in iter(cur):
                 yield (key.decode('utf-8'), value.decode('utf-8'))
 
     cpdef list get_paragraphs(self, unicode key):
+        cdef bytes value
+
         with self._env.begin(db=self._page_db) as txn:
             value = txn.get(key.encode('utf-8'))
             if not value:
@@ -97,10 +103,11 @@ cdef class DumpDB:
         return self._deserialize_paragraphs(value)
 
     cdef list _deserialize_paragraphs(self, bytes value):
+        cdef list ret, wiki_links
+
         ret = []
         for obj in pickle.loads(zlib.decompress(value)):
-            wiki_links = [WikiLink(title, text, start, end)
-                          for (title, text, (start, end)) in obj['links']]
+            wiki_links = [WikiLink(*args) for args in obj['links']]
             ret.append(Paragraph(obj['text'], wiki_links))
 
         return ret
@@ -128,28 +135,28 @@ cdef class DumpDB:
 
                     if len(page_buf) == buffer_size:
                         with env.begin(db=page_db, write=True) as txn:
-                            cur = txn.cursor()
-                            cur.putmulti(page_buf)
+                            txn.cursor().putmulti(page_buf)
                         page_buf = []
 
                     if len(redirect_buf) == buffer_size:
                         with env.begin(db=redirect_db, write=True) as txn:
-                            cur = txn.cursor()
-                            cur.putmulti(redirect_buf)
+                            txn.cursor().putmulti(redirect_buf)
                         redirect_buf = []
 
                 if page_buf:
                     with env.begin(db=page_db, write=True) as txn:
-                        cur = txn.cursor()
-                        cur.putmulti(page_buf)
+                        txn.cursor().putmulti(page_buf)
 
                 if redirect_buf:
                     with env.begin(db=redirect_db, write=True) as txn:
-                        cur = txn.cursor()
-                        cur.putmulti(redirect_buf)
+                        txn.cursor().putmulti(redirect_buf)
 
 
 def _parse(WikiPage page):
+    cdef uint32_t n, start, end
+    cdef unicode title, text, cur_text
+    cdef list ret, cur_links
+
     if page.is_redirect:
         return ('redirect', (page.title.encode('utf-8'), page.redirect.encode('utf-8')))
 
@@ -188,7 +195,7 @@ def _parse(WikiPage page):
             start = len(cur_text)
             cur_text += ' ' + text
             end = len(cur_text)
-            cur_links.append((_normalize_title(title), text, (start, end)))
+            cur_links.append((_normalize_title(title), text, start, end))
 
         elif isinstance(node, mwparserfromhell.nodes.Tag):
             if node.tag not in ('b', 'i'):

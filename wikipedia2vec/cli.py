@@ -124,7 +124,7 @@ def build_dump_db(dump_file, out_file, **kwargs):
 
 
 @cli.command()
-@click.argument('dump_db_file', type=click.Path(exists=True))
+@click.argument('dump_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--lowercase/--no-lowercase', default=True)
 @build_phrase_dictionary_options
