@@ -1,7 +1,5 @@
 # -*- coding: utf-8 -*-
 
-from libc.stdint cimport uint32_t
-
 from wikipedia2vec.phrase cimport PhraseDictionary
 
 cdef class BaseTokenizer:

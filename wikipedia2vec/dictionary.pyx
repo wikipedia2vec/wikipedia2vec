@@ -31,14 +31,14 @@ cdef BaseTokenizer _tokenizer = None
 
 
 cdef class Item:
-    def __init__(self, int32_t index, uint32_t count, uint32_t doc_count):
+    def __init__(self, int32_t index, int32_t count, int32_t doc_count):
         self.index = index
         self.count = count
         self.doc_count = doc_count
 
 
 cdef class Word(Item):
-    def __init__(self, unicode text, int32_t index, uint32_t count, uint32_t doc_count):
+    def __init__(self, unicode text, int32_t index, int32_t count, int32_t doc_count):
         super(Word, self).__init__(index, count, doc_count)
         self.text = text
 
@@ -53,7 +53,7 @@ cdef class Word(Item):
 
 
 cdef class Entity(Item):
-    def __init__(self, unicode title, int32_t index, uint32_t count, uint32_t doc_count):
+    def __init__(self, unicode title, int32_t index, int32_t count, int32_t doc_count):
         super(Entity, self).__init__(index, count, doc_count)
         self.title = title
 
@@ -238,7 +238,7 @@ cdef class Dictionary:
         logger.info('Step 3/3: Building dictionary...')
 
         word_dict = Trie([w for (w, c) in six.iteritems(word_counter) if c >= min_word_count])
-        word_stats = np.zeros((len(word_counter), 2), dtype=np.uint32)
+        word_stats = np.zeros((len(word_counter), 2), dtype=np.int32)
         for (word, index) in six.iteritems(word_dict):
             word_stats[index][0] = word_counter[word]
             word_stats[index][1] = word_doc_counter[word]
@@ -248,7 +248,7 @@ cdef class Dictionary:
 
         entity_dict = Trie([e for (e, c) in six.iteritems(entity_counter)
                             if c >= min_entity_count])
-        entity_stats = np.zeros((len(entity_counter), 2), dtype=np.uint32)
+        entity_stats = np.zeros((len(entity_counter), 2), dtype=np.int32)
         for (entity, index) in six.iteritems(entity_dict):
             entity_stats[index][0] = entity_counter[entity]
             entity_stats[index][1] = entity_doc_counter[entity]
@@ -283,8 +283,8 @@ cdef class Dictionary:
             word_dict=self._word_dict.tobytes(),
             entity_dict=self._entity_dict.tobytes(),
             redirect_dict=self._redirect_dict.tobytes(),
-            word_stats=np.asarray(self._word_stats, dtype=np.uint32),
-            entity_stats=np.asarray(self._entity_stats, dtype=np.uint32),
+            word_stats=np.asarray(self._word_stats, dtype=np.int32),
+            entity_stats=np.asarray(self._entity_stats, dtype=np.int32),
             meta=dict(language=self._language,
                       lowercase=self._lowercase,
                       build_params=self._build_params)

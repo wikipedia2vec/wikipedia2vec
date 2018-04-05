@@ -5,7 +5,7 @@ import cython
 from cython cimport view
 
 from cython.operator cimport dereference as deref, preincrement as inc
-from libc.stdint cimport uint32_t
+from libc.stdint cimport int32_t
 from libc.string cimport memset
 
 from .token cimport Token
@@ -16,7 +16,7 @@ cdef class BaseTokenizer:
         self._phrase_dict = phrase_dict
 
     cpdef list tokenize(self, unicode text):
-        cdef uint32_t cur, start, end, phrase_end
+        cdef int32_t cur, start, end, phrase_end
         cdef bint matched
         cdef unicode target_text, prefix
         cdef list ret, spans

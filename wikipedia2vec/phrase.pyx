@@ -55,7 +55,7 @@ cdef class PhraseDictionary:
         return self.phrase_trie.keys()
 
     @cython.wraparound(False)
-    cpdef list prefix_search(self, unicode text, uint32_t start=0, uint32_t max_len=50):
+    cpdef list prefix_search(self, unicode text, int32_t start=0, int32_t max_len=50):
         cdef list ret = self.phrase_trie.prefixes(text[start:start+max_len])
         ret.sort(key=len, reverse=True)
         return ret

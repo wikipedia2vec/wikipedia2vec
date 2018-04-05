@@ -13,10 +13,10 @@ cimport numpy as np
 cimport cython
 from cpython cimport array
 from collections import defaultdict
-from ctypes import c_float, c_int32, c_uint32, c_uint64
+from ctypes import c_float, c_int32, c_uint64
 from contextlib import closing
 from libc.math cimport exp
-from libc.stdint cimport int32_t, uint32_t, uint64_t
+from libc.stdint cimport int32_t, uint64_t
 from libc.stdlib cimport rand, RAND_MAX
 from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
@@ -44,10 +44,10 @@ cdef LinkGraph link_graph
 cdef float32_t [:, :] syn0
 cdef float32_t [:, :] syn1
 cdef float32_t [:] work
-cdef uint32_t [:] word_neg_table
-cdef uint32_t [:] entity_neg_table
+cdef int32_t [:] word_neg_table
+cdef int32_t [:] entity_neg_table
 cdef float32_t [:] exp_table
-cdef uint32_t [:] sample_ints
+cdef int32_t [:] sample_ints
 cdef int32_t [:] link_indices
 cdef Extractor extractor
 cdef unicode language
@@ -58,16 +58,16 @@ cdef uint64_t total_words
 
 
 cdef class _Parameters:
-    cdef public uint32_t dim_size
+    cdef public int32_t dim_size
     cdef public float32_t init_alpha
     cdef public float32_t min_alpha
-    cdef public uint32_t window
-    cdef public uint32_t negative
+    cdef public int32_t window
+    cdef public int32_t negative
     cdef public float32_t word_neg_power
     cdef public float32_t entity_neg_power
     cdef public float32_t sample
-    cdef public uint32_t iteration
-    cdef public uint32_t links_per_page
+    cdef public int32_t iteration
+    cdef public int32_t links_per_page
     cdef dict _kwargs
 
     def __init__(self, **kwargs):
@@ -204,8 +204,8 @@ cdef class Wikipedia2Vec:
         for (title, ind) in six.iteritems(entity_dict):
             syn0[ind + entity_offset] = vectors[entities[title]]
 
-        word_stats = np.zeros((len(word_dict), 2), dtype=np.uint32)
-        entity_stats = np.zeros((len(entity_dict), 2), dtype=np.uint32)
+        word_stats = np.zeros((len(word_dict), 2), dtype=np.int32)
+        entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int32)
 
         dictionary = Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
                                 None, dict())
@@ -234,7 +234,7 @@ cdef class Wikipedia2Vec:
 
         logger.info('Building a sampling table for frequent words...')
 
-        sample_ints = multiprocessing.RawArray(c_uint32, len(words))
+        sample_ints = multiprocessing.RawArray(c_int32, len(words))
         for word in words:
             cnt = float(word.count)
             if params.sample == 0:
@@ -257,7 +257,7 @@ cdef class Wikipedia2Vec:
         else:
             link_indices = None
 
-        link_cursor = multiprocessing.Value(c_uint32, 0)
+        link_cursor = multiprocessing.Value(c_int32, 0)
 
         logger.info('Starting to train embeddings...')
 
@@ -339,10 +339,10 @@ cdef class Wikipedia2Vec:
             return self._build_unigram_neg_table(items, power)
 
     def _build_uniform_neg_table(self, items):
-        return multiprocessing.RawArray(c_uint32, [o.index for o in items])
+        return multiprocessing.RawArray(c_int32, [o.index for o in items])
 
     def _build_unigram_neg_table(self, items, power, table_size=100000000):
-        neg_table = multiprocessing.RawArray(c_uint32, table_size)
+        neg_table = multiprocessing.RawArray(c_int32, table_size)
         items_pow = float(sum([item.count ** power for item in items]))
 
         index = 0
@@ -448,11 +448,10 @@ def train_page(WikiPage page):
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 @cython.cdivision(True)
-cdef inline void _train_pair(int32_t index1, int32_t index2, float32_t alpha, uint32_t negative,
-                             uint32_t [:] neg_table) nogil:
+cdef inline void _train_pair(int32_t index1, int32_t index2, float32_t alpha, int32_t negative,
+                             int32_t [:] neg_table) nogil:
     cdef float32_t label, f, g, f_dot
-    cdef int32_t index, neg_index
-    cdef uint32_t d
+    cdef int32_t index, neg_index, d
 
     cdef int one = 1
     cdef int dim_size = params.dim_size

@@ -6,7 +6,7 @@ import six
 
 
 cdef class Token:
-    def __init__(self, unicode text, uint32_t start, uint32_t end):
+    def __init__(self, unicode text, int32_t start, int32_t end):
         self.text = text
         self.start = start
         self.end = end

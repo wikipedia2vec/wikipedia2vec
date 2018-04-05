@@ -34,7 +34,7 @@ cdef class Paragraph:
 
 
 cdef class WikiLink:
-    def __init__(self, unicode title, unicode text, uint32_t start, uint32_t end):
+    def __init__(self, unicode title, unicode text, int32_t start, int32_t end):
         self.title = title
         self.text = text
         self.start = start
@@ -153,7 +153,7 @@ cdef class DumpDB:
 
 
 def _parse(WikiPage page):
-    cdef uint32_t n, start, end
+    cdef int32_t n, start, end
     cdef unicode title, text, cur_text
     cdef list ret, cur_links
 

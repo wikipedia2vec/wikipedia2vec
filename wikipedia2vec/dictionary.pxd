@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 cimport numpy as np
-from libc.stdint cimport int32_t, uint32_t
+from libc.stdint cimport int32_t
 
 from .phrase cimport PhraseDictionary
 from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
@@ -9,8 +9,8 @@ from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
 
 cdef class Item:
     cdef readonly int32_t index
-    cdef readonly uint32_t count
-    cdef readonly uint32_t doc_count
+    cdef readonly int32_t count
+    cdef readonly int32_t doc_count
 
 
 cdef class Word(Item):
@@ -26,8 +26,8 @@ cdef class Dictionary:
     cdef _entity_dict
     cdef _redirect_dict
     cdef PhraseDictionary _phrase_dict
-    cdef uint32_t [:, :] _word_stats
-    cdef uint32_t [:, :] _entity_stats
+    cdef const int32_t [:, :] _word_stats
+    cdef const int32_t [:, :] _entity_stats
     cdef unicode _language
     cdef bint _lowercase
     cdef dict _build_params

@@ -4,7 +4,7 @@
 from __future__ import unicode_literals
 import MeCab
 import six
-from libc.stdint cimport uint32_t
+from libc.stdint cimport int32_t
 
 from wikipedia2vec.phrase cimport PhraseDictionary
 from .base_tokenizer cimport BaseTokenizer
@@ -23,7 +23,7 @@ cdef class MeCabTokenizer(BaseTokenizer):
             self._tagger.parse('')
 
     cdef list _span_tokenize(self, unicode text):
-        cdef uint32_t cur, space_length, start, end
+        cdef int32_t cur, space_length, start, end
         cdef bytes text_utf8
         cdef unicode word
         cdef list ret

@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 cimport numpy as np
-from libc.stdint cimport int32_t, uint32_t
+from libc.stdint cimport int32_t
 
 from .dictionary cimport Dictionary, Entity
 
