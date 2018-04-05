@@ -31,6 +31,7 @@ cdef class Dictionary:
     cdef unicode _language
     cdef bint _lowercase
     cdef dict _build_params
+    cdef int32_t _entity_offset
 
     cpdef get_word(self, unicode, default=?)
     cpdef get_entity(self, unicode, bint resolve_redirect=?, default=?)

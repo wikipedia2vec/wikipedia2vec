@@ -81,6 +81,8 @@ cdef class Dictionary:
         self._lowercase = lowercase
         self._build_params = build_params
 
+        self._entity_offset = len(self._word_dict)
+
     @property
     def lowercase(self):
         return self._lowercase
@@ -95,7 +97,7 @@ cdef class Dictionary:
 
     @property
     def entity_offset(self):
-        return len(self._word_dict)
+        return self._entity_offset
 
     @property
     def word_size(self):
