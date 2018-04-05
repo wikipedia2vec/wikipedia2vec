@@ -6,6 +6,7 @@ import lmdb
 import logging
 import mwparserfromhell
 import six
+import uuid
 import zlib
 from contextlib import closing
 from six.moves import cPickle as pickle
@@ -63,6 +64,11 @@ cdef class DumpDB:
         self._redirect_db = self._env.open_db(b'__redirect__')
 
     @property
+    def id(self):
+        with self._env.begin(db=self._meta_db) as txn:
+            return txn.get(b'id').decode('utf-8')
+
+    @property
     def dump_file(self):
         with self._env.begin(db=self._meta_db) as txn:
             return txn.get(b'dump_file').decode('utf-8')
@@ -118,6 +124,7 @@ cdef class DumpDB:
                                max_dbs=3)) as env:
             meta_db = env.open_db(b'__meta__')
             with env.begin(db=meta_db, write=True) as txn:
+                txn.put(b'id', six.text_type(uuid.uuid1().hex).encode('utf-8'))
                 txn.put(b'dump_file', dump_reader.dump_file.encode('utf-8'))
                 txn.put(b'language', dump_reader.language.encode('utf-8'))
 
