@@ -361,7 +361,7 @@ def train_page(unicode title):
         total_nodes, text_len
     cdef int32_t [:] words, word_indices
     cdef const int32_t [:] neighbors
-    cdef unicode text, word_str
+    cdef unicode text
     cdef list tokens
     cdef Token token
     cdef WikiLink wiki_link
@@ -396,7 +396,10 @@ def train_page(unicode title):
         word_pos = cython.view.array(shape=(text_len,), itemsize=sizeof(int32_t), format='i')
         j = 0
         for (i, token) in enumerate(tokens):
-            words[i] = dictionary.get_word_index(token.text)
+            if dictionary.lowercase:
+                words[i] = dictionary.get_word_index(token.text.lower())
+            else:
+                words[i] = dictionary.get_word_index(token.text)
             if i > 0:
                 word_pos[j:token.start] = i - 1
                 j = token.start

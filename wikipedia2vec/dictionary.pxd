@@ -22,15 +22,15 @@ cdef class Entity(Item):
 
 
 cdef class Dictionary:
+    cdef readonly unicode language
+    cdef readonly bint lowercase
+    cdef readonly dict build_params
     cdef _word_dict
     cdef _entity_dict
     cdef _redirect_dict
     cdef PhraseDictionary _phrase_dict
     cdef const int32_t [:, :] _word_stats
     cdef const int32_t [:, :] _entity_stats
-    cdef unicode _language
-    cdef bint _lowercase
-    cdef dict _build_params
     cdef int32_t _entity_offset
 
     cpdef get_word(self, unicode, default=?)

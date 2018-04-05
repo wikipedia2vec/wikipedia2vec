@@ -77,19 +77,11 @@ cdef class Dictionary:
         self._phrase_dict = phrase_dict
         self._word_stats = word_stats
         self._entity_stats = entity_stats
-        self._language = language
-        self._lowercase = lowercase
-        self._build_params = build_params
+        self.language = language
+        self.lowercase = lowercase
+        self.build_params = build_params
 
         self._entity_offset = len(self._word_dict)
-
-    @property
-    def lowercase(self):
-        return self._lowercase
-
-    @property
-    def build_params(self):
-        return self._build_params
 
     @property
     def word_offset(self):
@@ -189,7 +181,7 @@ cdef class Dictionary:
         return Entity(title, index, *self._entity_stats[dict_index])
 
     cpdef BaseTokenizer get_tokenizer(self):
-        return get_tokenizer(self._language, phrase_dict=self._phrase_dict)
+        return get_tokenizer(self.language, phrase_dict=self._phrase_dict)
 
     @staticmethod
     def build(dump_db, phrase_dict, lowercase, min_word_count, min_entity_count, pool_size,
@@ -216,7 +208,8 @@ cdef class Dictionary:
 
         with closing(Pool(pool_size)) as pool:
             with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
-                for (word_cnt, entity_cnt) in pool.imap_unordered(_process_page, dump_db.titles(),
+                f = partial(_process_page, lowercase=lowercase)
+                for (word_cnt, entity_cnt) in pool.imap_unordered(f, dump_db.titles(),
                                                                   chunksize=chunk_size):
                     for (word, count) in word_cnt.items():
                         word_counter[word] += count
@@ -287,9 +280,9 @@ cdef class Dictionary:
             redirect_dict=self._redirect_dict.tobytes(),
             word_stats=np.asarray(self._word_stats, dtype=np.int32),
             entity_stats=np.asarray(self._entity_stats, dtype=np.int32),
-            meta=dict(language=self._language,
-                      lowercase=self._lowercase,
-                      build_params=self._build_params)
+            meta=dict(language=self.language,
+                      lowercase=self.lowercase,
+                      build_params=self.build_params)
         )
         if self._phrase_dict is not None:
             obj['phrase_dict'] = self._phrase_dict.serialize()
@@ -320,7 +313,7 @@ cdef class Dictionary:
                           target['entity_stats'], **target['meta'])
 
 
-def _process_page(unicode title):
+def _process_page(unicode title, bint lowercase):
     cdef Paragraph paragraph
     cdef Token token
     cdef WikiLink link
@@ -329,7 +322,10 @@ def _process_page(unicode title):
     entity_counter = Counter()
 
     for paragraph in _dump_db.get_paragraphs(title):
-        word_counter.update(token.text for token in _tokenizer.tokenize(paragraph.text))
+        if lowercase:
+            word_counter.update(token.text.lower() for token in _tokenizer.tokenize(paragraph.text))
+        else:
+            word_counter.update(token.text for token in _tokenizer.tokenize(paragraph.text))
         entity_counter.update(link.title for link in paragraph.wiki_links)
 
     return (word_counter, entity_counter)
