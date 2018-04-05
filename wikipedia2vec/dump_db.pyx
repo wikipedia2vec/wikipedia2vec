@@ -192,8 +192,9 @@ def _parse(WikiPage page):
             else:
                 text = node.title.strip_code()
 
+            cur_text += ' '
             start = len(cur_text)
-            cur_text += ' ' + text
+            cur_text += text
             end = len(cur_text)
             cur_links.append((_normalize_title(title), text, start, end))
 
