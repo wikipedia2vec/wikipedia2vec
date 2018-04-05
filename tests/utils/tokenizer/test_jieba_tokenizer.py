@@ -22,17 +22,15 @@ class TestJiebaTokenizer(unittest.TestCase):
         tokens = self._tokenizer.tokenize(text)
 
         ok_(all([isinstance(t, Token) for t in tokens]))
-
         eq_(['中華', '人民', '共和', '國的', '首都', '是', '北京', '。'], [t.text for t in tokens])
         eq_([(0, 2), (2, 4), (4, 6), (6, 8), (8, 10), (10, 11), (11, 13), (13, 14)],
             [t.span for t in tokens])
 
-    def test_phrase_tokenize(self):
+    def test_tokenize_with_phrases(self):
         text = '中華人民共和國的首都是北京。'
         tokens = self._phrase_tokenizer.tokenize(text)
 
         ok_(all([isinstance(t, Token) for t in tokens]))
-
         eq_(['中華人民', '共和', '國的', '首都', '是', '北京', '。'], [t.text for t in tokens])
         eq_([(0, 4), (4, 6), (6, 8), (8, 10), (10, 11), (11, 13), (13, 14)],
             [t.span for t in tokens])

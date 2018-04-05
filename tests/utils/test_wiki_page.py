@@ -24,11 +24,14 @@ class TestWikiPage(unittest.TestCase):
     def test_redirect(self):
         eq_('Computer accessibility', self.pages[0].redirect)
 
-    def test_page_properties(self):
-        page = self.pages[1]
-        eq_('Computer accessibility', page.title)
-        eq_('en', page.language)
-        eq_(24949, len(page.wiki_text))
+    def test_title_property(self):
+        eq_('Computer accessibility', self.pages[1].title)
+
+    def test_language_property(self):
+        eq_('en', self.pages[1].language)
+
+    def test_wiki_text_property(self):
+        eq_(24949, len(self.pages[1].wiki_text))
 
     def test_pickle(self):
         page1 = self.pages[1]

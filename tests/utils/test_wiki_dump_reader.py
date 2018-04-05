@@ -16,6 +16,9 @@ class TestWikiDumpReader(unittest.TestCase):
         )
         self.dump_reader = WikiDumpReader(sample_dump_file)
 
+    def test_dump_file_property(self):
+        ok_(self.dump_reader.dump_file.endswith('enwiki-pages-articles-sample.xml.bz2'))
+
     def test_language_property(self):
         eq_('en', self.dump_reader.language)
 

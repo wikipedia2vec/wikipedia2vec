@@ -22,15 +22,13 @@ class TestMeCabTokenizer(unittest.TestCase):
         tokens = self._tokenizer.tokenize(text)
 
         ok_(all([isinstance(t, Token) for t in tokens]))
-
         eq_(['東京', 'は', '日本', 'の', '首都', 'です'], [t.text for t in tokens])
         eq_([(0, 2), (2, 3), (3, 5), (5, 6), (6, 8), (8, 10)], [t.span for t in tokens])
 
-    def test_phrase_tokenize(self):
+    def test_tokenize_with_phrases(self):
         text = '充実野菜は野菜ジュースです'
         tokens = self._phrase_tokenizer.tokenize(text)
 
         ok_(all([isinstance(t, Token) for t in tokens]))
-
         eq_(['充実野菜', 'は', '野菜', 'ジュース', 'です'], [t.text for t in tokens])
         eq_([(0, 4), (4, 5), (5, 7), (7, 11), (11, 13)], [t.span for t in tokens])
