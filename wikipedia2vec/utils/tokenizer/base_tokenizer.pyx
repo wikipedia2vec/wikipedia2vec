@@ -21,7 +21,7 @@ cdef class BaseTokenizer:
         cdef unicode target_text, prefix
         cdef list ret, spans
         cdef tuple span
-        cdef char [:] end_markers
+        cdef frozenset end_offsets
 
         spans = self._span_tokenize(text)
         ret = []
@@ -36,12 +36,7 @@ cdef class BaseTokenizer:
             else:
                 target_text = text
 
-            end_markers = view.array(shape=(len(text) + 1,), itemsize=cython.sizeof(char),
-                                     format='c')
-            memset(&end_markers[0], 0, (len(text) + 1) * cython.sizeof(char))
-
-            for (_, end) in spans:
-                end_markers[end] = 1
+            end_offsets = frozenset([span[1] for span in spans])
 
             cur = 0
             for (start, end) in spans:
@@ -51,7 +46,7 @@ cdef class BaseTokenizer:
                 matched = False
                 for prefix in self._phrase_dict.prefix_search(target_text, start=start):
                     phrase_end = start + len(prefix)
-                    if end_markers[phrase_end] == 1:
+                    if phrase_end in end_offsets:
                         ret.append(Token(text[start:phrase_end], start, phrase_end))
                         cur = phrase_end
                         matched = True

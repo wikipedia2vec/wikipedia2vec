@@ -3,33 +3,33 @@
 cimport numpy as np
 from libc.stdint cimport int32_t, uint32_t
 
+from .phrase cimport PhraseDictionary
+from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
+
 
 cdef class Item:
-    cdef int32_t _index
-    cdef uint32_t _count
-    cdef uint32_t _doc_count
+    cdef readonly int32_t index
+    cdef readonly uint32_t count
+    cdef readonly uint32_t doc_count
 
 
 cdef class Word(Item):
-    cdef unicode _text
+    cdef readonly unicode text
 
 
 cdef class Entity(Item):
-    cdef unicode _title
+    cdef readonly unicode title
 
 
-cdef class PrefixSearchable:
-    cpdef list prefix_search(self, unicode, int32_t start=?)
-
-
-cdef class Dictionary(PrefixSearchable):
+cdef class Dictionary:
     cdef _word_dict
     cdef _entity_dict
     cdef _redirect_dict
-    cdef np.ndarray _word_stats
-    cdef np.ndarray _entity_stats
-    cdef int32_t _entity_offset
-    cdef _lowercase
+    cdef PhraseDictionary _phrase_dict
+    cdef uint32_t [:, :] _word_stats
+    cdef uint32_t [:, :] _entity_stats
+    cdef unicode _language
+    cdef bint _lowercase
     cdef dict _build_params
 
     cpdef get_word(self, unicode, default=?)
@@ -39,4 +39,4 @@ cdef class Dictionary(PrefixSearchable):
     cpdef Item get_item_by_index(self, int32_t)
     cpdef Word get_word_by_index(self, int32_t)
     cpdef Entity get_entity_by_index(self, int32_t)
-    cpdef list prefix_search(self, unicode, int32_t start=?)
+    cpdef BaseTokenizer get_tokenizer(self)

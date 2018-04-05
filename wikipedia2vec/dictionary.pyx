@@ -15,110 +15,120 @@ from functools import partial
 from itertools import chain
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
+from tqdm import tqdm
 
-from .extractor import Extractor
-from .utils.wiki_page cimport WikiPage
+from .dump_db cimport DumpDB, Paragraph, WikiLink
+from .phrase cimport PhraseDictionary
+from .utils.tokenizer import get_tokenizer
+from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
+from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 
-_extractor = None
+cdef DumpDB _dump_db = None
+cdef PhraseDictionary _phrase_dict = None
+cdef BaseTokenizer _tokenizer = None
 
 
 cdef class Item:
     def __init__(self, int32_t index, uint32_t count, uint32_t doc_count):
-        self._index = index
-        self._count = count
-        self._doc_count = doc_count
-
-    property index:
-        def __get__(self):
-            return self._index
-
-    property count:
-        def __get__(self):
-            return self._count
-
-    property doc_count:
-        def __get__(self):
-            return self._doc_count
+        self.index = index
+        self.count = count
+        self.doc_count = doc_count
 
 
 cdef class Word(Item):
     def __init__(self, unicode text, int32_t index, uint32_t count, uint32_t doc_count):
         super(Word, self).__init__(index, count, doc_count)
-        self._text = text
-
-    property text:
-        def __get__(self):
-            return self._text
+        self.text = text
 
     def __repr__(self):
         if six.PY2:
-            return b'<Word %s>' % self._text.encode('utf-8')
+            return b'<Word %s>' % self.text.encode('utf-8')
         else:
-            return '<Word %s>' % self._text
+            return '<Word %s>' % self.text
 
     def __reduce__(self):
-        return (self.__class__, (self._text, self._index, self._count, self._doc_count))
+        return (self.__class__, (self.text, self.index, self.count, self.doc_count))
 
 
 cdef class Entity(Item):
     def __init__(self, unicode title, int32_t index, uint32_t count, uint32_t doc_count):
         super(Entity, self).__init__(index, count, doc_count)
-        self._title = title
-
-    property title:
-        def __get__(self):
-            return self._title
+        self.title = title
 
     def __repr__(self):
         if six.PY2:
-            return b'<Entity %s>' % self._title.encode('utf-8')
+            return b'<Entity %s>' % self.title.encode('utf-8')
         else:
-            return '<Entity %s>' % self._title
+            return '<Entity %s>' % self.title
 
     def __reduce__(self):
-        return (self.__class__, (self._title, self._index, self._count, self._doc_count))
+        return (self.__class__, (self.title, self.index, self.count, self.doc_count))
 
 
-cdef class PrefixSearchable:
-    cpdef list prefix_search(self, unicode text, int32_t start=0):
-        raise NotImplementedError()
-
-
-cdef class Dictionary(PrefixSearchable):
-    def __init__(self, word_dict, entity_dict, redirect_dict, np.ndarray word_stats,
-                 np.ndarray entity_stats, lowercase, dict build_params):
+cdef class Dictionary:
+    def __init__(self, word_dict, entity_dict, redirect_dict, PhraseDictionary phrase_dict,
+                 np.ndarray word_stats, np.ndarray entity_stats, unicode language, bint lowercase,
+                 dict build_params):
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
+        self._phrase_dict = phrase_dict
         self._word_stats = word_stats
         self._entity_stats = entity_stats
+        self._language = language
         self._lowercase = lowercase
         self._build_params = build_params
 
-        self._entity_offset = len(word_dict)
+    @property
+    def lowercase(self):
+        return self._lowercase
 
-    property lowercase:
-        def __get__(self):
-            return self._lowercase
+    @property
+    def build_params(self):
+        return self._build_params
 
-    property build_params:
-        def __get__(self):
-            return self._build_params
+    @property
+    def word_offset(self):
+        return 0
 
-    property entity_offset:
-        def __get__(self):
-            return self._entity_offset
+    @property
+    def entity_offset(self):
+        return len(self._word_dict)
 
-    def __reduce__(self):
-        return (self.__class__, (
-            self._word_dict, self._entity_dict, self._redirect_dict, self._word_stats,
-            self._entity_stats, self._lowercase, self._build_params
-        ))
+    @property
+    def word_size(self):
+        return len(self._word_dict)
+
+    @property
+    def entity_size(self):
+        return len(self._entity_dict)
+
+    def __len__(self):
+        return len(self._word_dict) + len(self._entity_dict)
+
+    def __iter__(self):
+        return chain(self.words(), self.entities())
+
+    def words(self):
+        cdef unicode word
+        cdef int32_t index
+
+        for (word, index) in six.iteritems(self._word_dict):
+            yield Word(word, index, *self._word_stats[index])
+
+    def entities(self):
+        cdef unicode title
+        cdef int32_t index
+
+        for (title, index) in six.iteritems(self._entity_dict):
+            yield Entity(title, index + self._entity_offset, *self._entity_stats[index])
 
     cpdef get_word(self, unicode word, default=None):
-        cdef int32_t index = self.get_word_index(word)
+        cdef int32_t index
+
+        index = self.get_word_index(word)
         if index == -1:
             return default
         else:
@@ -164,6 +174,7 @@ cdef class Dictionary(PrefixSearchable):
 
     cpdef Word get_word_by_index(self, int32_t index):
         cdef unicode word
+
         word = self._word_dict.restore_key(index)
         return Word(word, index, *self._word_stats[index])
 
@@ -175,74 +186,49 @@ cdef class Dictionary(PrefixSearchable):
         title = self._entity_dict.restore_key(dict_index)
         return Entity(title, index, *self._entity_stats[dict_index])
 
-    cpdef list prefix_search(self, unicode text, int32_t start=0):
-        if start != 0:
-            text = text[start:]
-        return sorted(self._word_dict.prefixes(text), key=len, reverse=True)
-
-    def __len__(self):
-        return len(self._word_dict) + len(self._entity_dict)
-
-    def __iter__(self):
-        return chain(self.words(), self.entities())
-
-    def words(self):
-        cdef unicode word
-        cdef int32_t index
-
-        for (word, index) in six.iteritems(self._word_dict):
-            yield Word(word, index, *self._word_stats[index])
-
-    def entities(self):
-        cdef unicode title
-        cdef int32_t index
-
-        for (title, index) in six.iteritems(self._entity_dict):
-            yield Entity(title, index + self._entity_offset, *self._entity_stats[index])
+    cpdef BaseTokenizer get_tokenizer(self):
+        return get_tokenizer(self._language, phrase_dict=self._phrase_dict)
 
     @staticmethod
-    def build(dump_reader, phrase_dict, lowercase, min_word_count, min_entity_count, pool_size,
-              chunk_size):
+    def build(dump_db, phrase_dict, lowercase, min_word_count, min_entity_count, pool_size,
+              chunk_size, progressbar=True):
+        global _dump_db, _phrase_dict, _tokenizer
+
         start_time = time.time()
 
-        if phrase_dict:
+        if phrase_dict is not None:
             assert phrase_dict.lowercase == lowercase,\
                 'Lowercase config must be consistent with PhraseDictionary'
+
+            _phrase_dict = phrase_dict
+
+        _dump_db = dump_db
+        _tokenizer = get_tokenizer(dump_db.language, phrase_dict=phrase_dict)
+
+        logger.info('Step 1/3: Processing Wikipedia pages...')
 
         word_counter = Counter()
         word_doc_counter = Counter()
         entity_counter = Counter()
         entity_doc_counter = Counter()
-        entity_redirects = {}
-
-        logger.info('Step 1/3: Processing Wikipedia pages...')
-
-        global _extractor
-        _extractor = Extractor(dump_reader.language, lowercase=lowercase, dictionary=phrase_dict)
 
         with closing(Pool(pool_size)) as pool:
-            for (page, paragraphs) in pool.imap_unordered(_extract_paragraphs, dump_reader,
-                                                          chunksize=chunk_size):
-                if page.is_redirect:
-                    entity_redirects[page.title] = page.redirect
+            with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+                for (word_cnt, entity_cnt) in pool.imap_unordered(_process_page, dump_db.titles(),
+                                                                  chunksize=chunk_size):
+                    for (word, count) in word_cnt.items():
+                        word_counter[word] += count
+                        word_doc_counter[word] += 1
 
-                else:
-                    words = []
-                    entities = []
-                    for paragraph in paragraphs:
-                        words += paragraph.words
-                        entities += [l.title for l in paragraph.wiki_links]
+                    for (title, count) in entity_cnt.items():
+                        entity_counter[title] += count
+                        entity_doc_counter[title] += 1
 
-                    word_counter.update(words)
-                    entity_counter.update(entities)
-                    word_doc_counter.update(list(set(words)))
-                    entity_doc_counter.update(list(set(entities)))
-
-        _extractor = None
+                    bar.update(1)
 
         logger.info('Step 2/3: Processing Wikipedia redirects...')
 
-        for (title, dest_title) in six.iteritems(entity_redirects):
+        for (title, dest_title) in dump_db.redirects():
             entity_counter[dest_title] += entity_counter[title]
             del entity_counter[title]
 
@@ -270,41 +256,43 @@ cdef class Dictionary(PrefixSearchable):
         del entity_counter
         del entity_doc_counter
 
-        redirect_items = []
-        for (title, dest_title) in six.iteritems(entity_redirects):
-            if dest_title in entity_dict:
-                redirect_items.append((title, (entity_dict[dest_title],)))
+        redirect_dict = RecordTrie('<I', [
+            (title, (entity_dict[dest_title],))
+            for (title, dest_title) in dump_db.redirects() if dest_title in entity_dict
+        ])
 
-        redirect_dict = RecordTrie('<I', redirect_items)
-
-        if phrase_dict is None:
-            phrase_dict_params = None
-        else:
-            phrase_dict_params = dict(build_params=phrase_dict.build_params)
+        if phrase_dict is not None:
+            phrase_trie = Trie([phrase for phrase in phrase_dict if phrase in word_dict])
+            phrase_dict.phrase_trie = phrase_trie
 
         build_params = dict(
-            dump_file=dump_reader.dump_file,
+            dump_file=dump_db.dump_file,
             min_word_count=min_word_count,
             min_entity_count=min_entity_count,
-            phrase_dict=phrase_dict_params,
             build_time=time.time() - start_time,
         )
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
-                          lowercase, build_params)
+        return Dictionary(word_dict, entity_dict, redirect_dict, phrase_dict, word_stats,
+                          entity_stats, dump_db.language, lowercase, build_params)
 
     def save(self, out_file):
         joblib.dump(self.serialize(), out_file)
 
     def serialize(self):
-        return dict(
+        obj = dict(
             word_dict=self._word_dict.tobytes(),
             entity_dict=self._entity_dict.tobytes(),
             redirect_dict=self._redirect_dict.tobytes(),
-            word_stats=self._word_stats,
-            entity_stats=self._entity_stats,
-            meta=dict(lowercase=self._lowercase, build_params=self._build_params)
+            word_stats=np.asarray(self._word_stats, dtype=np.uint32),
+            entity_stats=np.asarray(self._entity_stats, dtype=np.uint32),
+            meta=dict(language=self._language,
+                      lowercase=self._lowercase,
+                      build_params=self._build_params)
         )
+        if self._phrase_dict is not None:
+            obj['phrase_dict'] = self._phrase_dict.serialize()
+
+        return obj
 
     @staticmethod
     def load(target, mmap=True):
@@ -321,14 +309,25 @@ cdef class Dictionary(PrefixSearchable):
         word_dict.frombytes(target['word_dict'])
         entity_dict.frombytes(target['entity_dict'])
         redirect_dict.frombytes(target['redirect_dict'])
+        if 'phrase_dict' in target:
+            phrase_dict = PhraseDictionary.load(target['phrase_dict'])
+        else:
+            phrase_dict = None
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, target['word_stats'],
+        return Dictionary(word_dict, entity_dict, redirect_dict, phrase_dict, target['word_stats'],
                           target['entity_stats'], **target['meta'])
 
 
-def _extract_paragraphs(WikiPage page):
-    try:
-        return (page, _extractor.extract_paragraphs(page))
-    except:
-        logging.exception('Unknown exception')
-        raise
+def _process_page(unicode title):
+    cdef Paragraph paragraph
+    cdef Token token
+    cdef WikiLink link
+
+    word_counter = Counter()
+    entity_counter = Counter()
+
+    for paragraph in _dump_db.get_paragraphs(title):
+        word_counter.update(token.text for token in _tokenizer.tokenize(paragraph.text))
+        entity_counter.update(link.title for link in paragraph.wiki_links)
+
+    return (word_counter, entity_counter)

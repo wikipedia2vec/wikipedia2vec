@@ -136,34 +136,34 @@ def build_phrase_dictionary(dump_db_file, out_file, **kwargs):
 
 
 @cli.command()
-@click.argument('dump_file', type=click.Path(exists=True))
+@click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--phrase', type=click.Path(exists=True))
 @click.option('--lowercase/--no-lowercase', default=True)
 @build_dictionary_options
 @common_options
-def build_dictionary(dump_file, out_file, phrase, **kwargs):
-    dump_reader = WikiDumpReader(dump_file)
+def build_dictionary(dump_db_file, out_file, phrase, **kwargs):
+    dump_db = DumpDB(dump_db_file)
 
     if phrase:
         phrase_dict = PhraseDictionary.load(phrase)
     else:
         phrase_dict = None
 
-    dictionary = Dictionary.build(dump_reader, phrase_dict, **kwargs)
+    dictionary = Dictionary.build(dump_db, phrase_dict, **kwargs)
     dictionary.save(out_file)
 
 
 @cli.command()
-@click.argument('dump_file', type=click.Path(exists=True))
+@click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @common_options
-def build_link_graph(dump_file, dictionary_file, out_file, **kwargs):
-    dump_reader = WikiDumpReader(dump_file)
+def build_link_graph(dump_db_file, dictionary_file, out_file, **kwargs):
+    dump_db = DumpDB(dump_db_file)
     dictionary = Dictionary.load(dictionary_file)
 
-    link_graph = LinkGraph.build(dump_reader, dictionary, **kwargs)
+    link_graph = LinkGraph.build(dump_db, dictionary, **kwargs)
     link_graph.save(out_file)
 
 
