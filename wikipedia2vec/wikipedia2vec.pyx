@@ -5,6 +5,7 @@ import joblib
 import logging
 import multiprocessing
 import os
+import random
 import time
 import six
 import six.moves.cPickle as pickle
@@ -22,15 +23,17 @@ from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 from scipy.linalg cimport cython_blas as blas
+from tqdm import tqdm
 try:
     import itertools.imap as map  # for Python 2
 except ImportError:
     pass
 
 from .dictionary cimport Dictionary, Item, Word, Entity
-from .extractor cimport Extractor, Paragraph, WikiLink
+from .dump_db cimport Paragraph, WikiLink, DumpDB
 from .link_graph cimport LinkGraph
-from .utils.wiki_page cimport WikiPage
+from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
+from .utils.tokenizer.token cimport Token
 
 ctypedef np.float32_t float32_t
 
@@ -40,7 +43,9 @@ DEF EXP_TABLE_SIZE = 1000
 logger = logging.getLogger(__name__)
 
 cdef Dictionary dictionary
+cdef DumpDB dump_db
 cdef LinkGraph link_graph
+cdef BaseTokenizer tokenizer
 cdef float32_t [:, :] syn0
 cdef float32_t [:, :] syn1
 cdef float32_t [:] work
@@ -49,7 +54,6 @@ cdef int32_t [:] entity_neg_table
 cdef float32_t [:] exp_table
 cdef int32_t [:] sample_ints
 cdef int32_t [:] link_indices
-cdef Extractor extractor
 cdef unicode language
 cdef object alpha
 cdef object word_counter
@@ -216,10 +220,10 @@ cdef class Wikipedia2Vec:
 
         return ret
 
-    def train(self, dump_reader, link_graph_, pool_size, chunk_size, **kwargs):
-        global dictionary, link_graph, syn0, syn1, work, word_neg_table, entity_neg_table,\
-            exp_table, sample_ints, link_indices, word_counter, link_cursor, extractor, alpha,\
-            params, total_words
+    def train(self, dump_db_, link_graph_, pool_size, chunk_size, progressbar=True, **kwargs):
+        global dictionary, dump_db, link_graph, tokenizer, syn0, syn1, work, word_neg_table,\
+            entity_neg_table, exp_table, sample_ints, link_indices, word_counter, link_cursor,\
+            alpha, params, total_words
 
         start_time = time.time()
 
@@ -261,12 +265,6 @@ cdef class Wikipedia2Vec:
 
         logger.info('Starting to train embeddings...')
 
-        def iter_dump_reader():
-            for n in range(params.iteration):
-                logger.info('Iteration: %d', n)
-                for page in dump_reader:
-                    yield page
-
         vocab_size = len(self.dictionary)
 
         logger.info('Initializing weights...')
@@ -283,10 +281,11 @@ cdef class Wikipedia2Vec:
         self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
         self.syn1[:] = np.zeros((vocab_size, dim_size))
 
+        dump_db = dump_db_
         dictionary = self.dictionary
         link_graph = link_graph_
+        tokenizer = dictionary.get_tokenizer()
 
-        extractor = Extractor(dump_reader.language, dictionary.lowercase, dictionary=dictionary)
         word_counter = multiprocessing.Value(c_uint64, 0)
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
         work = np.zeros(dim_size, dtype=np.float32)
@@ -296,25 +295,20 @@ cdef class Wikipedia2Vec:
             exp_table[i] = <float32_t>exp((i / <float32_t>EXP_TABLE_SIZE * 2 - 1) * MAX_EXP)
             exp_table[i] = <float32_t>(exp_table[i] / (exp_table[i] + 1))
 
-        if pool_size == 1:
-            for (n, _) in enumerate(map(train_page, iter_dump_reader())):
-                if n % 10000 == 0:
-                    prog = float(word_counter.value) / total_words
-                    logger.info('Proccessing page #%d progress: %.1f%% alpha: %.3f',
-                                n, prog * 100, alpha.value)
-        else:
-            with closing(Pool(pool_size)) as pool:
-                for (n, _) in enumerate(pool.imap_unordered(train_page, iter_dump_reader(),
-                                                            chunksize=chunk_size)):
-                    if n % 10000 == 0:
-                        prog = float(word_counter.value) / total_words
-                        logger.info('Proccessing page #%d progress: %.1f%% alpha: %.3f',
-                                    n, prog * 100, alpha.value)
+        with closing(Pool(pool_size)) as pool:
+            titles = list(dump_db.titles())
+            for i in range(params.iteration):
+                logger.info('Iteration: %d', i)
+                random.shuffle(titles)
+                with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+                    for (j, _) in enumerate(pool.imap_unordered(train_page, titles,
+                                                                chunksize=chunk_size)):
+                        bar.update(1)
 
-            logger.info('Terminated pool workers...')
+            logger.info('Terminating pool workers...')
 
         train_params = dict(
-            dump_file=dump_reader.dump_file,
+            dump_file=dump_db.dump_file,
             train_time=time.time() - start_time,
         )
         train_params.update(params.to_dict())
@@ -362,13 +356,14 @@ cdef class Wikipedia2Vec:
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 @cython.cdivision(True)
-def train_page(WikiPage page):
-    cdef uint32_t i, j, start, end, span_start, span_end, word_count, total_nodes
-    cdef int32_t word, word2, entity
-    cdef int32_t [:] words
+def train_page(unicode title):
+    cdef int32_t i, j, start, end, span_start, span_end, word, word2, entity, word_count,\
+        total_nodes, text_len
+    cdef int32_t [:] words, word_indices
     cdef const int32_t [:] neighbors
-    cdef unicode word_str
-    cdef list word_list
+    cdef unicode text, word_str
+    cdef list tokens
+    cdef Token token
     cdef WikiLink wiki_link
 
     cdef float32_t alpha_, p
@@ -390,11 +385,23 @@ def train_page(WikiPage page):
 
     word_count = 0
     # train using Wikipedia words and anchors
-    for paragraph in extractor.extract_paragraphs(page):
-        word_list = paragraph.words
-        words = cython.view.array(shape=(len(word_list),), itemsize=sizeof(int32_t), format='i')
-        for (i, word_str) in enumerate(word_list):
-            words[i] = dictionary.get_word_index(word_str)
+    for paragraph in dump_db.get_paragraphs(title):
+        text = paragraph.text
+        text_len = len(text)
+        tokens = tokenizer.tokenize(text)
+        if not tokens:
+            continue
+
+        words = cython.view.array(shape=(len(tokens),), itemsize=sizeof(int32_t), format='i')
+        word_pos = cython.view.array(shape=(text_len,), itemsize=sizeof(int32_t), format='i')
+        j = 0
+        for (i, token) in enumerate(tokens):
+            words[i] = dictionary.get_word_index(token.text)
+            if i > 0:
+                word_pos[j:token.start] = i - 1
+                j = token.start
+        word_pos[j:] = i
+
         for i in range(len(words)):
             word = words[i]
             if word == -1:
@@ -424,7 +431,8 @@ def train_page(WikiPage page):
             if entity == -1:
                 continue
 
-            (span_start, span_end) = wiki_link.span
+            span_start = word_pos[wiki_link.start]
+            span_end = word_pos[max(0, wiki_link.end - 1)] + 1
 
             start = max(0, span_start - params.window)
             end = min(len(words), span_end + params.window)

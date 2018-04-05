@@ -90,6 +90,11 @@ def train(ctx, out_file, phrase, link_graph, **kwargs):
                 cmd_kwargs[param.name] = kwargs[param.name]
         ctx.invoke(cmd, **cmd_kwargs)
 
+    logger.info('Starting to build a Dump DB...')
+    dump_db_file = os.path.join(out_path, out_name + '.db')
+    invoke(build_dump_db, out_file=dump_db_file)
+    kwargs['dump_db_file'] = dump_db_file
+
     if phrase:
         logger.info('Starting to build a phrase dictionary...')
         phrase_file = os.path.join(out_path, out_name + '_phrase.pkl')
@@ -168,21 +173,21 @@ def build_link_graph(dump_db_file, dictionary_file, out_file, **kwargs):
 
 
 @cli.command()
-@click.argument('dump_file', type=click.Path(exists=True))
+@click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--link-graph', type=click.Path(exists=True))
 @train_embedding_options
 @common_options
-def train_embedding(dump_file, dictionary_file, link_graph, out_file, **kwargs):
-    dump_reader = WikiDumpReader(dump_file)
+def train_embedding(dump_db_file, dictionary_file, link_graph, out_file, **kwargs):
+    dump_db = DumpDB(dump_db_file)
     dictionary = Dictionary.load(dictionary_file)
 
     if link_graph:
         link_graph = LinkGraph.load(link_graph, dictionary)
 
     wiki2vec = Wikipedia2Vec(dictionary)
-    wiki2vec.train(dump_reader, link_graph, **kwargs)
+    wiki2vec.train(dump_db, link_graph, **kwargs)
 
     wiki2vec.save(out_file)
 
