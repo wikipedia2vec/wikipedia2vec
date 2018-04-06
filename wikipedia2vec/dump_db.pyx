@@ -205,6 +205,16 @@ def _parse(WikiPage page):
             end = len(cur_text)
             cur_links.append((_normalize_title(title), text, start, end))
 
+        elif isinstance(node, mwparserfromhell.nodes.ExternalLink):
+            if not node.title:
+                continue
+
+            text = node.title.strip_code()
+            cur_text += ' '
+            start = len(cur_text)
+            cur_text += text
+            end = len(cur_text)
+
         elif isinstance(node, mwparserfromhell.nodes.Tag):
             if node.tag not in ('b', 'i'):
                 continue
