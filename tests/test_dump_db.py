@@ -32,6 +32,8 @@ class TestParagraph(unittest.TestCase):
         eq_(wiki_link.text, paragraph2.wiki_links[0].text)
         eq_(wiki_link.span, paragraph2.wiki_links[0].span)
 
+        eq_(pickle.dumps(paragraph), pickle.dumps(pickle.loads(pickle.dumps(paragraph))))
+
 
 class TestWikiLink(unittest.TestCase):
     def test_title_property(self):
@@ -53,6 +55,15 @@ class TestWikiLink(unittest.TestCase):
     def test_span_property(self):
         wiki_link = WikiLink('WikiTitle', 'link text', 0, 3)
         eq_((0, 3), wiki_link.span)
+
+    def test_pickle(self):
+        wiki_link = WikiLink('WikiTitle', 'link text', 0, 3)
+        wiki_link2 = pickle.loads(pickle.dumps(wiki_link))
+        eq_(wiki_link.title, wiki_link2.title)
+        eq_(wiki_link.text, wiki_link2.text)
+        eq_(wiki_link.span, wiki_link2.span)
+
+        eq_(pickle.dumps(wiki_link), pickle.dumps(pickle.loads(pickle.dumps(wiki_link))))
 
 
 class TestDumpDB(unittest.TestCase):
@@ -82,7 +93,7 @@ class TestDumpDB(unittest.TestCase):
         paragraphs = self.db.get_paragraphs('Computer accessibility')
         paragraph = paragraphs[0]
 
-        eq_('In  human–computer interaction', paragraph.text[:30])
+        ok_(paragraph.text.replace(' ', '').startswith('Inhuman–computerinteraction'))
         wiki_link = paragraph.wiki_links[0]
         eq_('Human–computer interaction', wiki_link.title)
         eq_('human–computer interaction', wiki_link.text)

@@ -53,7 +53,10 @@ class TestPhraseDictionary(unittest.TestCase):
     def test_save_load(self):
         eq_(self.phrase_dic.load(self.phrase_dic.serialize()).serialize(),
             self.phrase_dic.serialize())
+        eq_(self.phrase_dic.keys(),
+            self.phrase_dic.load(self.phrase_dic.serialize()).keys())
 
         with NamedTemporaryFile() as f:
             self.phrase_dic.save(f.name)
-            eq_(self.phrase_dic.load(f.name).serialize(), self.phrase_dic.serialize())
+            eq_(self.phrase_dic.serialize(), self.phrase_dic.load(f.name).serialize())
+            eq_(self.phrase_dic.keys(), self.phrase_dic.load(f.name).keys())
