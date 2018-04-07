@@ -1,15 +1,17 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 
+from __future__ import unicode_literals
+
 import joblib
 import logging
 import multiprocessing
+import numpy as np
 import os
 import random
 import time
 import six
 import six.moves.cPickle as pickle
-import numpy as np
 cimport numpy as np
 cimport cython
 from cpython cimport array
@@ -302,9 +304,9 @@ cdef class Wikipedia2Vec:
         with closing(Pool(pool_size)) as pool:
             titles = list(dump_db.titles())
             for i in range(params.iteration):
-                logger.info('Iteration: %d', i)
                 random.shuffle(titles)
-                with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+                with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar,
+                          desc='Iteration %d/%d' % (i + 1, params.iteration)) as bar:
                     for (j, _) in enumerate(pool.imap_unordered(train_page, titles,
                                                                 chunksize=chunk_size)):
                         bar.update(1)

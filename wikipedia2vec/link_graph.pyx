@@ -49,7 +49,7 @@ cdef class LinkGraph:
     def save(self, out_file):
         joblib.dump(dict(indices=np.asarray(self._indices, dtype=np.int32),
                          indptr=np.asarray(self._indptr, dtype=np.int32),
-                         build_params=self.build_params), out_file)
+                         build_params=self.build_params, uuid=self.uuid), out_file)
 
     @staticmethod
     def load(in_file, dictionary, bint mmap=True):
@@ -77,7 +77,7 @@ cdef class LinkGraph:
         with closing(Pool(pool_size)) as pool:
             matrix = lil_matrix((dictionary.entity_size, dictionary.entity_size), dtype=np.bool)
 
-            with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+            with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_process_page, offset=dictionary.entity_offset)
 
                 for ret in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):

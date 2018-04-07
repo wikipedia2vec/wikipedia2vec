@@ -210,8 +210,8 @@ cdef class Dictionary:
         entity_doc_counter = Counter()
 
         with closing(Pool(pool_size)) as pool:
-            with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
-                f = partial(_process_page, lowercase=lowercase)
+            with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
+                f = partial(_process_page, lowercase=lowercase, min_paragraph_len=min_paragraph_len)
                 for (word_cnt, entity_cnt) in pool.imap_unordered(f, dump_db.titles(),
                                                                   chunksize=chunk_size):
                     for (word, count) in word_cnt.items():

@@ -70,7 +70,7 @@ cdef class PhraseDictionary:
 
         with closing(Pool(pool_size)) as pool:
             f = partial(_extract_phrases, lowercase=lowercase, max_len=max_phrase_len)
-            with tqdm(total=dump_db.page_size(), disable=not progressbar) as bar:
+            with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 for counter in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
                     phrase_counter.update(counter)
                     bar.update(1)
