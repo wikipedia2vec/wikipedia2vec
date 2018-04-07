@@ -190,6 +190,7 @@ def train_embedding(dump_file, dictionary_file, link_graph, out_file, **kwargs):
 @cli.command()
 @click.argument('model_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-def save_text(model_file, out_file):
+@click.option('--out_format', default='default')
+def save_text(model_file, out_file, out_format='default'):
     wiki2vec = Wikipedia2Vec.load(model_file)
-    wiki2vec.save_text(out_file)
+    wiki2vec.save_text(out_file, out_format)

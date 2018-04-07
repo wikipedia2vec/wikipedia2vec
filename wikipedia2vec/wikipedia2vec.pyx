@@ -149,7 +149,7 @@ cdef class Wikipedia2Vec:
             train_history=self._train_history
         ), out_file)
 
-    def save_text(self, out_file):
+    def save_text(self, out_file, out_format='default'):
         with open(out_file, 'wb') as f:
             for item in sorted(self.dictionary, key=lambda o: o.doc_count, reverse=True):
                 vec_str = ' '.join('%.4f' % v for v in self.get_vector(item))
@@ -158,7 +158,11 @@ cdef class Wikipedia2Vec:
                 else:
                     text = 'ENTITY/' + item.title.replace('\t', ' ')
 
-                f.write(('%s\t%s\n' % (text, vec_str)).encode('utf-8'))
+                if out_format=='glove':
+                    text = text.replace(' ', '_')
+                    f.write(('%s %s\n' % (text, vec_str)).encode('utf-8'))
+                else:
+                    f.write(('%s\t%s\n' % (text, vec_str)).encode('utf-8'))
 
     @staticmethod
     def load(in_file, numpy_mmap_mode='c'):
