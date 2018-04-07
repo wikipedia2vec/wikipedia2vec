@@ -366,7 +366,7 @@ cdef class Wikipedia2Vec:
 @cython.cdivision(True)
 def train_page(unicode title):
     cdef int32_t i, j, start, end, span_start, span_end, word, word2, entity, word_count,\
-        total_nodes, text_len
+        total_nodes, text_len, token_len
     cdef int32_t [:] words, word_indices
     cdef const int32_t [:] neighbors
     cdef unicode text
@@ -397,7 +397,8 @@ def train_page(unicode title):
         text = paragraph.text
         text_len = len(text)
         tokens = tokenizer.tokenize(text)
-        if not tokens:
+        token_len = len(tokens)
+        if token_len < dictionary.min_paragraph_len:
             continue
 
         words = cython.view.array(shape=(len(tokens),), itemsize=sizeof(int32_t), format='i')

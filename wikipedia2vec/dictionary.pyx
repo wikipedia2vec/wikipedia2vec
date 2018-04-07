@@ -71,7 +71,7 @@ cdef class Entity(Item):
 cdef class Dictionary:
     def __init__(self, word_dict, entity_dict, redirect_dict, PhraseDictionary phrase_dict,
                  np.ndarray word_stats, np.ndarray entity_stats, unicode language, bint lowercase,
-                 dict build_params, unicode uuid=''):
+                 dict build_params, int32_t min_paragraph_len=0, unicode uuid=''):
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
@@ -187,8 +187,8 @@ cdef class Dictionary:
         return get_tokenizer(self.language, phrase_dict=self._phrase_dict)
 
     @staticmethod
-    def build(dump_db, phrase_dict, lowercase, min_word_count, min_entity_count, pool_size,
-              chunk_size, progressbar=True):
+    def build(dump_db, phrase_dict, lowercase, min_word_count, min_entity_count, min_paragraph_len,
+              pool_size, chunk_size, progressbar=True):
         global _dump_db, _phrase_dict, _tokenizer
 
         start_time = time.time()
@@ -279,7 +279,8 @@ cdef class Dictionary:
                     len(entity_dict))
 
         return Dictionary(word_dict, entity_dict, redirect_dict, phrase_dict, word_stats,
-                          entity_stats, dump_db.language, lowercase, build_params, uuid)
+                          entity_stats, dump_db.language, lowercase, build_params,
+                          min_paragraph_len, uuid)
 
     def save(self, out_file):
         joblib.dump(self.serialize(), out_file)
@@ -294,6 +295,7 @@ cdef class Dictionary:
             meta=dict(uuid=self.uuid,
                       language=self.language,
                       lowercase=self.lowercase,
+                      min_paragraph_len=self.min_paragraph_len,
                       build_params=self.build_params)
         )
         if self._phrase_dict is not None:
@@ -325,7 +327,8 @@ cdef class Dictionary:
                           target['entity_stats'], **target['meta'])
 
 
-def _process_page(unicode title, bint lowercase):
+def _process_page(unicode title, bint lowercase, int32_t min_paragraph_len):
+    cdef list tokens
     cdef Paragraph paragraph
     cdef Token token
     cdef WikiLink link
@@ -334,10 +337,13 @@ def _process_page(unicode title, bint lowercase):
     entity_counter = Counter()
 
     for paragraph in _dump_db.get_paragraphs(title):
-        if lowercase:
-            word_counter.update(token.text.lower() for token in _tokenizer.tokenize(paragraph.text))
-        else:
-            word_counter.update(token.text for token in _tokenizer.tokenize(paragraph.text))
         entity_counter.update(link.title for link in paragraph.wiki_links)
+
+        tokens = _tokenizer.tokenize(paragraph.text)
+        if len(tokens) >= min_paragraph_len:
+            if lowercase:
+                word_counter.update(token.text.lower() for token in tokens)
+            else:
+                word_counter.update(token.text for token in tokens)
 
     return (word_counter, entity_counter)

@@ -25,6 +25,7 @@ cdef class Dictionary:
     cdef readonly unicode uuid
     cdef readonly unicode language
     cdef readonly bint lowercase
+    cdef readonly int32_t min_paragraph_len
     cdef readonly dict build_params
     cdef _word_dict
     cdef _entity_dict
