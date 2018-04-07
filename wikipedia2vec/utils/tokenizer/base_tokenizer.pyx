@@ -31,7 +31,7 @@ cdef class BaseTokenizer:
                 ret.append(Token(text[start:end], start, end))
 
         else:
-            if self._phrase_dict._lowercase:
+            if self._phrase_dict.lowercase:
                 target_text = text.lower()
             else:
                 target_text = text

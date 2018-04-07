@@ -22,6 +22,7 @@ cdef class Entity(Item):
 
 
 cdef class Dictionary:
+    cdef readonly unicode uuid
     cdef readonly unicode language
     cdef readonly bint lowercase
     cdef readonly dict build_params

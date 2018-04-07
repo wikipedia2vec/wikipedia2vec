@@ -73,9 +73,9 @@ class TestDumpDB(unittest.TestCase):
     def setUp(self):
         self.db = get_dump_db()
 
-    def test_id_property(self):
-        ok_(isinstance(self.db.id, six.text_type))
-        eq_(32, len(self.db.id))
+    def test_uuid_property(self):
+        ok_(isinstance(self.db.uuid, six.text_type))
+        eq_(32, len(self.db.uuid))
 
     def test_dump_file_property(self):
         self.db.dump_file.endswith('enwiki-pages-articles-sample.xml.bz2')

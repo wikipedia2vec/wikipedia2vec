@@ -5,10 +5,10 @@ from __future__ import unicode_literals
 import joblib
 import logging
 import multiprocessing
+import numpy as np
 import time
 import six
 import six.moves.cPickle as pickle
-import numpy as np
 from collections import Counter
 from contextlib import closing
 from functools import partial
@@ -16,6 +16,7 @@ from itertools import chain
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 from tqdm import tqdm
+from uuid import uuid1
 
 from .dump_db cimport DumpDB, Paragraph, WikiLink
 from .phrase cimport PhraseDictionary
@@ -70,13 +71,15 @@ cdef class Entity(Item):
 cdef class Dictionary:
     def __init__(self, word_dict, entity_dict, redirect_dict, PhraseDictionary phrase_dict,
                  np.ndarray word_stats, np.ndarray entity_stats, unicode language, bint lowercase,
-                 dict build_params):
+                 dict build_params, unicode uuid=''):
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
         self._phrase_dict = phrase_dict
         self._word_stats = word_stats
         self._entity_stats = entity_stats
+        self.min_paragraph_len = min_paragraph_len
+        self.uuid = uuid
         self.language = language
         self.lowercase = lowercase
         self.build_params = build_params
@@ -261,14 +264,22 @@ cdef class Dictionary:
             phrase_dict.phrase_trie = phrase_trie
 
         build_params = dict(
+            dump_db=dump_db.uuid,
             dump_file=dump_db.dump_file,
             min_word_count=min_word_count,
             min_entity_count=min_entity_count,
             build_time=time.time() - start_time,
         )
+        if phrase_dict is not None:
+            build_params['phrase_dict'] = phrase_dict.uuid
+
+        uuid = six.text_type(uuid1().hex)
+
+        logger.info('%d words and %d entities are indexed in the dictionary', len(word_dict),
+                    len(entity_dict))
 
         return Dictionary(word_dict, entity_dict, redirect_dict, phrase_dict, word_stats,
-                          entity_stats, dump_db.language, lowercase, build_params)
+                          entity_stats, dump_db.language, lowercase, build_params, uuid)
 
     def save(self, out_file):
         joblib.dump(self.serialize(), out_file)
@@ -280,7 +291,8 @@ cdef class Dictionary:
             redirect_dict=self._redirect_dict.tobytes(),
             word_stats=np.asarray(self._word_stats, dtype=np.int32),
             entity_stats=np.asarray(self._entity_stats, dtype=np.int32),
-            meta=dict(language=self.language,
+            meta=dict(uuid=self.uuid,
+                      language=self.language,
                       lowercase=self.lowercase,
                       build_params=self.build_params)
         )

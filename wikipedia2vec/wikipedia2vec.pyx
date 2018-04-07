@@ -312,13 +312,15 @@ cdef class Wikipedia2Vec:
             logger.info('Terminating pool workers...')
 
         train_params = dict(
+            dump_db=dump_db.uuid,
             dump_file=dump_db.dump_file,
+            dictionary=dictionary.uuid,
             train_time=time.time() - start_time,
         )
         train_params.update(params.to_dict())
 
         if link_graph is not None:
-            train_params['link_graph'] = dict(build_params=link_graph.build_params)
+            train_params['link_graph'] = link_graph.uuid
 
         self._train_history.append(train_params)
 

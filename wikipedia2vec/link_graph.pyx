@@ -1,17 +1,20 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 
+from __future__ import unicode_literals
 import joblib
 import logging
-import time
-import six.moves.cPickle as pickle
 import numpy as np
+import six
+import six.moves.cPickle as pickle
+import time
 cimport cython
 from contextlib import closing
 from functools import partial
 from multiprocessing.pool import Pool
 from scipy.sparse import csr_matrix, lil_matrix
 from tqdm import tqdm
+from uuid import uuid1
 
 from .dictionary cimport Dictionary, Entity
 from .dump_db cimport DumpDB, Paragraph, WikiLink
@@ -24,17 +27,14 @@ cdef DumpDB _dump_db = None
 
 cdef class LinkGraph:
     def __init__(self, Dictionary dictionary, np.ndarray indices, np.ndarray indptr,
-                 dict build_params):
+                 dict build_params, unicode uuid=''):
+        self.uuid = uuid
+        self.build_params = build_params
         self._dictionary = dictionary
-        self._build_params = build_params
         self._indptr = indptr
         self._indices = indices
 
         self._offset = self._dictionary.entity_offset
-
-    property build_params:
-        def __get__(self):
-            return self._build_params
 
     cpdef list neighbors(self, Entity item):
         return [self._dictionary.get_entity_by_index(i) for i in self.neighbor_indices(item.index)]
@@ -49,7 +49,7 @@ cdef class LinkGraph:
     def save(self, out_file):
         joblib.dump(dict(indices=np.asarray(self._indices, dtype=np.int32),
                          indptr=np.asarray(self._indptr, dtype=np.int32),
-                         build_params=self._build_params), out_file)
+                         build_params=self.build_params), out_file)
 
     @staticmethod
     def load(in_file, dictionary, bint mmap=True):
@@ -58,7 +58,10 @@ cdef class LinkGraph:
         else:
             obj = joblib.load(in_file)
 
-        return LinkGraph(dictionary, obj['indices'], obj['indptr'], obj['build_params'])
+        if obj['build_params']['dictionary'] != dictionary.uuid:
+            raise RuntimeError('The specified dictionary is different from the one used to build this link graph')
+
+        return LinkGraph(dictionary=dictionary, **obj)
 
     @staticmethod
     def build(dump_db, dictionary, pool_size, chunk_size, progressbar=True):
@@ -89,9 +92,14 @@ cdef class LinkGraph:
         matrix = matrix.tocsr()
         matrix.indices += dictionary.entity_offset
 
-        build_params = dict(dump_file=dump_db.dump_file, build_time=time.time() - start_time)
+        build_params = dict(dump_file=dump_db.dump_file,
+                            dump_db=dump_db.uuid,
+                            dictionary=dictionary.uuid,
+                            build_time=time.time() - start_time)
 
-        return LinkGraph(dictionary, matrix.indices, matrix.indptr, build_params)
+        uuid = six.text_type(uuid1().hex)
+
+        return LinkGraph(dictionary, matrix.indices, matrix.indptr, build_params, uuid)
 
 
 def _process_page(unicode title, int32_t offset):

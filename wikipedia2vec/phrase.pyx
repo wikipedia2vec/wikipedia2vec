@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
 
+from __future__ import unicode_literals
 cimport cython
 import joblib
 import logging
@@ -14,6 +15,7 @@ from functools import partial
 from marisa_trie import Trie
 from multiprocessing.pool import Pool
 from tqdm import tqdm
+from uuid import uuid1
 
 from .dump_db cimport DumpDB, Paragraph, WikiLink
 from .utils.tokenizer import get_tokenizer
@@ -28,18 +30,11 @@ cdef _phrase_trie = None
 
 
 cdef class PhraseDictionary:
-    def __init__(self, phrase_trie, bint lowercase, dict build_params):
+    def __init__(self, phrase_trie, bint lowercase, dict build_params, unicode uuid=''):
+        self.uuid = uuid
         self.phrase_trie = phrase_trie
-        self._lowercase = lowercase
-        self._build_params = build_params
-
-    @property
-    def lowercase(self):
-        return self._lowercase
-
-    @property
-    def build_params(self):
-        return self._build_params
+        self.lowercase = lowercase
+        self.build_params = build_params
 
     def __len__(self):
         return len(self.phrase_trie)
@@ -102,17 +97,21 @@ cdef class PhraseDictionary:
         logger.info('%d phrases are successfully extracted', len(phrase_trie))
 
         build_params = dict(
+            dump_db=dump_db.uuid,
             dump_file=dump_db.dump_file,
             min_link_count=min_link_count,
             min_link_prob=min_link_prob,
             build_time=time.time() - start_time,
         )
 
-        return PhraseDictionary(phrase_trie, lowercase, build_params)
+        uuid = six.text_type(uuid1().hex)
+
+        return PhraseDictionary(phrase_trie, lowercase, build_params, uuid)
 
     def serialize(self):
         return dict(phrase_trie=self.phrase_trie.tobytes(),
-                    kwargs=dict(lowercase=self._lowercase, build_params=self._build_params))
+                    kwargs=dict(uuid=self.uuid, lowercase=self.lowercase,
+                                build_params=self.build_params))
 
     def save(self, out_file):
         joblib.dump(self.serialize(), out_file)
@@ -124,7 +123,8 @@ cdef class PhraseDictionary:
 
         phrase_trie = Trie()
         phrase_trie.frombytes(target['phrase_trie'])
-        return PhraseDictionary(phrase_trie, **target['kwargs'])
+
+        return PhraseDictionary(phrase_trie=phrase_trie, **target['kwargs'])
 
 
 def _extract_phrases(unicode title, bint lowercase, int max_len):

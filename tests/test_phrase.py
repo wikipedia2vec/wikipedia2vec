@@ -18,6 +18,10 @@ class TestPhraseDictionary(unittest.TestCase):
                                                  lowercase=True, max_phrase_len=3, pool_size=1,
                                                  chunk_size=1, progressbar=False)
 
+    def test_uuid_property(self):
+        ok_(isinstance(self.phrase_dic.uuid, six.text_type))
+        eq_(32, len(self.phrase_dic.uuid))
+
     def test_lowercase_property(self):
         ok_(self.phrase_dic.lowercase)
 
