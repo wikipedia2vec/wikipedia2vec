@@ -26,10 +26,6 @@ from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
 from scipy.linalg cimport cython_blas as blas
 from tqdm import tqdm
-try:
-    import itertools.imap as map  # for Python 2
-except ImportError:
-    pass
 
 from .dictionary cimport Dictionary, Item, Word, Entity
 from .dump_db cimport Paragraph, WikiLink, DumpDB
