@@ -30,11 +30,11 @@ class TestPhraseDictionary(unittest.TestCase):
         ok_(build_params['build_time'] > 0)
 
     def test_len(self):
-        eq_(128, len(self.phrase_dic))
+        eq_(116, len(self.phrase_dic))
 
     def test_iterator(self):
         phrases = list(self.phrase_dic)
-        eq_(128, len(phrases))
+        eq_(116, len(phrases))
         ok_(all(isinstance(phrase, six.text_type) for phrase in phrases))
 
     def test_contains(self):
@@ -43,7 +43,7 @@ class TestPhraseDictionary(unittest.TestCase):
     def test_keys(self):
         phrases = self.phrase_dic.keys()
         ok_(isinstance(phrases, list))
-        eq_(128, len(phrases))
+        eq_(116, len(phrases))
         ok_(all(isinstance(phrase, six.text_type) for phrase in phrases))
 
     def test_prefix_search(self):

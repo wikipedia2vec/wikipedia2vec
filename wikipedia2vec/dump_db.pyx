@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import lmdb
 import logging
 import mwparserfromhell
+import re
 import six
 import uuid
 import zlib
@@ -17,6 +18,7 @@ from .utils.wiki_page cimport WikiPage
 logger = logging.getLogger(__name__)
 
 MAP_SIZE = 100000000000  # 100GB
+STYLE_RE = re.compile("'''*")
 
 
 cdef class Paragraph:
@@ -161,14 +163,16 @@ cdef class DumpDB:
 
 def _parse(WikiPage page):
     cdef int32_t n, start, end
-    cdef unicode title, text, cur_text
+    cdef unicode title, text, cur_text, wiki_text
     cdef list ret, cur_links
 
     if page.is_redirect:
         return ('redirect', (page.title.encode('utf-8'), page.redirect.encode('utf-8')))
 
+    # remove style tags to reduce parsing errors
+    wiki_text = STYLE_RE.sub('', page.wiki_text)
     try:
-        parsed = mwparserfromhell.parse(page.wiki_text)
+        parsed = mwparserfromhell.parse(wiki_text)
     except Exception:
         logger.warn('Failed to parse wiki text: %s', page.title)
         return None
@@ -181,7 +185,7 @@ def _parse(WikiPage page):
         if isinstance(node, mwparserfromhell.nodes.Text):
             for (n, text) in enumerate(six.text_type(node).split('\n')):
                 if n == 0:
-                    cur_text += ' ' + text
+                    cur_text += text
                 else:
                     if cur_text and not cur_text.isspace():
                         ret.append(dict(text=cur_text, links=cur_links))
@@ -196,10 +200,12 @@ def _parse(WikiPage page):
 
             if node.text:
                 text = node.text.strip_code()
+                # dealing with extended image syntax: https://en.wikipedia.org/wiki/Wikipedia:Extended_image_syntax
+                if title.lower().startswith('file:') or title.lower().startswith('image:'):
+                    text = text.split('|')[-1]
             else:
                 text = node.title.strip_code()
 
-            cur_text += ' '
             start = len(cur_text)
             cur_text += text
             end = len(cur_text)
@@ -210,19 +216,19 @@ def _parse(WikiPage page):
                 continue
 
             text = node.title.strip_code()
-            cur_text += ' '
-            start = len(cur_text)
             cur_text += text
-            end = len(cur_text)
 
         elif isinstance(node, mwparserfromhell.nodes.Tag):
-            if node.tag not in ('b', 'i'):
+            if node.tag not in ('b', 'i', 'u'):
                 continue
             if not node.contents:
                 continue
 
             text = node.contents.strip_code()
-            cur_text += ' ' + text
+            cur_text += text
+
+    if cur_text and not cur_text.isspace():
+        ret.append(dict(text=cur_text, links=cur_links))
 
     return ('page', ((page.title.encode('utf-8'), zlib.compress(pickle.dumps(ret, protocol=-1)))))
 

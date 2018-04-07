@@ -397,7 +397,7 @@ def train_page(unicode title):
             continue
 
         words = cython.view.array(shape=(len(tokens),), itemsize=sizeof(int32_t), format='i')
-        word_pos = cython.view.array(shape=(text_len,), itemsize=sizeof(int32_t), format='i')
+        word_pos = cython.view.array(shape=(text_len + 1,), itemsize=sizeof(int32_t), format='i')
         j = 0
         for (i, token) in enumerate(tokens):
             if dictionary.lowercase:

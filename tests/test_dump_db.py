@@ -2,10 +2,13 @@
 
 from __future__ import unicode_literals
 import unittest
+import pickle
 import six
-import six.moves.cPickle as pickle
+import zlib
 
+from wikipedia2vec import dump_db
 from wikipedia2vec.dump_db import Paragraph, WikiLink
+from wikipedia2vec.utils.wiki_page import WikiPage
 
 from . import get_dump_db
 
@@ -97,7 +100,7 @@ class TestDumpDB(unittest.TestCase):
         wiki_link = paragraph.wiki_links[0]
         eq_('Human–computer interaction', wiki_link.title)
         eq_('human–computer interaction', wiki_link.text)
-        eq_((4, 30), wiki_link.span)
+        eq_((3, 29), wiki_link.span)
 
         for paragraph in paragraphs:
             ok_(isinstance(paragraph, Paragraph))
@@ -110,3 +113,24 @@ class TestDumpDB(unittest.TestCase):
     @raises(KeyError)
     def test_get_paragraphs_with_invalid_key(self):
         self.db.get_paragraphs('foo')
+
+    def test_parse(self):
+        page = WikiPage('Japan', 'en',
+            "'''Japan''' is a [[Sovereign state|sovereign]] [[island country|island nation]] in [[East Asia]]"
+        )
+        ret = dump_db._parse(page)
+        eq_('page', ret[0])
+        eq_(b'Japan', ret[1][0])
+        paragraph = pickle.loads(zlib.decompress(ret[1][1]))[0]
+        eq_('Japan is a sovereign island nation in East Asia', paragraph['text'])
+        eq_([('Sovereign state', 'sovereign', 11, 20),
+             ('Island country', 'island nation', 21, 34),
+             ('East Asia', 'East Asia', 38, 47)],
+            paragraph['links'])
+
+    def test_parse_redirect(self):
+        page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]')
+        ret = dump_db._parse(page)
+        eq_('redirect', ret[0])
+        eq_('日本'.encode('utf-8'), ret[1][0])
+        eq_(b'Japan', ret[1][1])
