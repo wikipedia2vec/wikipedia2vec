@@ -82,6 +82,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--lowercase/--no-lowercase*: Whether to lowercase words and phrases (default: True)
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
+- *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--links-per-page*: The number of contextual entities to be generated from the link graph for processing each page (default: 10)
 - *--phrase/--no-phrase*: Whether to learn the embeddings of phrases (default: True)
