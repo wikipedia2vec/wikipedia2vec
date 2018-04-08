@@ -394,7 +394,7 @@ def train_page(unicode title):
         text_len = len(text)
         tokens = tokenizer.tokenize(text)
         token_len = len(tokens)
-        if token_len < dictionary.min_paragraph_len:
+        if not tokens or token_len < dictionary.min_paragraph_len:
             continue
 
         words = cython.view.array(shape=(len(tokens),), itemsize=sizeof(int32_t), format='i')
