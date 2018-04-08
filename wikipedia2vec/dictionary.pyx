@@ -87,10 +87,6 @@ cdef class Dictionary:
         self._entity_offset = len(self._word_dict)
 
     @property
-    def word_offset(self):
-        return 0
-
-    @property
     def entity_offset(self):
         return self._entity_offset
 

@@ -46,22 +46,27 @@ cdef class LinkGraph:
         index -= self._offset
         return self._indices[self._indptr[index]:self._indptr[index + 1]]
 
+    def serialize(self):
+        return dict(indices=np.asarray(self._indices, dtype=np.int32),
+                    indptr=np.asarray(self._indptr, dtype=np.int32),
+                    build_params=self.build_params,
+                    uuid=self.uuid)
+
     def save(self, out_file):
-        joblib.dump(dict(indices=np.asarray(self._indices, dtype=np.int32),
-                         indptr=np.asarray(self._indptr, dtype=np.int32),
-                         build_params=self.build_params, uuid=self.uuid), out_file)
+        joblib.dump(self.serialize(), out_file)
 
     @staticmethod
-    def load(in_file, dictionary, bint mmap=True):
-        if mmap:
-            obj = joblib.load(in_file, mmap_mode='r')
-        else:
-            obj = joblib.load(in_file)
+    def load(target, dictionary, bint mmap=True):
+        if not isinstance(target, dict):
+            if mmap:
+                target = joblib.load(target, mmap_mode='r')
+            else:
+                target = joblib.load(target)
 
-        if obj['build_params']['dictionary'] != dictionary.uuid:
+        if target['build_params']['dictionary'] != dictionary.uuid:
             raise RuntimeError('The specified dictionary is different from the one used to build this link graph')
 
-        return LinkGraph(dictionary=dictionary, **obj)
+        return LinkGraph(dictionary=dictionary, **target)
 
     @staticmethod
     def build(dump_db, dictionary, pool_size, chunk_size, progressbar=True):

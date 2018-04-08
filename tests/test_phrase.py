@@ -55,12 +55,12 @@ class TestPhraseDictionary(unittest.TestCase):
             self.phrase_dic.prefix_search('web accessibility initiative'))
 
     def test_save_load(self):
-        eq_(self.phrase_dic.load(self.phrase_dic.serialize()).serialize(),
-            self.phrase_dic.serialize())
+        eq_(self.phrase_dic.serialize(),
+            PhraseDictionary.load(self.phrase_dic.serialize()).serialize())
         eq_(self.phrase_dic.keys(),
-            self.phrase_dic.load(self.phrase_dic.serialize()).keys())
+            PhraseDictionary.load(self.phrase_dic.serialize()).keys())
 
         with NamedTemporaryFile() as f:
             self.phrase_dic.save(f.name)
-            eq_(self.phrase_dic.serialize(), self.phrase_dic.load(f.name).serialize())
-            eq_(self.phrase_dic.keys(), self.phrase_dic.load(f.name).keys())
+            eq_(self.phrase_dic.serialize(), PhraseDictionary.load(f.name).serialize())
+            eq_(self.phrase_dic.keys(), PhraseDictionary.load(f.name).keys())
