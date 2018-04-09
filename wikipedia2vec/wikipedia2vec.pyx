@@ -16,10 +16,10 @@ cimport numpy as np
 cimport cython
 from cpython cimport array
 from collections import defaultdict
-from ctypes import c_float, c_int32, c_uint64
+from ctypes import c_float, c_int32
 from contextlib import closing
 from libc.math cimport exp
-from libc.stdint cimport int32_t, uint64_t
+from libc.stdint cimport int32_t
 from libc.stdlib cimport rand, RAND_MAX
 from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
@@ -52,11 +52,10 @@ cdef int32_t [:] entity_neg_table
 cdef float32_t [:] exp_table
 cdef int32_t [:] sample_ints
 cdef int32_t [:] link_indices
+cdef float32_t total_page_count
 cdef unicode language
 cdef object alpha
-cdef object word_counter
 cdef object link_cursor
-cdef uint64_t total_words
 
 
 cdef class _Parameters:
@@ -220,19 +219,18 @@ cdef class Wikipedia2Vec:
 
     def train(self, dump_db_, link_graph_, pool_size, chunk_size, progressbar=True, **kwargs):
         global dictionary, dump_db, link_graph, tokenizer, syn0, syn1, work, word_neg_table,\
-            entity_neg_table, exp_table, sample_ints, link_indices, word_counter, link_cursor,\
-            alpha, params, total_words
+            entity_neg_table, exp_table, sample_ints, link_indices, link_cursor, alpha, params,\
+            total_page_count
 
         start_time = time.time()
 
         params = _Parameters(**kwargs)
 
         words = list(self.dictionary.words())
-        total_word_cnt = int(sum(w.count for w in words))
-        total_words = total_word_cnt * params.iteration
-        logger.info('Total number of word occurrence: %d', total_words)
+        total_word_count = int(sum(w.count for w in words))
+        logger.info('Total number of word occurrences: %d', total_word_count * params.iteration)
 
-        thresh = params.sample * total_word_cnt
+        thresh = params.sample * total_word_count
 
         logger.info('Building a sampling table for frequent words...')
 
@@ -266,6 +264,7 @@ cdef class Wikipedia2Vec:
         vocab_size = len(self.dictionary)
 
         logger.info('Initializing weights...')
+
         dim_size = params.dim_size
         syn0_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
         syn1_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
@@ -284,7 +283,7 @@ cdef class Wikipedia2Vec:
         link_graph = link_graph_
         tokenizer = dictionary.get_tokenizer()
 
-        word_counter = multiprocessing.Value(c_uint64, 0)
+        total_page_count = dump_db.page_size() * params.iteration
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
         work = np.zeros(dim_size, dtype=np.float32)
 
@@ -297,9 +296,10 @@ cdef class Wikipedia2Vec:
             titles = list(dump_db.titles())
             for i in range(params.iteration):
                 random.shuffle(titles)
-                with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar,
+                with tqdm(total=len(titles), mininterval=0.5, disable=not progressbar,
                           desc='Iteration %d/%d' % (i + 1, params.iteration)) as bar:
-                    for _ in pool.imap_unordered(train_page, titles, chunksize=chunk_size):
+                    for _ in pool.imap_unordered(train_page, enumerate(titles, len(titles) * i),
+                                                 chunksize=chunk_size):
                         bar.update(1)
 
             logger.info('Terminating pool workers...')
@@ -360,17 +360,19 @@ cdef class Wikipedia2Vec:
 @cython.wraparound(False)
 @cython.initializedcheck(False)
 @cython.cdivision(True)
-def train_page(unicode title):
-    cdef int32_t i, j, start, end, span_start, span_end, word, word2, entity, word_count,\
-        total_nodes, text_len, token_len
+def train_page(tuple arg):
+    cdef int32_t i, j, n, start, end, span_start, span_end, word, word2, entity, text_len,\
+        token_len, total_nodes
     cdef int32_t [:] words, word_pos
     cdef const int32_t [:] neighbors
-    cdef unicode text
+    cdef unicode text, title
     cdef list tokens
     cdef Token token
     cdef WikiLink wiki_link
+    cdef float32_t alpha_
 
-    cdef float32_t alpha_, p
+    (n, title) = arg
+
     alpha_ = alpha.value
 
     # train using Wikipedia link graph
@@ -387,7 +389,6 @@ def train_page(unicode title):
             for j in range(len(neighbors)):
                 _train_pair(entity, neighbors[j], alpha_, params.negative, entity_neg_table)
 
-    word_count = 0
     # train using Wikipedia words and anchors
     for paragraph in dump_db.get_paragraphs(title):
         text = paragraph.text
@@ -414,8 +415,6 @@ def train_page(unicode title):
             word = words[i]
             if word == -1:
                 continue
-
-            word_count += 1
 
             if sample_ints[word] < rand():
                 continue
@@ -458,10 +457,7 @@ def train_page(unicode title):
 
                 _train_pair(entity, word2, alpha_, params.negative, word_neg_table)
 
-    with word_counter.get_lock():
-        word_counter.value += word_count  # lock is required since += is not an atomic operation
-        p = 1.0 - float(word_counter.value) / total_words
-        alpha.value = max(params.min_alpha, params.init_alpha * p)
+    alpha.value = max(params.min_alpha, params.init_alpha * (1.0 - n / total_page_count))
 
 
 @cython.boundscheck(False)
