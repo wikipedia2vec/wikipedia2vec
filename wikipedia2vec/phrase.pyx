@@ -154,7 +154,6 @@ def _count_occurrences(unicode title, trie_file, bint lowercase):
     cdef frozenset end_offsets
     cdef Token token
     cdef Paragraph paragraph
-    cdef WikiLink wiki_link
 
     if _phrase_trie is None:
         _phrase_trie = Trie()

@@ -94,13 +94,13 @@ cdef class Wikipedia2Vec:
         self._dictionary = dictionary
         self._train_history = []
 
-    property dictionary:
-        def __get__(self):
-            return self._dictionary
+    @property
+    def dictionary(self):
+        return self._dictionary
 
-    property train_history:
-        def __get__(self):
-            return self._train_history
+    @property
+    def train_history(self):
+        return self._train_history
 
     cpdef get_word(self, unicode word, default=None):
         return self._dictionary.get_word(word, default)
@@ -139,10 +139,6 @@ cdef class Wikipedia2Vec:
 
         return [(self._dictionary.get_item_by_index(ind), dst[ind]) for ind in indexes[:count]]
 
-    def init_sims(self):
-        for i in xrange(self.syn0.shape[0]):
-            self.syn0[i, :] /= np.sqrt((self.syn0[i, :] ** 2).sum(-1))
-
     def save(self, out_file):
         joblib.dump(dict(
             syn0=self.syn0,
@@ -160,7 +156,7 @@ cdef class Wikipedia2Vec:
                 else:
                     text = 'ENTITY/' + item.title.replace('\t', ' ')
 
-                if out_format=='glove':
+                if out_format == 'glove':
                     text = text.replace(' ', '_')
                     f.write(('%s %s\n' % (text, vec_str)).encode('utf-8'))
                 else:
@@ -303,8 +299,7 @@ cdef class Wikipedia2Vec:
                 random.shuffle(titles)
                 with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar,
                           desc='Iteration %d/%d' % (i + 1, params.iteration)) as bar:
-                    for (j, _) in enumerate(pool.imap_unordered(train_page, titles,
-                                                                chunksize=chunk_size)):
+                    for _ in pool.imap_unordered(train_page, titles, chunksize=chunk_size):
                         bar.update(1)
 
             logger.info('Terminating pool workers...')
@@ -322,31 +317,36 @@ cdef class Wikipedia2Vec:
 
         self._train_history.append(train_params)
 
-    def _build_word_neg_table(self, power):
-        items = list(self._dictionary.words())
+    def _build_word_neg_table(self, float32_t power):
         if power == 0:
-            return self._build_uniform_neg_table(items)
+            return self._build_uniform_neg_table(self._dictionary.words())
         else:
-            return self._build_unigram_neg_table(items, power)
+            return self._build_unigram_neg_table(self._dictionary.words(), power)
 
-    def _build_entity_neg_table(self, power):
-        items = list(self._dictionary.entities())
+    def _build_entity_neg_table(self, float32_t power):
         if power == 0:
-            return self._build_uniform_neg_table(items)
+            return self._build_uniform_neg_table(self._dictionary.entities())
         else:
-            return self._build_unigram_neg_table(items, power)
+            return self._build_unigram_neg_table(self._dictionary.entities(), power)
 
     def _build_uniform_neg_table(self, items):
-        return multiprocessing.RawArray(c_int32, [o.index for o in items])
+        cdef Item item
 
-    def _build_unigram_neg_table(self, items, power, table_size=100000000):
+        return multiprocessing.RawArray(c_int32, [item.index for item in items])
+
+    def _build_unigram_neg_table(self, items, float32_t power, int32_t table_size=100000000):
+        cdef int32_t index, table_index
+        cdef float32_t cur, items_pow
+        cdef Item item
+
+        items = list(items)
         neg_table = multiprocessing.RawArray(c_int32, table_size)
         items_pow = float(sum([item.count ** power for item in items]))
 
         index = 0
         cur = items[index].count ** power / items_pow
 
-        for table_index in xrange(table_size):
+        for table_index in range(table_size):
             neg_table[table_index] = items[index].index
             if float(table_index) / table_size > cur:
                 if index < len(items) - 1:
@@ -363,7 +363,7 @@ cdef class Wikipedia2Vec:
 def train_page(unicode title):
     cdef int32_t i, j, start, end, span_start, span_end, word, word2, entity, word_count,\
         total_nodes, text_len, token_len
-    cdef int32_t [:] words, word_indices
+    cdef int32_t [:] words, word_pos
     cdef const int32_t [:] neighbors
     cdef unicode text
     cdef list tokens
@@ -437,6 +437,10 @@ def train_page(unicode title):
         for wiki_link in paragraph.wiki_links:
             entity = dictionary.get_entity_index(wiki_link.title)
             if entity == -1:
+                continue
+
+            if not (0 <= wiki_link.start <= text_len and 0 <= wiki_link.end <= text_len):
+                logger.warn('Detected invalid span of a wiki link')
                 continue
 
             span_start = word_pos[wiki_link.start]
