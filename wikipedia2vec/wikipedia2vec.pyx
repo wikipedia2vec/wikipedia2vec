@@ -69,7 +69,7 @@ cdef class _Parameters:
     cdef public float32_t entity_neg_power
     cdef public float32_t sample
     cdef public int32_t iteration
-    cdef public int32_t links_per_page
+    cdef public int32_t entities_per_page
     cdef dict _kwargs
 
     def __init__(self, **kwargs):
@@ -379,9 +379,9 @@ def train_page(unicode title):
 
         with link_cursor.get_lock():
             start = link_cursor.value
-            link_cursor.value = (start + params.links_per_page) % total_nodes
+            link_cursor.value = (start + params.entities_per_page) % total_nodes
 
-        for i in range(start, start + params.links_per_page):
+        for i in range(start, start + params.entities_per_page):
             entity = link_indices[i % total_nodes]
             neighbors = link_graph.neighbor_indices(entity)
             for j in range(len(neighbors)):
