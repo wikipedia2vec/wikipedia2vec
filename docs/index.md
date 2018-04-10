@@ -82,7 +82,8 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--lowercase/--no-lowercase*: Whether to lowercase words and phrases (default: True)
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
-- *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
+- *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
+- *--category*: If this option is specified, categories are included as entities in the dictionary (default: False)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 10)
 - *--phrase/--no-phrase*: Whether to learn the embeddings of phrases (default: True)
@@ -151,6 +152,7 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
+- *--category*: If this option is specified, categories are included as entities in the dictionary (default: False)
 
 ### Building Link Graph
 
