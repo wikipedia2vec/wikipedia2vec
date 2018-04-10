@@ -184,7 +184,7 @@ cdef class Dictionary:
 
     @staticmethod
     def build(dump_db, phrase_dict, lowercase, min_word_count, min_entity_count, min_paragraph_len,
-              pool_size, chunk_size, progressbar=True):
+              category, pool_size, chunk_size, progressbar=True):
         global _dump_db, _phrase_dict, _tokenizer
 
         start_time = time.time()
@@ -215,6 +215,8 @@ cdef class Dictionary:
                         word_doc_counter[word] += 1
 
                     for (title, count) in entity_cnt.items():
+                        if not category and title.startswith('Category:'):
+                            continue
                         entity_counter[title] += count
                         entity_doc_counter[title] += 1
 
@@ -264,6 +266,7 @@ cdef class Dictionary:
             dump_file=dump_db.dump_file,
             min_word_count=min_word_count,
             min_entity_count=min_entity_count,
+            category=category,
             build_time=time.time() - start_time,
         )
         if phrase_dict is not None:

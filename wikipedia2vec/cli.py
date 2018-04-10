@@ -45,6 +45,7 @@ def build_dictionary_options(func):
     @click.option('--min-word-count', type=int, default=5)
     @click.option('--min-entity-count', type=int, default=5)
     @click.option('--min-paragraph-len', default=5)
+    @click.option('--category', is_flag=True)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)

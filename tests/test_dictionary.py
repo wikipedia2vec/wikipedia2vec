@@ -75,8 +75,8 @@ class TestDictionary(unittest.TestCase):
                                                  chunk_size=1, progressbar=False)
         self.dictionary = Dictionary.build(get_dump_db(), phrase_dict=self.phrase_dic,
                                            lowercase=True, min_word_count=2, min_entity_count=1,
-                                           pool_size=1, chunk_size=1, min_paragraph_len=5,
-                                           progressbar=False)
+                                           min_paragraph_len=5, category=True, pool_size=1,
+                                           chunk_size=1, progressbar=False)
 
     def test_uuid_property(self):
         ok_(isinstance(self.dictionary.uuid, six.text_type))

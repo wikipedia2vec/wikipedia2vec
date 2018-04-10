@@ -19,7 +19,7 @@ class TestLinkGraph(unittest.TestCase):
     def setUp(self):
         self.dictionary = Dictionary.build(get_dump_db(), None, lowercase=True, min_word_count=2,
                                            min_entity_count=1, pool_size=1, chunk_size=1,
-                                           min_paragraph_len=5, progressbar=False)
+                                           min_paragraph_len=5, category=True, progressbar=False)
         self.link_graph = LinkGraph.build(get_dump_db(), self.dictionary, pool_size=1, chunk_size=1,
                                           progressbar=False)
 
