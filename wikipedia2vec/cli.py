@@ -32,9 +32,11 @@ def common_options(func):
 
 
 def build_phrase_dictionary_options(func):
-    @click.option('--min-link-count', type=int, default=30)
-    @click.option('--min-link-prob', type=float, default=0.1)
-    @click.option('--max-phrase-len', default=3)
+    @click.option('--min-link-count', type=int, default=30, help='A phrase is ignored if the total '
+                  'frequency of the phrase appearing as an anchor link is less than this value')
+    @click.option('--min-link-prob', type=float, default=0.1, help='A phrase is ignored if the '
+                  'probability of the phrase appearing as an anchor link is less than this value')
+    @click.option('--max-phrase-len', default=3, help='The maximum number of words in a phrase')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -42,10 +44,15 @@ def build_phrase_dictionary_options(func):
 
 
 def build_dictionary_options(func):
-    @click.option('--min-word-count', type=int, default=5)
-    @click.option('--min-entity-count', type=int, default=5)
-    @click.option('--min-paragraph-len', default=5)
-    @click.option('--category', is_flag=True)
+    @click.option('--min-word-count', type=int, default=5, help='A word is ignored if the total '
+                  'frequency of the word is less than this value')
+    @click.option('--min-entity-count', type=int, default=5, help='An entity is ignored if the '
+                  'total frequency of the entity appearing as the referent of an anchor link is '
+                  'less than this value')
+    @click.option('--min-paragraph-len', default=5, help='A paragraph is ignored if its length is '
+                  'shorter than this value')
+    @click.option('--category/--no-category', default=False, help='Whether to include Wikipedia '
+                  'categories in the dictionary')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -53,16 +60,22 @@ def build_dictionary_options(func):
 
 
 def train_embedding_options(func):
-    @click.option('--dim-size', type=int, default=100)
-    @click.option('--init-alpha', type=float, default=0.025)
-    @click.option('--min-alpha', type=float, default=0.0001)
-    @click.option('--window', type=int, default=5)
-    @click.option('--entities-per-page', type=int, default=10)
-    @click.option('--negative', type=int, default=15)
+    @click.option('--dim-size', type=int, default=100, help='The number of dimensions of the '
+                  'embeddings')
+    @click.option('--init-alpha', type=float, default=0.025, help='The initial learning rate')
+    @click.option('--min-alpha', type=float, default=0.0001, help='The minimum learning rate')
+    @click.option('--window', type=int, default=5, help='The maximum distance between the target '
+                  'item (word or entity) and the context word to be predicted')
+    @click.option('--entities-per-page', type=int, default=10, help='For processing each page, the '
+                  'specified number of randomly chosen entities are used to predict their '
+                  'neighboring entities in the link graph')
+    @click.option('--negative', type=int, default=5, help='The number of negative samples')
     @click.option('--word-neg-power', type=float, default=0.75)
     @click.option('--entity-neg-power', type=float, default=0.0)
-    @click.option('--sample', type=float, default=1e-4)
-    @click.option('--iteration', type=int, default=5)
+    @click.option('--sample', type=float, default=1e-4, help='The parameter that controls the '
+                  'downsampling of frequent words')
+    @click.option('--iteration', type=int, default=5, help='The number of iterations for Wikipedia '
+                  'pages')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -72,9 +85,12 @@ def train_embedding_options(func):
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--lowercase/--no-lowercase', default=True)
-@click.option('--phrase/--no-phrase', default=True)
-@click.option('--link-graph/--no-link-graph', default=True)
+@click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words and '
+              'phrases')
+@click.option('--phrase/--no-phrase', default=True, help='Whether to learn the embeddings of '
+              'phrases')
+@click.option('--link-graph/--no-link-graph', default=True, help='Whether to learn from the '
+              'Wikipedia link graph')
 @build_phrase_dictionary_options
 @build_dictionary_options
 @train_embedding_options
@@ -133,7 +149,7 @@ def build_dump_db(dump_file, out_file, **kwargs):
 @cli.command()
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--lowercase/--no-lowercase', default=True)
+@click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase phrases')
 @build_phrase_dictionary_options
 @common_options
 def build_phrase_dictionary(dump_db_file, out_file, **kwargs):
@@ -145,8 +161,9 @@ def build_phrase_dictionary(dump_db_file, out_file, **kwargs):
 @cli.command()
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--phrase', type=click.Path(exists=True))
-@click.option('--lowercase/--no-lowercase', default=True)
+@click.option('--phrase', type=click.Path(exists=True), help='The phrase dictionary file generated '
+              'using the build_phrase_dictionary command')
+@click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words')
 @build_dictionary_options
 @common_options
 def build_dictionary(dump_db_file, out_file, phrase, **kwargs):
@@ -178,7 +195,8 @@ def build_link_graph(dump_db_file, dictionary_file, out_file, **kwargs):
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--link-graph', type=click.Path(exists=True))
+@click.option('--link-graph', type=click.Path(exists=True), help='The link graph file generated '
+              'using the build_link_graph command')
 @train_embedding_options
 @common_options
 def train_embedding(dump_db_file, dictionary_file, link_graph, out_file, **kwargs):
@@ -197,7 +215,7 @@ def train_embedding(dump_db_file, dictionary_file, link_graph, out_file, **kwarg
 @cli.command()
 @click.argument('model_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--out-format', default='default')
+@click.option('--out-format', default='default', type=click.Choice(['default', 'glove']))
 def save_text(model_file, out_file, out_format='default'):
     wiki2vec = Wikipedia2Vec.load(model_file)
     wiki2vec.save_text(out_file, out_format)
