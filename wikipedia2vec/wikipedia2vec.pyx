@@ -148,6 +148,9 @@ cdef class Wikipedia2Vec:
 
     def save_text(self, out_file, out_format='default'):
         with open(out_file, 'wb') as f:
+            if out_format == 'word2vec':
+                f.write(('%d %d\n' % (len(self.dictionary), len(self.syn0[0]))).encode('utf-8'))
+
             for item in sorted(self.dictionary, key=lambda o: o.doc_count, reverse=True):
                 vec_str = ' '.join('%.4f' % v for v in self.get_vector(item))
                 if isinstance(item, Word):
@@ -155,7 +158,7 @@ cdef class Wikipedia2Vec:
                 else:
                     text = 'ENTITY/' + item.title.replace('\t', ' ')
 
-                if out_format == 'glove':
+                if out_format in ('word2vec', 'glove'):
                     text = text.replace(' ', '_')
                     f.write(('%s %s\n' % (text, vec_str)).encode('utf-8'))
                 else:
