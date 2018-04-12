@@ -195,7 +195,7 @@ The *train_embedding* command runs the training of the embeddings.
 - *--negative*: The number of negative samples (default: 5)
 - *--word-neg-power*: Negative sampling of words is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0.75)
 - *--entity-neg-power*: Negative sampling of entities is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0)
-- *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 5)
+- *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 10)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
@@ -215,7 +215,7 @@ The *train_embedding* command runs the training of the embeddings.
 
 **Options:**
 
-- *--out-format*: The output format. Possible values are *default*, *word2vec*, and *glove*. If *word2vec* and *glove* are specified, the format adopted by [Word2Vec]() and [GloVe](https://nlp.stanford.edu/projects/glove/) are used, respectively.
+- *--out-format*: The output format. Possible values are *default*, *word2vec*, and *glove*. If *word2vec* and *glove* are specified, the format adopted by [Word2Vec](https://code.google.com/archive/p/word2vec/) and [GloVe](https://nlp.stanford.edu/projects/glove/) are used, respectively.
 
 Sample Usage
 ------------

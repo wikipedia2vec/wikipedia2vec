@@ -67,7 +67,7 @@ def train_embedding_options(func):
     @click.option('--min-alpha', type=float, default=0.0001, help='The minimum learning rate')
     @click.option('--window', type=int, default=5, help='The maximum distance between the target '
                   'item (word or entity) and the context word to be predicted')
-    @click.option('--entities-per-page', type=int, default=5, help='For processing each page, the '
+    @click.option('--entities-per-page', type=int, default=10, help='For processing each page, the '
                   'specified number of randomly chosen entities are used to predict their '
                   'neighboring entities in the link graph')
     @click.option('--negative', type=int, default=5, help='The number of negative samples')
