@@ -66,12 +66,16 @@ def train_embedding_options(func):
     @click.option('--min-alpha', type=float, default=0.0001, help='The minimum learning rate')
     @click.option('--window', type=int, default=5, help='The maximum distance between the target '
                   'item (word or entity) and the context word to be predicted')
-    @click.option('--entities-per-page', type=int, default=10, help='For processing each page, the '
+    @click.option('--entities-per-page', type=int, default=5, help='For processing each page, the '
                   'specified number of randomly chosen entities are used to predict their '
                   'neighboring entities in the link graph')
     @click.option('--negative', type=int, default=5, help='The number of negative samples')
-    @click.option('--word-neg-power', type=float, default=0.75)
-    @click.option('--entity-neg-power', type=float, default=0.0)
+    @click.option('--word-neg-power', type=float, default=0.75, help='Negative sampling of words is '
+                  'performed based on the probability proportional to the frequency raised to the '
+                  'power specified by this option')
+    @click.option('--entity-neg-power', type=float, default=0, help='Negative sampling of '
+                  'entities is performed based on the probability proportional to the frequency '
+                  'raised to the power specified by this option')
     @click.option('--sample', type=float, default=1e-4, help='The parameter that controls the '
                   'downsampling of frequent words')
     @click.option('--iteration', type=int, default=5, help='The number of iterations for Wikipedia '
