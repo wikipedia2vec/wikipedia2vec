@@ -7,7 +7,7 @@ Wikipedia2Vec
 Introduction
 ------------
 
-Wikipedia2Vec is a tool used for obtaining quality embeddings (vector representations) of words and entities from  Wikipedia.
+Wikipedia2Vec is a tool used for obtaining embeddings (vector representations) of words and entities from Wikipedia.
 It is developed and maintained by [Studio Ousia](http://www.ousia.jp).
 
 This tool enables you to learn embeddings that map words and entities into a unified continuous vector space.
