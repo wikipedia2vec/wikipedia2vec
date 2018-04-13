@@ -45,7 +45,7 @@ We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel L
 Wikipedia2Vec can be installed from PyPI:
 
 ```
-% pip install Wikipedia2Vec
+% pip install wikipedia2vec
 ```
 
 The command installs the following required Python libraries: [click](http://click.pocoo.org/), [jieba](https://github.com/fxsjy/jieba), [joblib](https://pythonhosted.org/joblib/), [lmdb](https://lmdb.readthedocs.io/), [marisa-trie](http://marisa-trie.readthedocs.io/), [mwparserfromhell](https://mwparserfromhell.readthedocs.io/), [numpy](http://www.numpy.org/), [scipy](https://www.scipy.org/), [six](https://pythonhosted.org/six/), and [tqdm](https://github.com/tqdm/tqdm).
