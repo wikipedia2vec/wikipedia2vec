@@ -9,6 +9,7 @@ import multiprocessing
 import numpy as np
 import os
 import random
+import re
 import time
 import six
 import six.moves.cPickle as pickle
@@ -18,6 +19,7 @@ from cpython cimport array
 from collections import defaultdict
 from ctypes import c_float, c_int32
 from contextlib import closing
+from itertools import islice
 from libc.math cimport exp
 from libc.stdint cimport int32_t
 from libc.stdlib cimport rand, RAND_MAX
@@ -186,14 +188,31 @@ cdef class Wikipedia2Vec:
         vectors = []
 
         with open(in_file, 'rb') as f:
-            for (n, line) in enumerate(f):
-                (item_str, vec_str) = line.decode('utf-8').split('\t')
+            if b'\t' in list(islice(f, 2))[1]:
+                sep = '\t'
+            else:
+                sep = ' '
+
+            f.seek(0)
+            n = 0
+            for (i, line) in enumerate(f):
+                line = line.decode('utf-8').rstrip()
+                if i == 0 and re.match(r'^\d+\s\d+$', line):  # word2vec format
+                    continue
+
+                if sep == '\t':
+                    (item_str, vec_str) = line.split(sep)
+                    vectors.append(np.array([float(s) for s in vec_str.split(' ')], dtype=np.float32))
+                else:
+                    items = line.split(sep)
+                    item_str = items[0].replace('_', ' ')
+                    vectors.append(np.array([float(s) for s in items[1:]], dtype=np.float32))
+
                 if item_str.startswith('ENTITY/'):
                     entities[item_str[7:]] = n
                 else:
                     words[item_str] = n
-
-                vectors.append(np.array([float(s) for s in vec_str.split(' ')], dtype=np.float32))
+                n += 1
 
         syn0 = np.empty((len(vectors), vectors[0].size))
 
@@ -211,8 +230,8 @@ cdef class Wikipedia2Vec:
         word_stats = np.zeros((len(word_dict), 2), dtype=np.int32)
         entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int32)
 
-        dictionary = Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
-                                None, dict())
+        dictionary = Dictionary(word_dict, entity_dict, redirect_dict, None, word_stats,
+                                entity_stats, None, False, dict())
         ret = Wikipedia2Vec(dictionary)
         ret.syn0 = syn0
         ret.syn1 = None
