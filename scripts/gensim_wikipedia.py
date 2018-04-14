@@ -6,7 +6,8 @@ import multiprocessing
 import time
 
 from gensim.corpora import WikiCorpus
-from gensim.models import Word2Vec, Phrases
+from gensim.models import Word2Vec
+from gensim.models.phrases import Phrases, Phraser
 from gensim.models.word2vec import LineSentence
 
 
@@ -23,7 +24,7 @@ from gensim.models.word2vec import LineSentence
 @click.option('--workers', default=multiprocessing.cpu_count())
 def main(dump_file, corpus_file, out_file, phrase, **kwargs):
     logging.basicConfig(format='%(asctime)s: %(levelname)s: %(message)s')
-    logging.setLevel(level=logging.INFO)
+    logging.root.setLevel(level=logging.INFO)
 
     start_time = time.time()
 
@@ -35,9 +36,11 @@ def main(dump_file, corpus_file, out_file, phrase, **kwargs):
     corpus_time = time.time()
     print('Elapsed: %d seconds' % (corpus_time - start_time))
 
-    sentences = LineSentence(corpus_file)
     if phrase:
-        sentences = Phrases(sentences)
+        phraser = Phraser(Phrases(LineSentence(corpus_file)))
+        sentences = phraser[LineSentence(corpus_file)]
+    else:
+        sentences = LineSentence(corpus_file)
 
     model = Word2Vec(sentences, sg=1, **kwargs)
     model.save(out_file)
