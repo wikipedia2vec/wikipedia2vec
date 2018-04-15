@@ -384,7 +384,7 @@ cdef class Wikipedia2Vec:
 @cython.cdivision(True)
 def train_page(tuple arg):
     cdef int32_t i, j, n, start, end, span_start, span_end, word, word2, entity, text_len,\
-        token_len, total_nodes
+        token_len, total_nodes, window
     cdef int32_t [:] words, word_pos
     cdef const int32_t [:] neighbors
     cdef unicode text, title
@@ -441,8 +441,9 @@ def train_page(tuple arg):
             if sample_ints[word] < rand():
                 continue
 
-            start = max(0, i - params.window)
-            end = min(len(words), i + params.window + 1)
+            window = rand() % params.window + 1
+            start = max(0, i - window)
+            end = min(len(words), i + window + 1)
             for j in range(start, end):
                 word2 = words[j]
 
@@ -467,8 +468,9 @@ def train_page(tuple arg):
             span_start = word_pos[wiki_link.start]
             span_end = word_pos[max(0, wiki_link.end - 1)] + 1
 
-            start = max(0, span_start - params.window)
-            end = min(len(words), span_end + params.window)
+            window = rand() % params.window + 1
+            start = max(0, span_start - window)
+            end = min(len(words), span_end + window)
             for j in range(start, end):
                 word2 = words[j]
                 if word2 == -1 or span_start <= j < span_end:
