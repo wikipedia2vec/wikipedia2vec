@@ -24,12 +24,14 @@ KORE_CATEGORIES = {
 @click.argument('data_dir', type=click.Path(exists=True), default='data')
 @click.option('-f', '--out-format', type=click.Choice(['csv', 'text']), default='text')
 @click.option('--word-analogy/--no-word-analogy', default=True)
+@click.option('--word-analogy-file', default="EN-GOOGLE.txt")
 @click.option('--word-similarity/--no-word-similarity', default=True)
 @click.option('--entity-relatedness/--no-entity-relatedness', default=True)
 @click.option('--batch-size', default=1000)
 @click.option('--vocab-size', default=300000)
+
 def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity_relatedness,
-         batch_size, vocab_size):
+         batch_size, vocab_size, word_analogy_file):
     model = Wikipedia2Vec.load(model_file)
 
     results = []
@@ -128,7 +130,7 @@ def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity
         results.append(('KORE', np.mean(list(chain(*kore_results.values()))), oov_count))
 
     if word_analogy:
-        with open(os.path.join(data_dir, 'EN-GOOGLE.txt')) as f:
+        with open(os.path.join(data_dir, word_analogy_file)) as f:
             (A_ind, B_ind, C_ind, D_ind) = ([], [], [], [])
             oov_count = 0
             for (n, line) in enumerate(f):
