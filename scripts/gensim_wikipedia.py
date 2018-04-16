@@ -16,7 +16,7 @@ from gensim.models.word2vec import LineSentence
 @click.argument('corpus_file', type=click.Path())
 @click.argument('out_file', type=click.Path())
 @click.option('--phrase', is_flag=True)
-@click.option('--size', default=100)
+@click.option('--size', default=300)
 @click.option('--window', default=5)
 @click.option('--min-count', default=5)
 @click.option('--negative', default=5)
