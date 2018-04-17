@@ -26,10 +26,11 @@ KORE_CATEGORIES = {
 @click.option('--word-analogy/--no-word-analogy', default=True)
 @click.option('--word-similarity/--no-word-similarity', default=True)
 @click.option('--entity-similarity/--no-entity-similarity', default=True)
+@click.option('--lowercase/--no-lowercase', default=True)
 @click.option('--batch-size', default=1000)
 @click.option('--vocab-size', default=300000)
 def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity_similarity,
-         batch_size, vocab_size):
+         lowercase, batch_size, vocab_size):
     model = Wikipedia2Vec.load(model_file)
 
     results = []
@@ -46,7 +47,9 @@ def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity
                 estimated = []
                 for line in f:
                     (w1, w2, val) = line.split()
-                    (w1, w2, val) = w1.lower(), w2.lower(), float(val)
+                    val = float(val)
+                    if lowercase:
+                        (w1, w2) = (w1.lower(), w2.lower())
                     try:
                         v1 = model.get_word_vector(w1)
                     except KeyError:
@@ -71,7 +74,10 @@ def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity
                 oov_count = 0
                 for (n, line) in enumerate(f):
                     if not line.startswith(':'):
-                        words = list(map(model.get_word, line.lower().split()))
+                        if lowercase:
+                            words = list(map(model.get_word, line.lower().split()))
+                        else:
+                            words = list(map(model.get_word, line.split()))
                         if not all(w is not None for w in words):
                             oov_count += 1
                             continue
