@@ -11,8 +11,9 @@ import time
 cimport cython
 from contextlib import closing
 from functools import partial
+from itertools import chain
 from multiprocessing.pool import Pool
-from scipy.sparse import csr_matrix, lil_matrix
+from scipy.sparse import coo_matrix
 from tqdm import tqdm
 from uuid import uuid1
 
@@ -80,21 +81,34 @@ cdef class LinkGraph:
         logger.info('Step 1/2: Processing Wikipedia pages...')
 
         with closing(Pool(pool_size)) as pool:
-            matrix = lil_matrix((dictionary.entity_size, dictionary.entity_size), dtype=np.bool)
+            rows = []
+            cols = []
 
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_process_page, offset=dictionary.entity_offset)
 
                 for ret in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
                     if ret:
-                        (page_index, dest_indices) = ret
-                        matrix[page_index, dest_indices] = True
-                        matrix[dest_indices, page_index] = True
+                        (page_indices, dest_indices) = ret
+                        rows.append(page_indices)
+                        rows.append(dest_indices)
+                        cols.append(dest_indices)
+                        cols.append(page_indices)
 
                     bar.update(1)
 
         logger.info('Step 2/2: Converting matrix...')
+
+        rows = list(chain(*rows))
+        cols = list(chain(*cols))
+
+        matrix = coo_matrix((np.ones(len(rows), dtype=np.bool),
+                             (np.array(rows, dtype=np.int32),
+                              np.array(cols, dtype=np.int32))), dtype=np.bool)
+        del rows, cols
+
         matrix = matrix.tocsr()
+
         matrix.indices += dictionary.entity_offset
 
         build_params = dict(dump_file=dump_db.dump_file,
@@ -126,4 +140,4 @@ def _process_page(unicode title, int32_t offset):
             if dest_index != -1:
                 dest_indices.append(dest_index - offset)
 
-    return (page_index, dest_indices)
+    return ([page_index] * len(dest_indices), dest_indices)
