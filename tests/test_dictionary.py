@@ -172,7 +172,7 @@ class TestDictionary(unittest.TestCase):
         eq_(427, item.count)
         eq_(2, item.doc_count)
 
-        item2 = self.dictionary.get_item_by_index(1122)
+        item2 = self.dictionary.get_item_by_index(1118)
         ok_(isinstance(item2, Entity))
         eq_('Computer system', item2.title)
         eq_(1118, item2.index)
@@ -196,7 +196,7 @@ class TestDictionary(unittest.TestCase):
         self.dictionary.get_word_by_index(884)
 
     def test_get_entity_by_index(self):
-        entity = self.dictionary.get_entity_by_index(1122)
+        entity = self.dictionary.get_entity_by_index(1118)
         ok_(isinstance(entity, Entity))
         eq_('Computer system', entity.title)
         eq_(1118, entity.index)
