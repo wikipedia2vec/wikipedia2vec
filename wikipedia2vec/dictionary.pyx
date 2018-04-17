@@ -215,6 +215,8 @@ cdef class Dictionary:
                         word_doc_counter[word] += 1
 
                     for (title, count) in entity_cnt.items():
+                        if '#' in title:
+                            continue
                         if not category and title.startswith('Category:'):
                             continue
                         entity_counter[title] += count

@@ -37,7 +37,7 @@ class TestLinkGraph(unittest.TestCase):
     def test_neighbors(self):
         entity = self.dictionary.get_entity('Computer accessibility')
         neighbors = self.link_graph.neighbors(entity)
-        eq_(116, len(neighbors))
+        eq_(115, len(neighbors))
         ok_(all(isinstance(entity, Entity) for entity in neighbors))
 
         titles = [e.title for e in neighbors]

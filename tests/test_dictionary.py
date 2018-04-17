@@ -107,10 +107,10 @@ class TestDictionary(unittest.TestCase):
         eq_(884, self.dictionary.word_size)
 
     def test_entity_size_property(self):
-        eq_(246, self.dictionary.entity_size)
+        eq_(242, self.dictionary.entity_size)
 
     def test_len(self):
-        eq_(1130, len(self.dictionary))
+        eq_(1126, len(self.dictionary))
 
     def test_iterator(self):
         items = list(self.dictionary)
@@ -147,7 +147,7 @@ class TestDictionary(unittest.TestCase):
     def test_get_entity(self):
         entity = self.dictionary.get_entity('Computer system')
         ok_(isinstance(entity, Entity))
-        eq_(1122, entity.index)
+        eq_(1118, entity.index)
         eq_(1, entity.count)
         eq_(1, entity.doc_count)
 
@@ -159,7 +159,7 @@ class TestDictionary(unittest.TestCase):
         eq_(None, self.dictionary.get_entity('Foo'))
 
     def test_get_entity_index(self):
-        eq_(1122, self.dictionary.get_entity_index('Computer system'))
+        eq_(1118, self.dictionary.get_entity_index('Computer system'))
 
     def test_get_entity_index_not_exist(self):
         eq_(-1, self.dictionary.get_entity_index('Foo'))
@@ -175,7 +175,7 @@ class TestDictionary(unittest.TestCase):
         item2 = self.dictionary.get_item_by_index(1122)
         ok_(isinstance(item2, Entity))
         eq_('Computer system', item2.title)
-        eq_(1122, item2.index)
+        eq_(1118, item2.index)
         eq_(1, item2.count)
         eq_(1, item2.doc_count)
 
@@ -199,7 +199,7 @@ class TestDictionary(unittest.TestCase):
         entity = self.dictionary.get_entity_by_index(1122)
         ok_(isinstance(entity, Entity))
         eq_('Computer system', entity.title)
-        eq_(1122, entity.index)
+        eq_(1118, entity.index)
         eq_(1, entity.count)
         eq_(1, entity.doc_count)
 
