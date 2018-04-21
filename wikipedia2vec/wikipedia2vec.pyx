@@ -480,6 +480,7 @@ def train_page(tuple arg):
                     continue
 
                 _train_pair(entity, word2, alpha_, params.negative, word_neg_table)
+                _train_pair(word2, entity, alpha_, params.negative, entity_neg_table)
 
     alpha.value = max(params.min_alpha, params.init_alpha * (1.0 - n / total_page_count))
 
