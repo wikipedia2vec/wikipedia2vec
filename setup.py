@@ -42,7 +42,7 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='0.1.13',
+    version='0.1.14',
     description='A tool for learning embeddings of words and entities from Wikipedia',
     long_description=long_description,
     author='Studio Ousia',
