@@ -102,7 +102,7 @@ def train(ctx, out_file, link_graph, **kwargs):
     kwargs['dump_db_file'] = dump_db_file
 
     logger.info('Starting to build a dictionary...')
-    invoke(build_dictionary, out_file=dictionary_file, phrase=None)
+    invoke(build_dictionary, out_file=dictionary_file)
 
     if link_graph:
         logger.info('Starting to build a link graph...')
