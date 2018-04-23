@@ -52,6 +52,8 @@ The command installs the following required Python libraries: [click](http://cli
 
 To process Japanese Wikipedia dumps, it is also required to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
 
+Currently, this software is tested only on Linux.
+
 Learning Embeddings
 -------------------
 
