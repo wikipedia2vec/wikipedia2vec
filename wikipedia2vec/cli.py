@@ -9,7 +9,6 @@ import os
 from .dump_db import DumpDB
 from .dictionary import Dictionary
 from .link_graph import LinkGraph
-from .phrase import PhraseDictionary
 from .wikipedia2vec import Wikipedia2Vec
 from .utils.wiki_dump_reader import WikiDumpReader
 
@@ -26,18 +25,6 @@ def common_options(func):
     @click.option('--pool-size', type=int, default=multiprocessing.cpu_count(), help='The number '
                   'of pool workers')
     @click.option('--chunk-size', type=int, default=100)
-    @functools.wraps(func)
-    def wrapper(*args, **kwargs):
-        return func(*args, **kwargs)
-    return wrapper
-
-
-def build_phrase_dictionary_options(func):
-    @click.option('--min-link-count', type=int, default=30, help='A phrase is ignored if the total '
-                  'frequency of the phrase appearing as an anchor link is less than this value')
-    @click.option('--min-link-prob', type=float, default=0.1, help='A phrase is ignored if the '
-                  'probability of the phrase appearing as an anchor link is less than this value')
-    @click.option('--max-phrase-len', default=3, help='The maximum number of words in a phrase')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -90,18 +77,14 @@ def train_embedding_options(func):
 @cli.command()
 @click.argument('dump_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words and '
-              'phrases')
-@click.option('--phrase/--no-phrase', default=True, help='Whether to learn the embeddings of '
-              'phrases')
+@click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words')
 @click.option('--link-graph/--no-link-graph', default=True, help='Whether to learn from the '
               'Wikipedia link graph')
-@build_phrase_dictionary_options
 @build_dictionary_options
 @train_embedding_options
 @common_options
 @click.pass_context
-def train(ctx, out_file, phrase, link_graph, **kwargs):
+def train(ctx, out_file, link_graph, **kwargs):
     (out_name, out_ext) = os.path.splitext(os.path.basename(out_file))
     out_path = os.path.dirname(out_file)
 
@@ -118,16 +101,8 @@ def train(ctx, out_file, phrase, link_graph, **kwargs):
     invoke(build_dump_db, out_file=dump_db_file)
     kwargs['dump_db_file'] = dump_db_file
 
-    if phrase:
-        logger.info('Starting to build a phrase dictionary...')
-        phrase_file = os.path.join(out_path, out_name + '_phrase.pkl')
-        invoke(build_phrase_dictionary, out_file=phrase_file)
-
-        logger.info('Starting to build a dictionary...')
-        invoke(build_dictionary, out_file=dictionary_file, phrase=phrase_file)
-    else:
-        logger.info('Starting to build a dictionary...')
-        invoke(build_dictionary, out_file=dictionary_file, phrase=None)
+    logger.info('Starting to build a dictionary...')
+    invoke(build_dictionary, out_file=dictionary_file, phrase=None)
 
     if link_graph:
         logger.info('Starting to build a link graph...')
@@ -154,32 +129,13 @@ def build_dump_db(dump_file, out_file, **kwargs):
 @cli.command()
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
-@click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase phrases')
-@build_phrase_dictionary_options
-@common_options
-def build_phrase_dictionary(dump_db_file, out_file, **kwargs):
-    dump_db = DumpDB(dump_db_file)
-    phrase_dict = PhraseDictionary.build(dump_db, **kwargs)
-    phrase_dict.save(out_file)
-
-
-@cli.command()
-@click.argument('dump_db_file', type=click.Path(exists=True))
-@click.argument('out_file', type=click.Path())
-@click.option('--phrase', type=click.Path(exists=True), help='The phrase dictionary file generated '
-              'using the build_phrase_dictionary command')
 @click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words')
 @build_dictionary_options
 @common_options
-def build_dictionary(dump_db_file, out_file, phrase, **kwargs):
+def build_dictionary(dump_db_file, out_file, **kwargs):
     dump_db = DumpDB(dump_db_file)
 
-    if phrase:
-        phrase_dict = PhraseDictionary.load(phrase)
-    else:
-        phrase_dict = None
-
-    dictionary = Dictionary.build(dump_db, phrase_dict, **kwargs)
+    dictionary = Dictionary.build(dump_db, None, **kwargs)
     dictionary.save(out_file)
 
 

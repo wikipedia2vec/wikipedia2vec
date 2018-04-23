@@ -81,24 +81,20 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
 - *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
-- *--lowercase/--no-lowercase*: Whether to lowercase words and phrases (default: True)
+- *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 5)
-- *--phrase/--no-phrase*: Whether to learn the embeddings of phrases (default: True)
-- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is less than this value (default: 10)
-- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is less than this value (default: 0.1)
-- *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
 - *--word-neg-power*: Negative sampling of words is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0.75)
 - *--entity-neg-power*: Negative sampling of entities is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0)
 
-The *train* command internally calls the five commands described below (namely, *build_dump_db*, *build_phrase_dictionary*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
+The *train* command internally calls the four commands described below (namely, *build_dump_db*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
 
 ### Building Dump Database
 
@@ -113,28 +109,6 @@ The size of the database based on an English Wikipedia dump is approximately 15G
 
 - *DUMP_FILE*: The Wikipedia dump file
 - *OUT_FILE*: The output file
-
-### Building Phrase Dictionary
-
-The *build_phrase_dictionary* command constructs a dictionary consisting of phrases extracted from Wikipedia.
-This command extracts all phrases that appear as an anchor link in Wikipedia, and reduces them using three configurable thresholds, namely *min_link_count*, *min_link_prob*, and *max_phrase_len*.
-Detected phrases are treated as words in the subsequent steps.
-
-```
-% wikipedia2vec build_phrase_dictionary DUMP_DB_FILE OUT_FILE
-```
-
-**Arguments:**
-
-- *DUMP_DB_FILE*: The database file generated using the *build\_dump\_db* command
-- *OUT_FILE*: The output file
-
-**Options:**
-
-- *--lowercase/--no-lowercase*: Whether to lowercase phrases (default: True)
-- *--min-link-count*: A phrase is ignored if the total frequency of the phrase appearing as an anchor link is less than this value (default: 30)
-- *--min-link-prob*: A phrase is ignored if the probability of the phrase appearing as an anchor link is less than this value (default: 0.1)
-- *--max-phrase-len*: The maximum number of words in a phrase (default: 4)
 
 ### Building Dictionary
 
@@ -151,7 +125,6 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 
 **Options:**
 
-- *--phrase*: The phrase dictionary file generated using the *build\_phrase\_dictionary* command
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
