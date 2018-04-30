@@ -32,6 +32,7 @@ from tqdm import tqdm
 from .dictionary cimport Dictionary, Item, Word, Entity
 from .dump_db cimport Paragraph, WikiLink, DumpDB
 from .link_graph cimport LinkGraph
+from .mention_db cimport MentionDB, Mention
 from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
 from .utils.tokenizer.token cimport Token
 
@@ -45,6 +46,7 @@ logger = logging.getLogger(__name__)
 cdef Dictionary dictionary
 cdef DumpDB dump_db
 cdef LinkGraph link_graph
+cdef MentionDB mention_db
 cdef BaseTokenizer tokenizer
 cdef float32_t [:, :] syn0
 cdef float32_t [:, :] syn1
@@ -239,10 +241,11 @@ cdef class Wikipedia2Vec:
 
         return ret
 
-    def train(self, dump_db_, link_graph_, pool_size, chunk_size, progressbar=True, **kwargs):
-        global dictionary, dump_db, link_graph, tokenizer, syn0, syn1, work, word_neg_table,\
-            entity_neg_table, exp_table, sample_ints, link_indices, link_cursor, alpha, params,\
-            total_page_count
+    def train(self, dump_db_, link_graph_, mention_db_, pool_size, chunk_size, progressbar=True,
+              **kwargs):
+        global dictionary, dump_db, link_graph, mention_db, tokenizer, syn0, syn1, work,\
+            word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, link_cursor,\
+            alpha, params, total_page_count
 
         start_time = time.time()
 
@@ -303,6 +306,7 @@ cdef class Wikipedia2Vec:
         dump_db = dump_db_
         dictionary = self.dictionary
         link_graph = link_graph_
+        mention_db = mention_db_
         tokenizer = dictionary.get_tokenizer()
 
         total_page_count = dump_db.page_size() * params.iteration
@@ -383,14 +387,18 @@ cdef class Wikipedia2Vec:
 @cython.initializedcheck(False)
 @cython.cdivision(True)
 def train_page(tuple arg):
+    cdef bint matched
     cdef int32_t i, j, n, start, end, span_start, span_end, word, word2, entity, text_len,\
         token_len, total_nodes, window
     cdef int32_t [:] words, word_pos
+    cdef char [:] link_flags
     cdef const int32_t [:] neighbors
     cdef unicode text, title
-    cdef list tokens
+    cdef list tokens, paragraphs, target_links
+    cdef set entity_indices
     cdef Token token
     cdef WikiLink wiki_link
+    cdef Mention mention
     cdef float32_t alpha_
 
     (n, title) = arg
@@ -411,8 +419,19 @@ def train_page(tuple arg):
             for j in range(len(neighbors)):
                 _train_pair(entity, neighbors[j], alpha_, params.negative, entity_neg_table)
 
+    paragraphs = dump_db.get_paragraphs(title)
+    if mention_db is not None:
+        entity_indices = set()
+        entity_indices.add(dictionary.get_entity_index(title))
+
+        for paragraph in paragraphs:
+            for wiki_link in paragraph.wiki_links:
+                entity_indices.add(dictionary.get_entity_index(wiki_link.title))
+
+        entity_indices.discard(-1)
+
     # train using Wikipedia words and anchors
-    for paragraph in dump_db.get_paragraphs(title):
+    for paragraph in paragraphs:
         text = paragraph.text
         text_len = len(text)
         tokens = tokenizer.tokenize(text)
@@ -455,7 +474,11 @@ def train_page(tuple arg):
 
                 _train_pair(word, word2, alpha_, params.negative, word_neg_table)
 
-        # train using word-entity co-occurrences
+        link_flags = cython.view.array(shape=(text_len + 1,), itemsize=sizeof(char), format='c')
+        link_flags[:] = 0
+
+        target_links = []
+
         for wiki_link in paragraph.wiki_links:
             entity = dictionary.get_entity_index(wiki_link.title)
             if entity == -1:
@@ -465,8 +488,24 @@ def train_page(tuple arg):
                 logger.warn('Detected invalid span of a wiki link')
                 continue
 
-            span_start = word_pos[wiki_link.start]
-            span_end = word_pos[max(0, wiki_link.end - 1)] + 1
+            target_links.append((entity, wiki_link.start, wiki_link.end))
+
+            link_flags[wiki_link.start:wiki_link.end] = 1
+
+        if mention_db is not None:
+            for mention in mention_db.detect_mentions(text, tokens, entity_indices):
+                matched = False
+                for i in range(mention.start, mention.end):
+                    if link_flags[i] == 1:
+                        matched = True
+                        break
+
+                if not matched:
+                    target_links.append((mention.index, mention.start, mention.end))
+
+        for (entity, start, end) in target_links:
+            span_start = word_pos[start]
+            span_end = word_pos[max(0, end - 1)] + 1
 
             window = rand() % params.window + 1
             start = max(0, span_start - window)

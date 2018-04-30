@@ -9,6 +9,7 @@ import os
 from .dump_db import DumpDB
 from .dictionary import Dictionary
 from .link_graph import LinkGraph
+from .mention_db import MentionDB
 from .wikipedia2vec import Wikipedia2Vec
 from .utils.wiki_dump_reader import WikiDumpReader
 
@@ -41,6 +42,23 @@ def build_dictionary_options(func):
                   'shorter than this value')
     @click.option('--category/--no-category', default=False, help='Whether to include Wikipedia '
                   'categories in the dictionary')
+    @functools.wraps(func)
+    def wrapper(*args, **kwargs):
+        return func(*args, **kwargs)
+    return wrapper
+
+
+def build_mention_db_options(func):
+    @click.option('--min-link-prob', type=float, default=0.05, help='A mention surface is ignored '
+                  'if the probability of the surface appearing as an anchor link is less than this '
+                  'value')
+    @click.option('--min-prior-prob', type=float, default=0.1, help='An entity is not registered as '
+                  'a candidate of a mention surface if the probability of the mention surface '
+                  'referring to the entity is less than this value.')
+    @click.option('--max-mention-len', default=20, help='The maximum number of characters in a '
+                  'mention surface')
+    @click.option('--case-sensitive', default=False, help='Whether to detect mentions in a case '
+                  'sensitive manner')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
@@ -156,19 +174,38 @@ def build_link_graph(dump_db_file, dictionary_file, out_file, **kwargs):
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
+@build_mention_db_options
+@common_options
+def build_mention_db(dump_db_file, dictionary_file, out_file, **kwargs):
+    dump_db = DumpDB(dump_db_file)
+    dictionary = Dictionary.load(dictionary_file)
+
+    mention_db = MentionDB.build(dump_db, dictionary, **kwargs)
+    mention_db.save(out_file)
+
+
+@cli.command()
+@click.argument('dump_db_file', type=click.Path(exists=True))
+@click.argument('dictionary_file', type=click.Path(exists=True))
+@click.argument('out_file', type=click.Path())
 @click.option('--link-graph', type=click.Path(exists=True), help='The link graph file generated '
               'using the build_link_graph command')
+@click.option('--mention-db', type=click.Path(exists=True), help='The mention DB file generated '
+              'using the build_mention_db command')
 @train_embedding_options
 @common_options
-def train_embedding(dump_db_file, dictionary_file, link_graph, out_file, **kwargs):
+def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, out_file, **kwargs):
     dump_db = DumpDB(dump_db_file)
     dictionary = Dictionary.load(dictionary_file)
 
     if link_graph:
         link_graph = LinkGraph.load(link_graph, dictionary)
 
+    if mention_db:
+        mention_db = MentionDB.load(mention_db, dictionary)
+
     wiki2vec = Wikipedia2Vec(dictionary)
-    wiki2vec.train(dump_db, link_graph, **kwargs)
+    wiki2vec.train(dump_db, link_graph, mention_db, **kwargs)
 
     wiki2vec.save(out_file)
 
