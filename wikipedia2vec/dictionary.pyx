@@ -19,14 +19,12 @@ from tqdm import tqdm
 from uuid import uuid1
 
 from .dump_db cimport DumpDB, Paragraph, WikiLink
-from .utils.tokenizer import get_tokenizer
-from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
 from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 
 cdef DumpDB _dump_db = None
-cdef BaseTokenizer _tokenizer = None
+cdef _tokenize_func = None
 
 
 cdef class Item:
@@ -177,14 +175,14 @@ cdef class Dictionary:
         return Entity(title, index, *self._entity_stats[dict_index])
 
     @staticmethod
-    def build(dump_db, lowercase, min_word_count, min_entity_count, min_paragraph_len, category,
-              pool_size, chunk_size, progressbar=True):
-        global _dump_db, _tokenizer
+    def build(dump_db, tokenizer, lowercase, min_word_count, min_entity_count, min_paragraph_len,
+              category, pool_size, chunk_size, progressbar=True):
+        global _dump_db, _tokenize_func
 
         start_time = time.time()
 
         _dump_db = dump_db
-        _tokenizer = get_tokenizer(dump_db.language)
+        _tokenize_func = tokenizer
 
         logger.info('Step 1/3: Processing Wikipedia pages...')
 
@@ -315,7 +313,7 @@ def _process_page(unicode title, bint lowercase, int32_t min_paragraph_len):
     for paragraph in _dump_db.get_paragraphs(title):
         entity_counter.update(link.title for link in paragraph.wiki_links)
 
-        tokens = _tokenizer.tokenize(paragraph.text)
+        tokens = _tokenize_func(paragraph.text)
         if len(tokens) >= min_paragraph_len:
             if lowercase:
                 word_counter.update(token.text.lower() for token in tokens)

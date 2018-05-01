@@ -33,8 +33,7 @@ from .dictionary cimport Dictionary, Item, Word, Entity
 from .dump_db cimport Paragraph, WikiLink, DumpDB
 from .link_graph cimport LinkGraph
 from .mention_db cimport MentionDB, Mention
-from .utils.tokenizer import get_tokenizer
-from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
+from .utils.tokenizer import get_default_tokenizer
 from .utils.tokenizer.token cimport Token
 
 ctypedef np.float32_t float32_t
@@ -48,7 +47,7 @@ cdef Dictionary dictionary
 cdef DumpDB dump_db
 cdef LinkGraph link_graph
 cdef MentionDB mention_db
-cdef BaseTokenizer tokenizer
+cdef tokenize_func
 cdef float32_t [:, :] syn0
 cdef float32_t [:, :] syn1
 cdef float32_t [:] work
@@ -242,9 +241,9 @@ cdef class Wikipedia2Vec:
 
         return ret
 
-    def train(self, dump_db_, link_graph_, mention_db_, pool_size, chunk_size, progressbar=True,
-              **kwargs):
-        global dictionary, dump_db, link_graph, mention_db, tokenizer, syn0, syn1, work,\
+    def train(self, dump_db_, link_graph_, mention_db_, tokenizer, pool_size, chunk_size,
+              progressbar=True, **kwargs):
+        global dictionary, dump_db, link_graph, mention_db, tokenize_func, syn0, syn1, work,\
             word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, link_cursor,\
             alpha, params, total_page_count
 
@@ -308,7 +307,7 @@ cdef class Wikipedia2Vec:
         dictionary = self.dictionary
         link_graph = link_graph_
         mention_db = mention_db_
-        tokenizer = get_tokenizer(dump_db.language)
+        tokenize_func = tokenizer
 
         total_page_count = dump_db.page_size() * params.iteration
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
@@ -435,7 +434,7 @@ def train_page(tuple arg):
     for paragraph in paragraphs:
         text = paragraph.text
         text_len = len(text)
-        tokens = tokenizer.tokenize(text)
+        tokens = tokenize_func(text)
         token_len = len(tokens)
         if not tokens or token_len < dictionary.min_paragraph_len:
             continue

@@ -12,6 +12,7 @@ from .link_graph import LinkGraph
 from .mention_db import MentionDB
 from .wikipedia2vec import Wikipedia2Vec
 from .utils.wiki_dump_reader import WikiDumpReader
+from .utils.tokenizer import get_tokenizer, get_default_tokenizer
 
 logger = logging.getLogger(__name__)
 
@@ -98,11 +99,13 @@ def train_embedding_options(func):
 @click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words')
 @click.option('--link-graph/--no-link-graph', default=True, help='Whether to learn from the '
               'Wikipedia link graph')
+@click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
+              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
 @build_dictionary_options
 @train_embedding_options
 @common_options
 @click.pass_context
-def train(ctx, out_file, link_graph, **kwargs):
+def train(ctx, out_file, link_graph, tokenizer, **kwargs):
     (out_name, out_ext) = os.path.splitext(os.path.basename(out_file))
     out_path = os.path.dirname(out_file)
 
@@ -120,7 +123,7 @@ def train(ctx, out_file, link_graph, **kwargs):
     kwargs['dump_db_file'] = dump_db_file
 
     logger.info('Starting to build a dictionary...')
-    invoke(build_dictionary, out_file=dictionary_file)
+    invoke(build_dictionary, tokenizer=tokenizer, out_file=dictionary_file)
 
     if link_graph:
         logger.info('Starting to build a link graph...')
@@ -129,10 +132,11 @@ def train(ctx, out_file, link_graph, **kwargs):
 
         logger.info('Starting to train embeddings...')
         invoke(train_embedding, dictionary_file=dictionary_file,
-               link_graph=link_graph_file, out_file=out_file)
+               link_graph=link_graph_file, tokenizer=tokenizer, out_file=out_file)
     else:
         logger.info('Starting to train embeddings...')
-        invoke(train_embedding, dictionary_file=dictionary_file, out_file=out_file)
+        invoke(train_embedding, dictionary_file=dictionary_file, tokenizer=tokenizer,
+               out_file=out_file)
 
 
 @cli.command()
@@ -148,12 +152,19 @@ def build_dump_db(dump_file, out_file, **kwargs):
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words')
+@click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
+              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
 @build_dictionary_options
 @common_options
-def build_dictionary(dump_db_file, out_file, **kwargs):
+def build_dictionary(dump_db_file, out_file, tokenizer, **kwargs):
     dump_db = DumpDB(dump_db_file)
 
-    dictionary = Dictionary.build(dump_db, **kwargs)
+    if tokenizer is None:
+        tokenizer = get_default_tokenizer(dump_db.language)
+    else:
+        tokenizer = get_tokenizer(tokenizer, dump_db.language)
+
+    dictionary = Dictionary.build(dump_db, tokenizer, **kwargs)
     dictionary.save(out_file)
 
 
@@ -174,13 +185,20 @@ def build_link_graph(dump_db_file, dictionary_file, out_file, **kwargs):
 @click.argument('dump_db_file', type=click.Path(exists=True))
 @click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
+@click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
+              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
 @build_mention_db_options
 @common_options
-def build_mention_db(dump_db_file, dictionary_file, out_file, **kwargs):
+def build_mention_db(dump_db_file, dictionary_file, out_file, tokenizer, **kwargs):
     dump_db = DumpDB(dump_db_file)
     dictionary = Dictionary.load(dictionary_file)
 
-    mention_db = MentionDB.build(dump_db, dictionary, **kwargs)
+    if tokenizer is None:
+        tokenizer = get_default_tokenizer(dump_db.language)
+    else:
+        tokenizer = get_tokenizer(tokenizer, dump_db.language)
+
+    mention_db = MentionDB.build(dump_db, dictionary, tokenizer, **kwargs)
     mention_db.save(out_file)
 
 
@@ -192,9 +210,12 @@ def build_mention_db(dump_db_file, dictionary_file, out_file, **kwargs):
               'using the build_link_graph command')
 @click.option('--mention-db', type=click.Path(exists=True), help='The mention DB file generated '
               'using the build_mention_db command')
+@click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
+              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
 @train_embedding_options
 @common_options
-def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, out_file, **kwargs):
+def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, tokenizer, out_file,
+                    **kwargs):
     dump_db = DumpDB(dump_db_file)
     dictionary = Dictionary.load(dictionary_file)
 
@@ -204,8 +225,13 @@ def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, out_f
     if mention_db:
         mention_db = MentionDB.load(mention_db, dictionary)
 
+    if tokenizer is None:
+        tokenizer = get_default_tokenizer(dump_db.language)
+    else:
+        tokenizer = get_tokenizer(tokenizer, dump_db.language)
+
     wiki2vec = Wikipedia2Vec(dictionary)
-    wiki2vec.train(dump_db, link_graph, mention_db, **kwargs)
+    wiki2vec.train(dump_db, link_graph, mention_db, tokenizer, **kwargs)
 
     wiki2vec.save(out_file)
 

@@ -14,15 +14,13 @@ from tqdm import tqdm
 from uuid import uuid1
 
 from .dump_db cimport DumpDB, Paragraph, WikiLink
-from .utils.tokenizer import get_tokenizer
-from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
 from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 
 cdef Dictionary _dictionary = None
 cdef DumpDB _dump_db = None
-cdef BaseTokenizer _tokenizer = None
+cdef _tokenize_func = None
 cdef _name_trie = None
 
 
@@ -119,13 +117,13 @@ cdef class MentionDB(object):
         return ret
 
     @staticmethod
-    def build(dump_db, dictionary, min_link_prob, min_prior_prob, max_mention_len, case_sensitive,
-              pool_size, chunk_size, progressbar=True):
+    def build(dump_db, dictionary, tokenizer, min_link_prob, min_prior_prob, max_mention_len,
+              case_sensitive, pool_size, chunk_size, progressbar=True):
 
-        global _dictionary, _dump_db, _tokenizer, _name_trie
+        global _dictionary, _dump_db, _tokenize_func, _name_trie
         _dictionary = dictionary
         _dump_db = dump_db
-        _tokenizer = get_tokenizer(dump_db.language)
+        _tokenize_func = tokenizer
 
         start_time = time.time()
 
@@ -250,7 +248,7 @@ def _count_occurrences(unicode title, int32_t max_mention_len, bint case_sensiti
 
     for paragraph in _dump_db.get_paragraphs(title):
         text = paragraph.text
-        tokens = _tokenizer.tokenize(text)
+        tokens = _tokenize_func(text)
 
         if not case_sensitive:
             text = text.lower()
