@@ -9,6 +9,7 @@ from tempfile import NamedTemporaryFile
 
 from wikipedia2vec.dictionary import Dictionary, Entity
 from wikipedia2vec.link_graph import LinkGraph
+from wikipedia2vec.utils.tokenizer import get_default_tokenizer
 
 from . import get_dump_db
 
@@ -17,9 +18,11 @@ from nose.tools import *
 
 class TestLinkGraph(unittest.TestCase):
     def setUp(self):
-        self.dictionary = Dictionary.build(get_dump_db(), lowercase=True, min_word_count=2,
-                                           min_entity_count=1, pool_size=1, chunk_size=1,
-                                           min_paragraph_len=5, category=True, progressbar=False)
+        tokenizer = get_default_tokenizer('en')
+        self.dictionary = Dictionary.build(get_dump_db(), tokenizer=tokenizer, lowercase=True,
+                                           min_word_count=2, min_entity_count=1, pool_size=1,
+                                           chunk_size=1, min_paragraph_len=5, category=True,
+                                           progressbar=False)
         self.link_graph = LinkGraph.build(get_dump_db(), self.dictionary, pool_size=1, chunk_size=1,
                                           progressbar=False)
 
