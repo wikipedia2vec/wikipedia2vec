@@ -14,6 +14,9 @@ def get_tokenizer(name, language=None):
     if name == 'regexp':
         from .regexp_tokenizer import RegexpTokenizer
         return RegexpTokenizer().tokenize
+    elif name == 'icu':
+        from .icu_tokenizer import ICUTokenizer
+        return ICUTokenizer(language).tokenize
     elif name == 'mecab':
         from .mecab_tokenizer import MeCabTokenizer
         return MeCabTokenizer().tokenize

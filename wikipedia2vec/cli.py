@@ -100,7 +100,7 @@ def train_embedding_options(func):
 @click.option('--link-graph/--no-link-graph', default=True, help='Whether to learn from the '
               'Wikipedia link graph')
 @click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
-              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
+              'into words', type=click.Choice(['regexp', 'icu', 'mecab', 'jieba']))
 @build_dictionary_options
 @train_embedding_options
 @common_options
@@ -153,7 +153,7 @@ def build_dump_db(dump_file, out_file, **kwargs):
 @click.argument('out_file', type=click.Path())
 @click.option('--lowercase/--no-lowercase', default=True, help='Whether to lowercase words')
 @click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
-              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
+              'into words', type=click.Choice(['regexp', 'icu', 'mecab', 'jieba']))
 @build_dictionary_options
 @common_options
 def build_dictionary(dump_db_file, out_file, tokenizer, **kwargs):
@@ -186,7 +186,7 @@ def build_link_graph(dump_db_file, dictionary_file, out_file, **kwargs):
 @click.argument('dictionary_file', type=click.Path(exists=True))
 @click.argument('out_file', type=click.Path())
 @click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
-              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
+              'into words', type=click.Choice(['regexp', 'icu', 'mecab', 'jieba']))
 @build_mention_db_options
 @common_options
 def build_mention_db(dump_db_file, dictionary_file, out_file, tokenizer, **kwargs):
@@ -211,7 +211,7 @@ def build_mention_db(dump_db_file, dictionary_file, out_file, tokenizer, **kwarg
 @click.option('--mention-db', type=click.Path(exists=True), help='The mention DB file generated '
               'using the build_mention_db command')
 @click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
-              'into words', type=click.Choice(['default', 'regexp', 'mecab', 'jieba']))
+              'into words', type=click.Choice(['regexp', 'icu', 'mecab', 'jieba']))
 @train_embedding_options
 @common_options
 def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, tokenizer, out_file,
