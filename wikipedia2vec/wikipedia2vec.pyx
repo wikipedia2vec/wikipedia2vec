@@ -33,6 +33,7 @@ from .dictionary cimport Dictionary, Item, Word, Entity
 from .dump_db cimport Paragraph, WikiLink, DumpDB
 from .link_graph cimport LinkGraph
 from .mention_db cimport MentionDB, Mention
+from .utils.tokenizer import get_tokenizer
 from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
 from .utils.tokenizer.token cimport Token
 
@@ -307,7 +308,7 @@ cdef class Wikipedia2Vec:
         dictionary = self.dictionary
         link_graph = link_graph_
         mention_db = mention_db_
-        tokenizer = dictionary.get_tokenizer()
+        tokenizer = get_tokenizer(dump_db.language)
 
         total_page_count = dump_db.page_size() * params.iteration
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)

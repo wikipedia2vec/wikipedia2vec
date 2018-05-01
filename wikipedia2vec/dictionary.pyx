@@ -19,7 +19,6 @@ from tqdm import tqdm
 from uuid import uuid1
 
 from .dump_db cimport DumpDB, Paragraph, WikiLink
-from .phrase cimport PhraseDictionary
 from .utils.tokenizer import get_tokenizer
 from .utils.tokenizer.base_tokenizer cimport BaseTokenizer
 from .utils.tokenizer.token cimport Token
@@ -27,7 +26,6 @@ from .utils.tokenizer.token cimport Token
 logger = logging.getLogger(__name__)
 
 cdef DumpDB _dump_db = None
-cdef PhraseDictionary _phrase_dict = None
 cdef BaseTokenizer _tokenizer = None
 
 
@@ -69,13 +67,12 @@ cdef class Entity(Item):
 
 
 cdef class Dictionary:
-    def __init__(self, word_dict, entity_dict, redirect_dict, PhraseDictionary phrase_dict,
-                 np.ndarray word_stats, np.ndarray entity_stats, unicode language, bint lowercase,
-                 dict build_params, int32_t min_paragraph_len=0, unicode uuid=''):
+    def __init__(self, word_dict, entity_dict, redirect_dict, np.ndarray word_stats,
+                 np.ndarray entity_stats, unicode language, bint lowercase, dict build_params,
+                 int32_t min_paragraph_len=0, unicode uuid=''):
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
-        self._phrase_dict = phrase_dict
         self._word_stats = word_stats
         self._entity_stats = entity_stats
         self.min_paragraph_len = min_paragraph_len
@@ -179,24 +176,15 @@ cdef class Dictionary:
         title = self._entity_dict.restore_key(dict_index)
         return Entity(title, index, *self._entity_stats[dict_index])
 
-    cpdef BaseTokenizer get_tokenizer(self):
-        return get_tokenizer(self.language, phrase_dict=self._phrase_dict)
-
     @staticmethod
-    def build(dump_db, phrase_dict, lowercase, min_word_count, min_entity_count, min_paragraph_len,
-              category, pool_size, chunk_size, progressbar=True):
-        global _dump_db, _phrase_dict, _tokenizer
+    def build(dump_db, lowercase, min_word_count, min_entity_count, min_paragraph_len, category,
+              pool_size, chunk_size, progressbar=True):
+        global _dump_db, _tokenizer
 
         start_time = time.time()
 
-        if phrase_dict is not None:
-            assert phrase_dict.lowercase == lowercase,\
-                'Lowercase config must be consistent with PhraseDictionary'
-
-            _phrase_dict = phrase_dict
-
         _dump_db = dump_db
-        _tokenizer = get_tokenizer(dump_db.language, phrase_dict=phrase_dict)
+        _tokenizer = get_tokenizer(dump_db.language)
 
         logger.info('Step 1/3: Processing Wikipedia pages...')
 
@@ -259,10 +247,6 @@ cdef class Dictionary:
             for (title, dest_title) in dump_db.redirects() if dest_title in entity_dict
         ])
 
-        if phrase_dict is not None:
-            phrase_trie = Trie([phrase for phrase in phrase_dict if phrase in word_dict])
-            phrase_dict.phrase_trie = phrase_trie
-
         build_params = dict(
             dump_db=dump_db.uuid,
             dump_file=dump_db.dump_file,
@@ -271,17 +255,14 @@ cdef class Dictionary:
             category=category,
             build_time=time.time() - start_time,
         )
-        if phrase_dict is not None:
-            build_params['phrase_dict'] = phrase_dict.uuid
 
         uuid = six.text_type(uuid1().hex)
 
         logger.info('%d words and %d entities are indexed in the dictionary', len(word_dict),
                     len(entity_dict))
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, phrase_dict, word_stats,
-                          entity_stats, dump_db.language, lowercase, build_params,
-                          min_paragraph_len, uuid)
+        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
+                          dump_db.language, lowercase, build_params, min_paragraph_len, uuid)
 
     def save(self, out_file):
         joblib.dump(self.serialize(), out_file)
@@ -299,8 +280,6 @@ cdef class Dictionary:
                       min_paragraph_len=self.min_paragraph_len,
                       build_params=self.build_params)
         )
-        if self._phrase_dict is not None:
-            obj['phrase_dict'] = self._phrase_dict.serialize()
 
         return obj
 
@@ -319,12 +298,8 @@ cdef class Dictionary:
         word_dict.frombytes(target['word_dict'])
         entity_dict.frombytes(target['entity_dict'])
         redirect_dict.frombytes(target['redirect_dict'])
-        if 'phrase_dict' in target:
-            phrase_dict = PhraseDictionary.load(target['phrase_dict'])
-        else:
-            phrase_dict = None
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, phrase_dict, target['word_stats'],
+        return Dictionary(word_dict, entity_dict, redirect_dict, target['word_stats'],
                           target['entity_stats'], **target['meta'])
 
 

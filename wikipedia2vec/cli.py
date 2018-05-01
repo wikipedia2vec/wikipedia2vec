@@ -153,7 +153,7 @@ def build_dump_db(dump_file, out_file, **kwargs):
 def build_dictionary(dump_db_file, out_file, **kwargs):
     dump_db = DumpDB(dump_db_file)
 
-    dictionary = Dictionary.build(dump_db, None, **kwargs)
+    dictionary = Dictionary.build(dump_db, **kwargs)
     dictionary.save(out_file)
 
 

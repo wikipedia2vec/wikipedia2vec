@@ -6,16 +6,13 @@ import MeCab
 import six
 from libc.stdint cimport int32_t
 
-from wikipedia2vec.phrase cimport PhraseDictionary
 from .base_tokenizer cimport BaseTokenizer
 
 
 cdef class MeCabTokenizer(BaseTokenizer):
     cdef _tagger
 
-    def __init__(self, PhraseDictionary phrase_dict=None):
-        super(MeCabTokenizer, self).__init__(phrase_dict)
-
+    def __init__(self):
         if six.PY2:
             self._tagger = MeCab.Tagger(''.encode('utf-8'))
         else:
