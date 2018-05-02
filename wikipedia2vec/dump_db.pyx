@@ -17,7 +17,6 @@ from .utils.wiki_page cimport WikiPage
 
 logger = logging.getLogger(__name__)
 
-MAP_SIZE = 100000000000  # 100GB
 STYLE_RE = re.compile("'''*")
 
 
@@ -59,8 +58,7 @@ cdef class WikiLink:
 
 cdef class DumpDB:
     def __init__(self, db_file):
-        self._env = lmdb.open(db_file, readonly=True, subdir=False, lock=False, map_size=MAP_SIZE,
-                              max_dbs=3)
+        self._env = lmdb.open(db_file, readonly=True, subdir=False, lock=False, max_dbs=3)
         self._meta_db = self._env.open_db(b'__meta__')
         self._page_db = self._env.open_db(b'__page__')
         self._redirect_db = self._env.open_db(b'__redirect__')
@@ -121,9 +119,11 @@ cdef class DumpDB:
         return ret
 
     @staticmethod
-    def build(dump_reader, out_file, pool_size, chunk_size, buffer_size=3000):
-        with closing(lmdb.open(out_file, subdir=False, map_async=True, map_size=MAP_SIZE,
+    def build(dump_reader, out_file, pool_size, chunk_size, init_map_size=500000000,
+              buffer_size=3000):
+        with closing(lmdb.open(out_file, subdir=False, map_async=True, map_size=init_map_size,
                                max_dbs=3)) as env:
+            map_size = [init_map_size]
             meta_db = env.open_db(b'__meta__')
             with env.begin(db=meta_db, write=True) as txn:
                 txn.put(b'id', six.text_type(uuid1().hex).encode('utf-8'))
@@ -132,6 +132,18 @@ cdef class DumpDB:
 
             page_db = env.open_db(b'__page__')
             redirect_db = env.open_db(b'__redirect__')
+
+            def write_db(db, data):
+                try:
+                    with env.begin(db=db, write=True) as txn:
+                        txn.cursor().putmulti(data)
+
+                except lmdb.MapFullError:
+                    map_size[0] *= 2
+                    env.set_mapsize(map_size[0])
+
+                    write_db(db, data)
+
             with closing(Pool(pool_size)) as pool:
                 page_buf = []
                 redirect_buf = []
@@ -143,22 +155,18 @@ cdef class DumpDB:
                             redirect_buf.append(ret[1])
 
                     if len(page_buf) == buffer_size:
-                        with env.begin(db=page_db, write=True) as txn:
-                            txn.cursor().putmulti(page_buf)
+                        write_db(page_db, page_buf)
                         page_buf = []
 
                     if len(redirect_buf) == buffer_size:
-                        with env.begin(db=redirect_db, write=True) as txn:
-                            txn.cursor().putmulti(redirect_buf)
+                        write_db(redirect_db, redirect_buf)
                         redirect_buf = []
 
                 if page_buf:
-                    with env.begin(db=page_db, write=True) as txn:
-                        txn.cursor().putmulti(page_buf)
+                    write_db(page_db, page_buf)
 
                 if redirect_buf:
-                    with env.begin(db=redirect_db, write=True) as txn:
-                        txn.cursor().putmulti(redirect_buf)
+                    write_db(redirect_db, redirect_buf)
 
 
 def _parse(WikiPage page):
