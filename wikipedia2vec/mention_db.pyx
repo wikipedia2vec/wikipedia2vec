@@ -18,11 +18,6 @@ from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 
-cdef Dictionary _dictionary = None
-cdef DumpDB _dump_db = None
-cdef _tokenize_func = None
-cdef _name_trie = None
-
 
 cdef class Mention:
     def __init__(self, Dictionary dictionary, unicode text, int32_t start, int32_t end,
@@ -119,19 +114,14 @@ cdef class MentionDB(object):
     @staticmethod
     def build(dump_db, dictionary, tokenizer, min_link_prob, min_prior_prob, max_mention_len,
               case_sensitive, pool_size, chunk_size, progressbar=True):
-
-        global _dictionary, _dump_db, _tokenize_func, _name_trie
-        _dictionary = dictionary
-        _dump_db = dump_db
-        _tokenize_func = tokenizer
-
         start_time = time.time()
 
         logger.info('Step 1/3: Starting to iterate over Wikipedia pages...')
 
         name_dict = defaultdict(lambda: Counter())
+        init_args = [dump_db, dictionary.serialize(shared_array=True), tokenizer, None]
 
-        with closing(Pool(pool_size)) as pool:
+        with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_extract_links, max_mention_len=max_mention_len,
                             case_sensitive=case_sensitive)
@@ -142,18 +132,18 @@ cdef class MentionDB(object):
 
         logger.info('Step 2/3: Starting to count occurrences...')
 
-        _name_trie = Trie(six.iterkeys(name_dict))
-        name_counter = Counter()
+        name_trie = Trie(six.iterkeys(name_dict))
 
-        with closing(Pool(pool_size)) as pool:
+        name_counter = Counter()
+        init_args[3] = name_trie
+
+        with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_count_occurrences, max_mention_len=max_mention_len,
                             case_sensitive=case_sensitive)
                 for names in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
                     name_counter.update(names)
                     bar.update(1)
-
-        _name_trie = None
 
         logger.info('Step 3/3: Building DB...')
 
@@ -211,6 +201,21 @@ cdef class MentionDB(object):
         return MentionDB(mention_trie, dictionary, **target['kwargs'])
 
 
+cdef Dictionary _dictionary = None
+cdef DumpDB _dump_db = None
+cdef _tokenizer = None
+cdef _name_trie = None
+
+
+def init_worker(dump_db, dictionary_obj, tokenizer, name_trie=None):
+    global _dump_db, _dictionary, _tokenizer, _name_trie
+
+    _dump_db = dump_db
+    _dictionary = Dictionary.load(dictionary_obj)
+    _tokenizer = tokenizer
+    _name_trie = name_trie
+
+
 def _extract_links(unicode title, int32_t max_mention_len, bint case_sensitive):
     cdef unicode text
     cdef list ret
@@ -248,7 +253,7 @@ def _count_occurrences(unicode title, int32_t max_mention_len, bint case_sensiti
 
     for paragraph in _dump_db.get_paragraphs(title):
         text = paragraph.text
-        tokens = _tokenize_func(text)
+        tokens = _tokenizer.tokenize(text)
 
         if not case_sensitive:
             text = text.lower()

@@ -52,3 +52,6 @@ cdef class MeCabTokenizer(BaseTokenizer):
             node = node.next
 
         return ret
+
+    def __reduce__(self):
+        return (self.__class__, tuple())

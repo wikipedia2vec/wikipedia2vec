@@ -43,24 +43,6 @@ DEF EXP_TABLE_SIZE = 1000
 
 logger = logging.getLogger(__name__)
 
-cdef Dictionary dictionary
-cdef DumpDB dump_db
-cdef LinkGraph link_graph
-cdef MentionDB mention_db
-cdef tokenize_func
-cdef float32_t [:, :] syn0
-cdef float32_t [:, :] syn1
-cdef float32_t [:] work
-cdef int32_t [:] word_neg_table
-cdef int32_t [:] entity_neg_table
-cdef float32_t [:] exp_table
-cdef int32_t [:] sample_ints
-cdef int32_t [:] link_indices
-cdef float32_t total_page_count
-cdef unicode language
-cdef object alpha
-cdef object link_cursor
-
 
 cdef class _Parameters:
     cdef public int32_t dim_size
@@ -73,18 +55,18 @@ cdef class _Parameters:
     cdef public float32_t sample
     cdef public int32_t iteration
     cdef public int32_t entities_per_page
-    cdef dict _kwargs
+    cdef dict _params
 
-    def __init__(self, **kwargs):
-        self._kwargs = kwargs
-        for key, value in kwargs.items():
+    def __init__(self, params):
+        self._params = params
+        for key, value in params.items():
             setattr(self, key, value)
 
+    def __reduce__(self):
+        return (self.__class__, (self._params,))
+
     def to_dict(self):
-        return self._kwargs
-
-
-cdef _Parameters params
+        return self._params
 
 
 cdef class Wikipedia2Vec:
@@ -241,15 +223,11 @@ cdef class Wikipedia2Vec:
 
         return ret
 
-    def train(self, dump_db_, link_graph_, mention_db_, tokenizer, pool_size, chunk_size,
+    def train(self, dump_db, link_graph, mention_db, tokenizer, pool_size, chunk_size,
               progressbar=True, **kwargs):
-        global dictionary, dump_db, link_graph, mention_db, tokenize_func, syn0, syn1, work,\
-            word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, link_cursor,\
-            alpha, params, total_page_count
-
         start_time = time.time()
 
-        params = _Parameters(**kwargs)
+        params = _Parameters(kwargs)
 
         words = list(self.dictionary.words())
         total_word_count = int(sum(w.count for w in words))
@@ -277,7 +255,7 @@ cdef class Wikipedia2Vec:
 
         offset = self.dictionary.entity_offset
         indices = np.arange(offset, offset + len(list(self.dictionary.entities())))
-        if link_graph_:
+        if link_graph:
             link_indices = multiprocessing.RawArray(c_int32, np.random.permutation(indices))
         else:
             link_indices = None
@@ -294,31 +272,47 @@ cdef class Wikipedia2Vec:
         syn0_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
         syn1_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
 
-        self.syn0 = np.frombuffer(syn0_shared, dtype=np.float32)
-        syn0 = self.syn0 = self.syn0.reshape(vocab_size, dim_size)
-
-        self.syn1 = np.frombuffer(syn1_shared, dtype=np.float32)
-        syn1 = self.syn1 = self.syn1.reshape(vocab_size, dim_size)
+        self.syn0 = np.frombuffer(syn0_shared, dtype=np.float32).reshape(vocab_size, dim_size)
+        self.syn1 = np.frombuffer(syn1_shared, dtype=np.float32).reshape(vocab_size, dim_size)
 
         self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
         self.syn1[:] = np.zeros((vocab_size, dim_size))
 
-        dump_db = dump_db_
-        dictionary = self.dictionary
-        link_graph = link_graph_
-        mention_db = mention_db_
-        tokenize_func = tokenizer
-
         total_page_count = dump_db.page_size() * params.iteration
         alpha = multiprocessing.RawValue(c_float, params.init_alpha)
-        work = np.zeros(dim_size, dtype=np.float32)
 
         exp_table = multiprocessing.RawArray(c_float, EXP_TABLE_SIZE)
         for i in range(EXP_TABLE_SIZE):
             exp_table[i] = <float32_t>exp((i / <float32_t>EXP_TABLE_SIZE * 2 - 1) * MAX_EXP)
             exp_table[i] = <float32_t>(exp_table[i] / (exp_table[i] + 1))
 
-        with closing(Pool(pool_size)) as pool:
+        link_graph_obj = None
+        if link_graph is not None:
+            link_graph_obj = link_graph.serialize(shared_array=True)
+
+        mention_db_obj = None
+        if mention_db is not None:
+            mention_db_obj = mention_db.serialize()
+
+        init_args = (
+            dump_db,
+            self.dictionary.serialize(shared_array=True),
+            link_graph_obj,
+            mention_db_obj,
+            tokenizer,
+            syn0_shared,
+            syn1_shared,
+            word_neg_table,
+            entity_neg_table,
+            exp_table,
+            sample_ints,
+            link_indices,
+            link_cursor,
+            alpha,
+            params,
+            total_page_count
+        )
+        with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
             titles = list(dump_db.titles())
             for i in range(params.iteration):
                 random.shuffle(titles)
@@ -333,13 +327,16 @@ cdef class Wikipedia2Vec:
         train_params = dict(
             dump_db=dump_db.uuid,
             dump_file=dump_db.dump_file,
-            dictionary=dictionary.uuid,
+            dictionary=self.dictionary.uuid,
             train_time=time.time() - start_time,
         )
         train_params.update(params.to_dict())
 
         if link_graph is not None:
             train_params['link_graph'] = link_graph.uuid
+
+        if mention_db is not None:
+            train_params['mention_db'] = mention_db.uuid
 
         self._train_history.append(train_params)
 
@@ -380,6 +377,61 @@ cdef class Wikipedia2Vec:
                 cur += items[index].count ** power / items_pow
 
         return neg_table
+
+
+cdef DumpDB dump_db
+cdef Dictionary dictionary
+cdef LinkGraph link_graph
+cdef MentionDB mention_db
+cdef tokenizer
+cdef float32_t [:, :] syn0
+cdef float32_t [:, :] syn1
+cdef int32_t [:] word_neg_table
+cdef int32_t [:] entity_neg_table
+cdef float32_t [:] exp_table
+cdef int32_t [:] sample_ints
+cdef int32_t [:] link_indices
+cdef object link_cursor
+cdef object alpha
+cdef _Parameters params
+cdef float32_t total_page_count
+cdef float32_t [:] work
+
+
+def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokenizer_, syn0_shared,
+                syn1_shared, word_neg_table_, entity_neg_table_, exp_table_, sample_ints_,
+                link_indices_, link_cursor_, alpha_, params_, total_page_count_):
+    global dump_db, dictionary, link_graph, mention_db, tokenizer, syn0, syn1, word_neg_table,\
+        entity_neg_table, exp_table, sample_ints, link_indices, link_cursor, alpha, params,\
+        total_page_count, work
+
+    dump_db = dump_db_
+    tokenizer = tokenizer_
+    word_neg_table = word_neg_table_
+    entity_neg_table = entity_neg_table_
+    exp_table = exp_table_
+    sample_ints = sample_ints_
+    link_indices = link_indices_
+    link_cursor = link_cursor_
+    alpha = alpha_
+    params = params_
+    total_page_count = total_page_count_
+
+    dictionary = Dictionary.load(dictionary_obj)
+
+    if link_graph_obj is not None:
+        link_graph = LinkGraph.load(link_graph_obj, dictionary)
+    else:
+        link_graph = None
+
+    if mention_db_obj is not None:
+        mention_db = MentionDB.load(mention_db_obj, dictionary)
+    else:
+        mention_db = None
+
+    syn0 = np.frombuffer(syn0_shared, dtype=np.float32).reshape(-1, params.dim_size)
+    syn1 = np.frombuffer(syn1_shared, dtype=np.float32).reshape(-1, params.dim_size)
+    work = np.zeros(params.dim_size, dtype=np.float32)
 
 
 @cython.boundscheck(False)
@@ -434,7 +486,7 @@ def train_page(tuple arg):
     for paragraph in paragraphs:
         text = paragraph.text
         text_len = len(text)
-        tokens = tokenize_func(text)
+        tokens = tokenizer.tokenize(text)
         token_len = len(tokens)
         if not tokens or token_len < dictionary.min_paragraph_len:
             continue

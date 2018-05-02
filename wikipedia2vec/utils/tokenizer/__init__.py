@@ -13,15 +13,15 @@ def get_default_tokenizer(language):
 def get_tokenizer(name, language=None):
     if name == 'regexp':
         from .regexp_tokenizer import RegexpTokenizer
-        return RegexpTokenizer().tokenize
+        return RegexpTokenizer()
     elif name == 'icu':
         from .icu_tokenizer import ICUTokenizer
-        return ICUTokenizer(language).tokenize
+        return ICUTokenizer(language)
     elif name == 'mecab':
         from .mecab_tokenizer import MeCabTokenizer
-        return MeCabTokenizer().tokenize
+        return MeCabTokenizer()
     elif name == 'jieba':
         from .jieba_tokenizer import JiebaTokenizer
-        return JiebaTokenizer().tokenize
+        return JiebaTokenizer()
     else:
         raise NotImplementedError()

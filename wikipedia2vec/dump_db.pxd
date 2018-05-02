@@ -3,6 +3,7 @@
 from libc.stdint cimport int32_t
 
 cdef class DumpDB:
+    cdef _db_file
     cdef _env
     cdef _meta_db
     cdef _page_db

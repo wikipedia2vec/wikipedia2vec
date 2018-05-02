@@ -58,10 +58,15 @@ cdef class WikiLink:
 
 cdef class DumpDB:
     def __init__(self, db_file):
+        self._db_file = db_file
+
         self._env = lmdb.open(db_file, readonly=True, subdir=False, lock=False, max_dbs=3)
         self._meta_db = self._env.open_db(b'__meta__')
         self._page_db = self._env.open_db(b'__page__')
         self._redirect_db = self._env.open_db(b'__redirect__')
+
+    def __reduce__(self):
+        return (self.__class__, (self._db_file,))
 
     @property
     def uuid(self):

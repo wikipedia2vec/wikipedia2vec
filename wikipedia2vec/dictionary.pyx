@@ -23,9 +23,6 @@ from .utils.tokenizer.token cimport Token
 
 logger = logging.getLogger(__name__)
 
-cdef DumpDB _dump_db = None
-cdef _tokenize_func = None
-
 
 cdef class Item:
     def __init__(self, int32_t index, int32_t count, int32_t doc_count):
@@ -177,12 +174,7 @@ cdef class Dictionary:
     @staticmethod
     def build(dump_db, tokenizer, lowercase, min_word_count, min_entity_count, min_paragraph_len,
               category, pool_size, chunk_size, progressbar=True):
-        global _dump_db, _tokenize_func
-
         start_time = time.time()
-
-        _dump_db = dump_db
-        _tokenize_func = tokenizer
 
         logger.info('Step 1/3: Processing Wikipedia pages...')
 
@@ -191,7 +183,7 @@ cdef class Dictionary:
         entity_counter = Counter()
         entity_doc_counter = Counter()
 
-        with closing(Pool(pool_size)) as pool:
+        with closing(Pool(pool_size, initializer=init_worker, initargs=(dump_db, tokenizer))) as pool:
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_process_page, lowercase=lowercase, min_paragraph_len=min_paragraph_len)
                 for (word_cnt, entity_cnt) in pool.imap_unordered(f, dump_db.titles(),
@@ -265,21 +257,36 @@ cdef class Dictionary:
     def save(self, out_file):
         joblib.dump(self.serialize(), out_file)
 
-    def serialize(self):
-        obj = dict(
+    def serialize(self, shared_array=False):
+        cdef int32_t [:] word_stats_src, entity_stats_src, word_stats_dst, entity_stats_dst
+
+        if shared_array:
+            word_stats_src = np.asarray(self._word_stats, dtype=np.int32).flatten()
+            entity_stats_src = np.asarray(self._entity_stats, dtype=np.int32).flatten()
+
+            word_stats = multiprocessing.RawArray('i', word_stats_src.size)
+            entity_stats = multiprocessing.RawArray('i', entity_stats_src.size)
+            word_stats_dst = word_stats
+            entity_stats_dst = entity_stats
+
+            word_stats_dst[:] = word_stats_src
+            entity_stats_dst[:] = entity_stats_src
+        else:
+            word_stats = np.asarray(self._word_stats, dtype=np.int32)
+            entity_stats = np.asarray(self._entity_stats, dtype=np.int32)
+
+        return dict(
             word_dict=self._word_dict.tobytes(),
             entity_dict=self._entity_dict.tobytes(),
             redirect_dict=self._redirect_dict.tobytes(),
-            word_stats=np.asarray(self._word_stats, dtype=np.int32),
-            entity_stats=np.asarray(self._entity_stats, dtype=np.int32),
+            word_stats=word_stats,
+            entity_stats=entity_stats,
             meta=dict(uuid=self.uuid,
                       language=self.language,
                       lowercase=self.lowercase,
                       min_paragraph_len=self.min_paragraph_len,
                       build_params=self.build_params)
         )
-
-        return obj
 
     @staticmethod
     def load(target, mmap=True):
@@ -297,8 +304,25 @@ cdef class Dictionary:
         entity_dict.frombytes(target['entity_dict'])
         redirect_dict.frombytes(target['redirect_dict'])
 
-        return Dictionary(word_dict, entity_dict, redirect_dict, target['word_stats'],
-                          target['entity_stats'], **target['meta'])
+        word_stats = target['word_stats']
+        entity_stats = target['entity_stats']
+        if not isinstance(word_stats, np.ndarray):
+            word_stats = np.frombuffer(word_stats, dtype=np.int32).reshape(-1, 2)
+            entity_stats = np.frombuffer(entity_stats, dtype=np.int32).reshape(-1, 2)
+
+        return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
+                          **target['meta'])
+
+
+cdef DumpDB _dump_db = None
+cdef _tokenizer = None
+
+
+def init_worker(dump_db, tokenizer):
+    global _dump_db, _tokenizer
+
+    _dump_db = dump_db
+    _tokenizer = tokenizer
 
 
 def _process_page(unicode title, bint lowercase, int32_t min_paragraph_len):
@@ -313,7 +337,7 @@ def _process_page(unicode title, bint lowercase, int32_t min_paragraph_len):
     for paragraph in _dump_db.get_paragraphs(title):
         entity_counter.update(link.title for link in paragraph.wiki_links)
 
-        tokens = _tokenize_func(paragraph.text)
+        tokens = _tokenizer.tokenize(paragraph.text)
         if len(tokens) >= min_paragraph_len:
             if lowercase:
                 word_counter.update(token.text.lower() for token in tokens)

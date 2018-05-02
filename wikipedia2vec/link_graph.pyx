@@ -4,6 +4,7 @@
 from __future__ import unicode_literals
 import joblib
 import logging
+import multiprocessing
 import numpy as np
 import six
 import six.moves.cPickle as pickle
@@ -21,9 +22,6 @@ from .dictionary cimport Dictionary, Entity
 from .dump_db cimport DumpDB, Paragraph, WikiLink
 
 logger = logging.getLogger(__name__)
-
-cdef Dictionary _dictionary = None
-cdef DumpDB _dump_db = None
 
 
 cdef class LinkGraph:
@@ -47,9 +45,23 @@ cdef class LinkGraph:
         index -= self._offset
         return self._indices[self._indptr[index]:self._indptr[index + 1]]
 
-    def serialize(self):
-        return dict(indices=np.asarray(self._indices, dtype=np.int32),
-                    indptr=np.asarray(self._indptr, dtype=np.int32),
+    def serialize(self, shared_array=False):
+        cdef int32_t [:] indices_c, indptr_c
+
+        if shared_array:
+            indices = multiprocessing.RawArray('i', len(self._indices))
+            indptr = multiprocessing.RawArray('i', len(self._indptr))
+
+            indices_c = indices
+            indptr_c = indptr
+            indices_c[:] = self._indices
+            indptr_c[:] = self._indptr
+        else:
+            indices = np.asarray(self._indices, dtype=np.int32)
+            indptr = np.asarray(self._indptr, dtype=np.int32)
+
+        return dict(indices=indices,
+                    indptr=indptr,
                     build_params=self.build_params,
                     uuid=self.uuid)
 
@@ -67,20 +79,22 @@ cdef class LinkGraph:
         if target['build_params']['dictionary'] != dictionary.uuid:
             raise RuntimeError('The specified dictionary is different from the one used to build this link graph')
 
-        return LinkGraph(dictionary=dictionary, **target)
+        indices = target.pop('indices')
+        indptr = target.pop('indptr')
+        if not isinstance(indices, np.ndarray):
+            indices = np.frombuffer(indices, dtype=np.int32)
+            indptr = np.frombuffer(indptr, dtype=np.int32)
+
+        return LinkGraph(dictionary, indices, indptr, **target)
 
     @staticmethod
     def build(dump_db, dictionary, pool_size, chunk_size, progressbar=True):
-        global _dump_db, _dictionary
-
-        _dump_db = dump_db
-        _dictionary = dictionary
-
         start_time = time.time()
 
         logger.info('Step 1/2: Processing Wikipedia pages...')
 
-        with closing(Pool(pool_size)) as pool:
+        with closing(Pool(pool_size, initializer=init_worker,
+                          initargs=(dump_db, dictionary.serialize(shared_array=True)))) as pool:
             rows = []
             cols = []
 
@@ -119,6 +133,17 @@ cdef class LinkGraph:
         uuid = six.text_type(uuid1().hex)
 
         return LinkGraph(dictionary, matrix.indices, matrix.indptr, build_params, uuid)
+
+
+cdef DumpDB _dump_db = None
+cdef Dictionary _dictionary = None
+
+
+def init_worker(dump_db, dictionary_obj):
+    global _dump_db, _dictionary
+
+    _dump_db = dump_db
+    _dictionary = Dictionary.load(dictionary_obj)
 
 
 def _process_page(unicode title, int32_t offset):
