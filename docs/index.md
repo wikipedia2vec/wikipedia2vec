@@ -45,8 +45,8 @@ Wikipedia2Vec can be installed from PyPI:
 % pip install wikipedia2vec
 ```
 
-This software requires the 64-bit version of Python.
 The command installs the following required Python libraries: [click](http://click.pocoo.org/), [jieba](https://github.com/fxsjy/jieba), [joblib](https://pythonhosted.org/joblib/), [lmdb](https://lmdb.readthedocs.io/), [marisa-trie](http://marisa-trie.readthedocs.io/), [mwparserfromhell](https://mwparserfromhell.readthedocs.io/), [numpy](http://www.numpy.org/), [scipy](https://www.scipy.org/), [six](https://pythonhosted.org/six/), and [tqdm](https://github.com/tqdm/tqdm).
+This software requires the 64-bit version of Python.
 
 If you want to train embeddings on your machine, it is highly recommended to install a BLAS library.
 We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
@@ -85,7 +85,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
-- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
@@ -134,7 +134,7 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 **Options:**
 
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
-- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
@@ -176,7 +176,7 @@ The *build\_mention\_db* command builds a database of the mapping from mentions 
 - *--min-prior-prob*: An entity is not registered as a candidate of a mention surface if the probability of the mention surface referring to the entity is less than this value (default: 0.1)
 - *--max-mention-len*: The maximum number of characters in a mention surface (default: 20)
 - *--case-sensitive*: Whether to detect mentions in a case sensitive manner (default: False)
-- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
 
 ### Learning Embeddings
 
@@ -206,7 +206,7 @@ The *train_embedding* command runs the training of the embeddings.
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
-- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
 
 ### Saving Embeddings in Text Format
 
