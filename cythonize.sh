@@ -1,5 +1,5 @@
 #!/bin/bash
 
-cython -Wextra wikipedia2vec/*.pyx
-cython -Wextra wikipedia2vec/utils/*.pyx
-cython -Wextra wikipedia2vec/utils/tokenizer/*.pyx
+cythonize -f wikipedia2vec/*.pyx
+cythonize -f wikipedia2vec/utils/*.pyx
+cythonize -f wikipedia2vec/utils/tokenizer/*.pyx
