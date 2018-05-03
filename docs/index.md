@@ -39,20 +39,21 @@ Pretrained Embeddings
 Installation
 ------------
 
-If you want to train embeddings on your machine, it is highly recommended to install a BLAS library before installing this tool.
-We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
-
 Wikipedia2Vec can be installed from PyPI:
 
 ```
 % pip install wikipedia2vec
 ```
 
+This software requires the 64-bit version of Python.
 The command installs the following required Python libraries: [click](http://click.pocoo.org/), [jieba](https://github.com/fxsjy/jieba), [joblib](https://pythonhosted.org/joblib/), [lmdb](https://lmdb.readthedocs.io/), [marisa-trie](http://marisa-trie.readthedocs.io/), [mwparserfromhell](https://mwparserfromhell.readthedocs.io/), [numpy](http://www.numpy.org/), [scipy](https://www.scipy.org/), [six](https://pythonhosted.org/six/), and [tqdm](https://github.com/tqdm/tqdm).
 
-To process Japanese Wikipedia dumps, it is also required to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
+If you want to train embeddings on your machine, it is highly recommended to install a BLAS library.
+We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
+Note that, the BLAS library needs to be recognized properly from NumPy.
+This can be confirmed by using `numpy.show_config()` function.
 
-Currently, this software is tested only on Linux.
+To process Japanese Wikipedia dumps, it is also required to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
 
 Learning Embeddings
 -------------------
@@ -84,19 +85,24 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 5)
+- *--link-mentions*: Whether to detect entity mentions and convert them into links (default: True)
+- *--min-link-prob*: A mention surface is ignored if the probability of the surface appearing as an anchor link is less than this value (default: 0.1)
+- *--min-prior-prob*: An entity is not registered as a candidate of a mention surface if the probability of the mention surface referring to the entity is less than this value (default: 0.1)
+- *--max-mention-len*: The maximum number of characters in a mention surface (default: 20)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
 - *--word-neg-power*: Negative sampling of words is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0.75)
 - *--entity-neg-power*: Negative sampling of entities is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0)
 
-The *train* command internally calls the four commands described below (namely, *build_dump_db*, *build_dictionary*, *build_link_graph*, and *train_embedding*).
+The *train* command internally calls the five commands described below (namely, *build_dump_db*, *build_dictionary*, *build_link_graph*, *build_mention_db*, and *train_embedding*).
 
 ### Building Dump Database
 
@@ -128,6 +134,7 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 **Options:**
 
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
@@ -149,6 +156,28 @@ The *build\_link\_graph* command generates a sparse matrix representing the link
 
 There is no option in this command.
 
+### Building Mention DB
+
+The *build\_mention\_db* command builds a database of the mapping from mentions (entity names) to their possible referent entities.
+
+```
+% wikipedia2vec build_mention_db DUMP_DB_FILE DIC_FILE OUT_FILE
+```
+
+**Arguments:**:
+
+- *DUMP_DB_FILE*: The database file generated using the *build\_dump\_db* command
+- *DIC_FILE*: The dictionary file generated by the *build\_dictionary* command
+- *OUT_FILE*: The output file
+
+**Options:**
+
+- *--min-link-prob*: A mention surface is ignored if the probability of the surface appearing as an anchor link is less than this value (default: 0.1)
+- *--min-prior-prob*: An entity is not registered as a candidate of a mention surface if the probability of the mention surface referring to the entity is less than this value (default: 0.1)
+- *--max-mention-len*: The maximum number of characters in a mention surface (default: 20)
+- *--case-sensitive*: Whether to detect mentions in a case sensitive manner (default: False)
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
+
 ### Learning Embeddings
 
 The *train_embedding* command runs the training of the embeddings.
@@ -166,6 +195,7 @@ The *train_embedding* command runs the training of the embeddings.
 **Options:**
 
 - *--link-graph*: The link graph file generated using the *build\_link\_graph* command
+- *--mention-db*: The mention DB file generated using the *build\_mention\_db* command
 - *--dim-size*: The number of dimensions of the embeddings (default: 100)
 - *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
 - *--iteration*: The number of iterations for Wikipedia pages (default: 3)
@@ -176,6 +206,7 @@ The *train_embedding* command runs the training of the embeddings.
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
+- *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*.
 
 ### Saving Embeddings in Text Format
 

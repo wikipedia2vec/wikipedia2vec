@@ -253,9 +253,9 @@ cdef class Wikipedia2Vec:
 
         logger.info('Building tables for link indices...')
 
-        offset = self.dictionary.entity_offset
-        indices = np.arange(offset, offset + len(list(self.dictionary.entities())))
-        if link_graph:
+        if link_graph is not None:
+            offset = self.dictionary.entity_offset
+            indices = np.arange(offset, offset + len(list(self.dictionary.entities())))
             link_indices = multiprocessing.RawArray(c_int32, np.random.permutation(indices))
         else:
             link_indices = None
