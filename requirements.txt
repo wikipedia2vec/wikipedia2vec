@@ -1,9 +1,11 @@
 Cython==0.28
 click==6.7
 gensim==3.4.0
+jieba==0.39
 joblib==0.11
 marisa-trie==0.7.4
 mwparserfromhell==0.5.1
 numpy==1.14.2
 scipy==1.0.0
 six==1.11.0
+tqdm==4.19.8
