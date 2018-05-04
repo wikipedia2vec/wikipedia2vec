@@ -50,10 +50,15 @@ This software requires the 64-bit version of Python.
 
 If you want to train embeddings on your machine, it is highly recommended to install a BLAS library.
 We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
-Note that, the BLAS library needs to be recognized properly from NumPy.
-This can be confirmed by using `numpy.show_config()` function.
+Note that, the BLAS library needs to be recognized properly from the SciPy library.
+This can be confirmed by using the following command:
+
+```
+% python -c 'import scipy; scipy.show_config()'
+```
 
 To process Japanese Wikipedia dumps, it is also required to install [MeCab](http://taku910.github.io/mecab/) and [its Python binding](https://pypi.python.org/pypi/mecab-python3).
+Furthermore, to use [ICU tokenizer](http://site.icu-project.org/) to tokenize words, you need to install the [C/C++ ICU library](http://site.icu-project.org/download) and the [PyICU](https://pypi.org/project/PyICU/) library.
 
 Learning Embeddings
 -------------------
