@@ -25,7 +25,7 @@ def cli():
 
 def common_options(func):
     @click.option('--pool-size', type=int, default=multiprocessing.cpu_count(), help='The number '
-                  'of pool workers')
+                  'of worker processes')
     @click.option('--chunk-size', type=int, default=100)
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -68,24 +68,24 @@ def build_mention_db_options(func):
 def train_embedding_options(func):
     @click.option('--dim-size', type=int, default=100, help='The number of dimensions of the '
                   'embeddings')
-    @click.option('--init-alpha', type=float, default=0.025, help='The initial learning rate')
-    @click.option('--min-alpha', type=float, default=0.0001, help='The minimum learning rate')
     @click.option('--window', type=int, default=5, help='The maximum distance between the target '
                   'item (word or entity) and the context word to be predicted')
+    @click.option('--iteration', type=int, default=5, help='The number of iterations for Wikipedia '
+                  'pages')
+    @click.option('--negative', type=int, default=5, help='The number of negative samples')
     @click.option('--entities-per-page', type=int, default=10, help='For processing each page, the '
                   'specified number of randomly chosen entities are used to predict their '
                   'neighboring entities in the link graph')
-    @click.option('--negative', type=int, default=5, help='The number of negative samples')
+    @click.option('--init-alpha', type=float, default=0.025, help='The initial learning rate')
+    @click.option('--min-alpha', type=float, default=0.0001, help='The minimum learning rate')
+    @click.option('--sample', type=float, default=1e-4, help='The parameter that controls the '
+                  'downsampling of frequent words')
     @click.option('--word-neg-power', type=float, default=0.75, help='Negative sampling of words is '
                   'performed based on the probability proportional to the frequency raised to the '
                   'power specified by this option')
     @click.option('--entity-neg-power', type=float, default=0, help='Negative sampling of '
                   'entities is performed based on the probability proportional to the frequency '
                   'raised to the power specified by this option')
-    @click.option('--sample', type=float, default=1e-4, help='The parameter that controls the '
-                  'downsampling of frequent words')
-    @click.option('--iteration', type=int, default=5, help='The number of iterations for Wikipedia '
-                  'pages')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)
