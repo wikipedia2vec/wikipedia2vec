@@ -109,6 +109,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--negative*: The number of negative samples (default: 5)
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
 - *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
+- *--sent-detect*: The sentence detector used to split texts into sentences. Currently, only *icu* is the possible value (default: None)
 - *--min-word-count*: A word is ignored if the total frequency of the word is less than this value (default: 10)
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
@@ -233,6 +234,7 @@ The *train_embedding* command runs the training of the embeddings.
 - *--iteration*: The number of iterations for Wikipedia pages (default: 3)
 - *--negative*: The number of negative samples (default: 5)
 - *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible values are *regexp*, *icu*, *mecab*, and *jieba*
+- *--sent-detect*: The sentence detector used to split texts into sentences. Currently, only *icu* is the possible value (default: None)
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 10)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)

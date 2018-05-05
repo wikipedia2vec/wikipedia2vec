@@ -33,6 +33,7 @@ from .dictionary cimport Dictionary, Item, Word, Entity
 from .dump_db cimport Paragraph, WikiLink, DumpDB
 from .link_graph cimport LinkGraph
 from .mention_db cimport MentionDB, Mention
+from .utils.sentence_detector.sentence cimport Sentence
 from .utils.tokenizer import get_default_tokenizer
 from .utils.tokenizer.token cimport Token
 
@@ -223,8 +224,8 @@ cdef class Wikipedia2Vec:
 
         return ret
 
-    def train(self, dump_db, link_graph, mention_db, tokenizer, pool_size, chunk_size,
-              progressbar=True, **kwargs):
+    def train(self, dump_db, link_graph, mention_db, tokenizer, sentence_detector, pool_size,
+              chunk_size, progressbar=True, **kwargs):
         start_time = time.time()
 
         params = _Parameters(kwargs)
@@ -300,6 +301,7 @@ cdef class Wikipedia2Vec:
             link_graph_obj,
             mention_db_obj,
             tokenizer,
+            sentence_detector,
             syn0_shared,
             syn1_shared,
             word_neg_table,
@@ -384,6 +386,7 @@ cdef Dictionary dictionary
 cdef LinkGraph link_graph
 cdef MentionDB mention_db
 cdef tokenizer
+cdef sentence_detector
 cdef float32_t [:, :] syn0
 cdef float32_t [:, :] syn1
 cdef int32_t [:] word_neg_table
@@ -398,15 +401,17 @@ cdef float32_t total_page_count
 cdef float32_t [:] work
 
 
-def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokenizer_, syn0_shared,
-                syn1_shared, word_neg_table_, entity_neg_table_, exp_table_, sample_ints_,
-                link_indices_, link_cursor_, alpha_, params_, total_page_count_):
-    global dump_db, dictionary, link_graph, mention_db, tokenizer, syn0, syn1, word_neg_table,\
-        entity_neg_table, exp_table, sample_ints, link_indices, link_cursor, alpha, params,\
-        total_page_count, work
+def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokenizer_,
+                sentence_detector_, syn0_shared, syn1_shared, word_neg_table_, entity_neg_table_,
+                exp_table_, sample_ints_, link_indices_, link_cursor_, alpha_, params_,
+                total_page_count_):
+    global dump_db, dictionary, link_graph, mention_db, tokenizer, sentence_detector, syn0, syn1,\
+        word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, link_cursor, alpha,\
+        params, total_page_count, work
 
     dump_db = dump_db_
     tokenizer = tokenizer_
+    sentence_detector = sentence_detector_
     word_neg_table = word_neg_table_
     entity_neg_table = entity_neg_table_
     exp_table = exp_table_
@@ -440,15 +445,16 @@ def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokeni
 @cython.cdivision(True)
 def train_page(tuple arg):
     cdef bint matched
-    cdef int32_t i, j, n, start, end, span_start, span_end, word, word2, entity, text_len,\
-        token_len, total_nodes, window
-    cdef int32_t [:] words, word_pos
+    cdef int32_t i, j, n, start, end, span_start, span_end, ent_start, ent_end, word, word2,\
+        entity, text_len, token_len, total_nodes, window
+    cdef int32_t [:] words, word_pos, sent_char_pos, sent_token_pos
     cdef char [:] link_flags
     cdef const int32_t [:] neighbors
     cdef unicode text, title
     cdef list tokens, paragraphs, target_links
     cdef set entity_indices
     cdef Token token
+    cdef Sentence sentence
     cdef WikiLink wiki_link
     cdef Mention mention
     cdef float32_t alpha_
@@ -491,14 +497,29 @@ def train_page(tuple arg):
         if not tokens or token_len < dictionary.min_paragraph_len:
             continue
 
-        words = cython.view.array(shape=(len(tokens),), itemsize=sizeof(int32_t), format='i')
+        words = cython.view.array(shape=(token_len,), itemsize=sizeof(int32_t), format='i')
         word_pos = cython.view.array(shape=(text_len + 1,), itemsize=sizeof(int32_t), format='i')
+
+        if sentence_detector is not None:
+            sent_char_pos = cython.view.array(shape=(text_len + 1,), itemsize=sizeof(int32_t),
+                                              format='i')
+            sent_token_pos = cython.view.array(shape=(token_len,), itemsize=sizeof(int32_t),
+                                               format='i')
+
+            memset(&sent_char_pos[0], 0, (text_len + 1) * cython.sizeof(int32_t))
+            for (i, sentence) in enumerate(sentence_detector.detect_sentences(text)):
+                sent_char_pos[sentence.start:sentence.end] = i
+
         j = 0
         for (i, token) in enumerate(tokens):
             if dictionary.lowercase:
                 words[i] = dictionary.get_word_index(token.text.lower())
             else:
                 words[i] = dictionary.get_word_index(token.text)
+
+            if sentence_detector is not None:
+                sent_token_pos[i] = sent_char_pos[token.start]
+
             if i > 0:
                 word_pos[j:token.start] = i - 1
                 j = token.start
@@ -522,6 +543,9 @@ def train_page(tuple arg):
                     continue
 
                 if sample_ints[word2] < rand():
+                    continue
+
+                if sentence_detector is not None and sent_token_pos[i] != sent_token_pos[j]:
                     continue
 
                 _train_pair(word, word2, alpha_, params.negative, word_neg_table)
@@ -555,9 +579,9 @@ def train_page(tuple arg):
                 if not matched:
                     target_links.append((mention.index, mention.start, mention.end))
 
-        for (entity, start, end) in target_links:
-            span_start = word_pos[start]
-            span_end = word_pos[max(0, end - 1)] + 1
+        for (entity, ent_start, ent_end) in target_links:
+            span_start = word_pos[ent_start]
+            span_end = word_pos[max(0, ent_end - 1)] + 1
 
             window = rand() % params.window + 1
             start = max(0, span_start - window)
@@ -568,6 +592,9 @@ def train_page(tuple arg):
                     continue
 
                 if sample_ints[word2] < rand():
+                    continue
+
+                if sentence_detector is not None and sent_char_pos[ent_start] != sent_token_pos[j]:
                     continue
 
                 _train_pair(entity, word2, alpha_, params.negative, word_neg_table)

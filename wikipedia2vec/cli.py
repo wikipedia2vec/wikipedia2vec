@@ -13,6 +13,7 @@ from .mention_db import MentionDB
 from .wikipedia2vec import Wikipedia2Vec
 from .utils.wiki_dump_reader import WikiDumpReader
 from .utils.tokenizer import get_tokenizer, get_default_tokenizer
+from .utils.sentence_detector import get_sentence_detector
 
 logger = logging.getLogger(__name__)
 
@@ -73,6 +74,8 @@ def train_embedding_options(func):
     @click.option('--iteration', type=int, default=5, help='The number of iterations for Wikipedia '
                   'pages')
     @click.option('--negative', type=int, default=5, help='The number of negative samples')
+    @click.option('--sent-detect', type=click.Choice(['icu']), default=None, help='The sentence '
+                  'detector used to split texts into sentences')
     @click.option('--entities-per-page', type=int, default=10, help='For processing each page, the '
                   'specified number of randomly chosen entities are used to predict their '
                   'neighboring entities in the link graph')
@@ -224,8 +227,8 @@ def build_mention_db(dump_db_file, dictionary_file, out_file, tokenizer, **kwarg
               'into words', type=click.Choice(['regexp', 'icu', 'mecab', 'jieba']))
 @train_embedding_options
 @common_options
-def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, tokenizer, out_file,
-                    **kwargs):
+def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, tokenizer, sent_detect,
+                    out_file, **kwargs):
     dump_db = DumpDB(dump_db_file)
     dictionary = Dictionary.load(dictionary_file)
 
@@ -240,8 +243,11 @@ def train_embedding(dump_db_file, dictionary_file, link_graph, mention_db, token
     else:
         tokenizer = get_tokenizer(tokenizer, dump_db.language)
 
+    if sent_detect is not None:
+        sent_detect = get_sentence_detector(sent_detect, dump_db.language)
+
     wiki2vec = Wikipedia2Vec(dictionary)
-    wiki2vec.train(dump_db, link_graph, mention_db, tokenizer, **kwargs)
+    wiki2vec.train(dump_db, link_graph, mention_db, tokenizer, sent_detect, **kwargs)
 
     wiki2vec.save(out_file)
 
