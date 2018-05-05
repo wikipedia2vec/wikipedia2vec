@@ -17,8 +17,7 @@ They are used in the state-of-the-art models of various tasks such as [entity li
 The embeddings can be easily trained from a publicly available Wikipedia dump.
 The code is implemented in Python, and optimized using Cython and BLAS.
 
-How It Works
-------------
+### Extended Skip-Gram Model to Learn Embeddings of Words and Entities
 
 <img src="http://studio-ousia.github.io/wikipedia2vec/img/model.png" width="600" />
 
@@ -26,10 +25,19 @@ Wikipedia2Vec is based on the [Word2vec's skip-gram model](https://en.wikipedia.
 We extend the skip-gram model by adding the following two submodels:
 
 - *The KB link graph model* that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities.
-- *The anchor context model* that learns to predict neighboring words given an entity by using an anchor link that points to the entity and its neighboring words.
+- *The anchor context model* that learns to predict neighboring words given an entity by using a link that points to the entity and its neighboring words.
 
 By jointly optimizing the skip-gram model and these two submodels, our model simultaneously learns the embedding of words and entities from Wikipedia.
 For further details, please refer to our paper: [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
+
+### Automatic Generation of Entity Links
+
+Many entity names in Wikipedia do not appear as links because Wikipedia instructs its contributors to [link an entity name if it is the first occurrence in the page](https://en.wikipedia.org/wiki/Wikipedia:Manual_of_Style/Linking#Principles).
+This is problematic for our model because the anchor context model depends on entity links to generate contextual words of entities.
+
+To address this, we implement a feature that automatically links entity names that do not appear as links.
+In particular, it takes all words and phrases, and treats them as candidates of entity names if they exist in the *Mention DB* that contains mapping of an entity name (e.g., “Washington”) to a set of possible referent entities (e.g., Washington, D.C. and George Washington).
+Then, it converts an entity name to a link pointing to an entity if the entity name is unambiguous (i.e., there is only one referent entity associated to the entity name in the DB) or the entity is referred by an entity link in the same page.
 
 Pretrained Embeddings
 ---------------------
@@ -45,12 +53,22 @@ Wikipedia2Vec can be installed from PyPI:
 % pip install wikipedia2vec
 ```
 
-The command installs the following required Python libraries: [click](http://click.pocoo.org/), [jieba](https://github.com/fxsjy/jieba), [joblib](https://pythonhosted.org/joblib/), [lmdb](https://lmdb.readthedocs.io/), [marisa-trie](http://marisa-trie.readthedocs.io/), [mwparserfromhell](https://mwparserfromhell.readthedocs.io/), [numpy](http://www.numpy.org/), [scipy](https://www.scipy.org/), [six](https://pythonhosted.org/six/), and [tqdm](https://github.com/tqdm/tqdm).
-This software requires the 64-bit version of Python.
+Alternatively, you can install the development version of this software from the GitHub repository:
+
+```
+% git clone https://github.com/studio-ousia/wikipedia2vec.git
+% cd wikipedia2vec
+% pip install -r requirements.txt
+% ./cythonize.sh
+% python setup.py install
+```
+
+Wikipedia2Vec requires the 64-bit version of Python, and can be run on Linux, Windows, and Mac OSX.
+It currently depends on the following Python libraries: [click](http://click.pocoo.org/), [jieba](https://github.com/fxsjy/jieba), [joblib](https://pythonhosted.org/joblib/), [lmdb](https://lmdb.readthedocs.io/), [marisa-trie](http://marisa-trie.readthedocs.io/), [mwparserfromhell](https://mwparserfromhell.readthedocs.io/), [numpy](http://www.numpy.org/), [scipy](https://www.scipy.org/), [six](https://pythonhosted.org/six/), and [tqdm](https://github.com/tqdm/tqdm).
 
 If you want to train embeddings on your machine, it is highly recommended to install a BLAS library.
 We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel Library](https://software.intel.com/en-us/mkl).
-Note that, the BLAS library needs to be recognized properly from the SciPy library.
+Note that, the BLAS library needs to be recognized properly from SciPy.
 This can be confirmed by using the following command:
 
 ```
@@ -97,10 +115,10 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 5)
-- *--link-mentions*: Whether to detect entity mentions and convert them into links (default: True)
-- *--min-link-prob*: A mention surface is ignored if the probability of the surface appearing as an anchor link is less than this value (default: 0.1)
-- *--min-prior-prob*: An entity is not registered as a candidate of a mention surface if the probability of the mention surface referring to the entity is less than this value (default: 0.1)
-- *--max-mention-len*: The maximum number of characters in a mention surface (default: 20)
+- *--link-mentions*: Whether to convert entity names into links (default: True)
+- *--min-link-prob*: An entity name is ignored if the probability of the name appearing as a link is less than this value (default: 0.1)
+- *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.1)
+- *--max-mention-len*: The maximum number of characters in an entity name (default: 20)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
 - *--sample*: The parameter that controls the downsampling of frequent words (default: 1e-4)
@@ -145,7 +163,7 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
 
-### Building Link Graph
+### Building Link Graph (Optional)
 
 The *build\_link\_graph* command generates a sparse matrix representing the link structure between Wikipedia entities.
 
@@ -161,9 +179,9 @@ The *build\_link\_graph* command generates a sparse matrix representing the link
 
 There is no option in this command.
 
-### Building Mention DB
+### Building Mention DB (Optional)
 
-The *build\_mention\_db* command builds a database of the mapping from mentions (entity names) to their possible referent entities.
+The *build\_mention\_db* command builds a database of the mapping from entity names (mentions) to their possible referent entities.
 
 ```
 % wikipedia2vec build_mention_db DUMP_DB_FILE DIC_FILE OUT_FILE
@@ -177,10 +195,10 @@ The *build\_mention\_db* command builds a database of the mapping from mentions 
 
 **Options:**
 
-- *--min-link-prob*: A mention surface is ignored if the probability of the surface appearing as an anchor link is less than this value (default: 0.1)
-- *--min-prior-prob*: An entity is not registered as a candidate of a mention surface if the probability of the mention surface referring to the entity is less than this value (default: 0.1)
-- *--max-mention-len*: The maximum number of characters in a mention surface (default: 20)
-- *--case-sensitive*: Whether to detect mentions in a case sensitive manner (default: False)
+- *--min-link-prob*: An entity name is ignored if the probability of the name appearing as a link is less than this value (default: 0.1)
+- *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.1)
+- *--max-mention-len*: The maximum number of characters in an entity name (default: 20)
+- *--case-sensitive*: Whether to detect entity names in a case sensitive manner (default: False)
 - *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
 
 ### Learning Embeddings

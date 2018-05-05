@@ -50,15 +50,14 @@ def build_dictionary_options(func):
 
 
 def build_mention_db_options(func):
-    @click.option('--min-link-prob', type=float, default=0.1, help='A mention surface is ignored '
-                  'if the probability of the surface appearing as an anchor link is less than this '
-                  'value')
-    @click.option('--min-prior-prob', type=float, default=0.1, help='An entity is not registered as '
-                  'a candidate of a mention surface if the probability of the mention surface '
-                  'referring to the entity is less than this value.')
-    @click.option('--max-mention-len', default=20, help='The maximum number of characters in a '
-                  'mention surface')
-    @click.option('--case-sensitive', default=False, help='Whether to detect mentions in a case '
+    @click.option('--min-link-prob', type=float, default=0.1, help='An entity name is ignored if '
+                  'the probability of the name appearing as a link is less than this value')
+    @click.option('--min-prior-prob', type=float, default=0.1, help='An entity is not registered '
+                  'as a referent of an entity name if the probability of the entity name referring '
+                  'to the entity is less than this value')
+    @click.option('--max-mention-len', default=20, help='The maximum number of characters in an '
+                  'entity name')
+    @click.option('--case-sensitive', default=False, help='Whether to detect entity names in a case '
                   'sensitive manner')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
@@ -100,7 +99,7 @@ def train_embedding_options(func):
 @click.option('--link-graph/--no-link-graph', default=True, help='Whether to learn from the '
               'Wikipedia link graph')
 @click.option('--link-mentions/--no-link-mentions', default=True, help='Whether to detect entity '
-              'mentions and convert them into links')
+              'names and convert them into links')
 @click.option('--tokenizer', default=None, help='The name of a tokenizer used to tokenize a text '
               'into words', type=click.Choice(['regexp', 'icu', 'mecab', 'jieba']))
 @build_dictionary_options
