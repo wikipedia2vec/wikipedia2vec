@@ -330,6 +330,7 @@ cdef class Wikipedia2Vec:
             dump_db=dump_db.uuid,
             dump_file=dump_db.dump_file,
             dictionary=self.dictionary.uuid,
+            tokenizer='%s.%s' % (tokenizer.__class__.__module__, tokenizer.__class__.__name__),
             train_time=time.time() - start_time,
         )
         train_params.update(params.to_dict())
@@ -339,6 +340,10 @@ cdef class Wikipedia2Vec:
 
         if mention_db is not None:
             train_params['mention_db'] = mention_db.uuid
+
+        if sentence_detector is not None:
+            train_params['sentence_detector'] = '%s.%s' % (sentence_detector.__class__.__module__,
+                                                           sentence_detector.__class__.__name__)
 
         self._train_history.append(train_params)
 
