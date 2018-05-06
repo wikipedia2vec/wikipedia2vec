@@ -6,6 +6,7 @@ import joblib
 import logging
 import multiprocessing
 import numpy as np
+import pkg_resources
 import six
 import six.moves.cPickle as pickle
 import time
@@ -128,7 +129,8 @@ cdef class LinkGraph:
         build_params = dict(dump_file=dump_db.dump_file,
                             dump_db=dump_db.uuid,
                             dictionary=dictionary.uuid,
-                            build_time=time.time() - start_time)
+                            build_time=time.time() - start_time,
+                            version=pkg_resources.get_distribution('wikipedia2vec').version)
 
         uuid = six.text_type(uuid1().hex)
 

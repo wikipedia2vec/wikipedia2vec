@@ -8,6 +8,7 @@ import logging
 import multiprocessing
 import numpy as np
 import os
+import pkg_resources
 import random
 import re
 import time
@@ -72,21 +73,20 @@ cdef class _Parameters:
 
 cdef class Wikipedia2Vec:
     cdef Dictionary _dictionary
-    cdef list _train_history
+    cdef dict _train_params
     cdef public np.ndarray syn0
     cdef public np.ndarray syn1
 
     def __init__(self, dictionary):
         self._dictionary = dictionary
-        self._train_history = []
 
     @property
     def dictionary(self):
         return self._dictionary
 
     @property
-    def train_history(self):
-        return self._train_history
+    def train_params(self):
+        return self._train_params
 
     cpdef get_word(self, unicode word, default=None):
         return self._dictionary.get_word(word, default)
@@ -130,7 +130,7 @@ cdef class Wikipedia2Vec:
             syn0=self.syn0,
             syn1=self.syn1,
             dictionary=self._dictionary.serialize(),
-            train_history=self._train_history
+            train_params=self._train_params
         ), out_file)
 
     def save_text(self, out_file, out_format='default'):
@@ -162,7 +162,7 @@ cdef class Wikipedia2Vec:
         ret = Wikipedia2Vec(dictionary)
         ret.syn0 = obj['syn0']
         ret.syn1 = obj['syn1']
-        ret._train_history = obj['train_history']
+        ret._train_params = obj.get('train_params')
 
         return ret
 
@@ -220,7 +220,6 @@ cdef class Wikipedia2Vec:
         ret = Wikipedia2Vec(dictionary)
         ret.syn0 = syn0
         ret.syn1 = None
-        ret._train_history = []
 
         return ret
 
@@ -332,6 +331,7 @@ cdef class Wikipedia2Vec:
             dictionary=self.dictionary.uuid,
             tokenizer='%s.%s' % (tokenizer.__class__.__module__, tokenizer.__class__.__name__),
             train_time=time.time() - start_time,
+            version=pkg_resources.get_distribution('wikipedia2vec').version,
         )
         train_params.update(params.to_dict())
 
@@ -345,7 +345,7 @@ cdef class Wikipedia2Vec:
             train_params['sentence_detector'] = '%s.%s' % (sentence_detector.__class__.__module__,
                                                            sentence_detector.__class__.__name__)
 
-        self._train_history.append(train_params)
+        self._train_params = train_params
 
     def _build_word_neg_table(self, float32_t power):
         if power == 0:

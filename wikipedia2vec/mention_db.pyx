@@ -2,6 +2,7 @@
 
 import joblib
 import logging
+import pkg_resources
 import six
 import re
 import time
@@ -173,7 +174,8 @@ cdef class MentionDB(object):
         build_params = dict(dump_file=dump_db.dump_file,
                             dump_db=dump_db.uuid,
                             dictionary=dictionary.uuid,
-                            build_time=time.time() - start_time)
+                            build_time=time.time() - start_time,
+                            version=pkg_resources.get_distribution('wikipedia2vec').version)
 
         return MentionDB(mention_trie, dictionary, case_sensitive, max_mention_len, build_params,
                          uuid)

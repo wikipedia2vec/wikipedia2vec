@@ -6,6 +6,7 @@ import joblib
 import logging
 import multiprocessing
 import numpy as np
+import pkg_resources
 import time
 import six
 import six.moves.cPickle as pickle
@@ -244,6 +245,7 @@ cdef class Dictionary:
             min_entity_count=min_entity_count,
             category=category,
             build_time=time.time() - start_time,
+            version=pkg_resources.get_distribution('wikipedia2vec').version
         )
 
         uuid = six.text_type(uuid1().hex)

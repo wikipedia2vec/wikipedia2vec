@@ -5,6 +5,7 @@ from __future__ import unicode_literals
 import lmdb
 import logging
 import mwparserfromhell
+import pkg_resources
 import re
 import six
 from uuid import uuid1
@@ -134,6 +135,9 @@ cdef class DumpDB:
                 txn.put(b'id', six.text_type(uuid1().hex).encode('utf-8'))
                 txn.put(b'dump_file', dump_reader.dump_file.encode('utf-8'))
                 txn.put(b'language', dump_reader.language.encode('utf-8'))
+                txn.put(b'version', six.text_type(
+                    pkg_resources.get_distribution('wikipedia2vec').version).encode('utf-8')
+                )
 
             page_db = env.open_db(b'__page__')
             redirect_db = env.open_db(b'__redirect__')
