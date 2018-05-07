@@ -9,7 +9,10 @@ try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
 except(IOError, ImportError):
-    long_description = open('README.md', encoding='utf-8').read()
+    if sys.version_info[0] == 3:
+        long_description = open('README.md', encoding='utf-8').read()
+    else:
+        long_description = open('README.md').read()
 
 
 def list_cpp_files(package_dir='wikipedia2vec'):
