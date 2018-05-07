@@ -51,7 +51,7 @@ def build_dictionary_options(func):
 
 
 def build_mention_db_options(func):
-    @click.option('--min-link-prob', type=float, default=0.1, help='An entity name is ignored if '
+    @click.option('--min-link-prob', type=float, default=0.2, help='An entity name is ignored if '
                   'the probability of the name appearing as a link is less than this value')
     @click.option('--min-prior-prob', type=float, default=0.1, help='An entity is not registered '
                   'as a referent of an entity name if the probability of the entity name referring '
