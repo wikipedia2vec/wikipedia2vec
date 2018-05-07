@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import sys
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
 
@@ -11,15 +12,25 @@ except(IOError, ImportError):
     long_description = open('README.md').read()
 
 
-def list_c_files(package_dir='wikipedia2vec'):
+def list_cpp_files(package_dir='wikipedia2vec'):
+    if sys.platform.startswith("win"):
+        compile_args = []
+        link_args = []
+    else:
+        compile_args = ['-Wno-unused-function', '-std=c++11']
+        link_args = ['-std=c++11']
+
     ret = []
     for (dir_name, _, files) in os.walk(package_dir):
         for file_name in files:
             (module_name, ext) = os.path.splitext(file_name)
-            if ext == '.c':
+            if ext == '.cpp':
                 module_name = '.'.join(dir_name.split(os.sep) + [module_name])
                 path = os.path.join(dir_name, file_name)
-                ret.append((module_name, path))
+                ret.append((module_name, dict(
+                    sources=[path], language='c++', extra_compile_args=compile_args,
+                    extra_link_args=link_args
+                )))
 
     return ret
 
@@ -50,7 +61,7 @@ setup(
     url='http://studio-ousia.github.io/wikipedia2vec/',
     packages=find_packages(exclude=('tests*',)),
     cmdclass=dict(build_ext=custom_build_ext),
-    ext_modules=[Extension(module_name, [path]) for (module_name, path) in list_c_files()],
+    ext_modules=[Extension(module_name, **kwargs) for (module_name, kwargs) in list_cpp_files()],
     include_package_data=True,
     entry_points={
         'console_scripts': [

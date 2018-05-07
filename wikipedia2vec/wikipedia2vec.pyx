@@ -23,7 +23,6 @@ from contextlib import closing
 from itertools import islice
 from libc.math cimport exp
 from libc.stdint cimport int32_t
-from libc.stdlib cimport rand, RAND_MAX
 from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
@@ -34,10 +33,12 @@ from .dictionary cimport Dictionary, Item, Word, Entity
 from .dump_db cimport Paragraph, WikiLink, DumpDB
 from .link_graph cimport LinkGraph
 from .mention_db cimport MentionDB, Mention
+from .utils.random cimport seed, randint_c
 from .utils.sentence_detector.sentence cimport Sentence
 from .utils.tokenizer import get_default_tokenizer
 from .utils.tokenizer.token cimport Token
 
+cdef int32_t INT32_MAX = np.iinfo(np.int32).max
 ctypedef np.float32_t float32_t
 
 DEF MAX_EXP = 6
@@ -244,7 +245,7 @@ cdef class Wikipedia2Vec:
                 word_prob = 1.0
             else:
                 word_prob = min(1.0, (np.sqrt(cnt / thresh) + 1) * (thresh / cnt))
-            sample_ints[word.index] = int(round(word_prob * RAND_MAX))
+            sample_ints[word.index] = int(round(word_prob * INT32_MAX))
 
         logger.info('Building tables for negative sampling...')
 
@@ -427,6 +428,9 @@ def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokeni
     params = params_
     total_page_count = total_page_count_
 
+    np.random.seed()
+    seed(np.random.randint(2 ** 31))
+
     dictionary = Dictionary.load(dictionary_obj)
 
     if link_graph_obj is not None:
@@ -535,10 +539,10 @@ def train_page(tuple arg):
             if word == -1:
                 continue
 
-            if sample_ints[word] < rand():
+            if sample_ints[word] < randint_c():
                 continue
 
-            window = rand() % params.window + 1
+            window = randint_c() % params.window + 1
             start = max(0, i - window)
             end = min(len(words), i + window + 1)
             for j in range(start, end):
@@ -547,7 +551,7 @@ def train_page(tuple arg):
                 if word2 == -1 or i == j:
                     continue
 
-                if sample_ints[word2] < rand():
+                if sample_ints[word2] < randint_c():
                     continue
 
                 if sentence_detector is not None and sent_token_pos[i] != sent_token_pos[j]:
@@ -588,7 +592,7 @@ def train_page(tuple arg):
             span_start = word_pos[ent_start]
             span_end = word_pos[max(0, ent_end - 1)] + 1
 
-            window = rand() % params.window + 1
+            window = randint_c() % params.window + 1
             start = max(0, span_start - window)
             end = min(len(words), span_end + window)
             for j in range(start, end):
@@ -596,7 +600,7 @@ def train_page(tuple arg):
                 if word2 == -1 or span_start <= j < span_end:
                     continue
 
-                if sample_ints[word2] < rand():
+                if sample_ints[word2] < randint_c():
                     continue
 
                 if sentence_detector is not None and sent_char_pos[ent_start] != sent_token_pos[j]:
@@ -629,7 +633,7 @@ cdef inline void _train_pair(int32_t index1, int32_t index2, float32_t alpha, in
             index = index2
             label = 1.0
         else:
-            neg_index = rand() % neg_table_size
+            neg_index = randint_c() % neg_table_size
             index = neg_table[neg_index]
             if index == index2:
                 continue
