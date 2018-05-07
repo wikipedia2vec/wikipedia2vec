@@ -76,7 +76,8 @@ cdef class MentionDB(object):
     cpdef list detect_mentions(self, unicode text, list tokens, set entity_indices_in_page=set()):
         cdef int32_t cur, start, end, index
         cdef unicode prefix, target_text
-        cdef list ret, candidates
+        cdef tuple c
+        cdef list ret, candidates, matched
         cdef frozenset end_offsets
         cdef Mention mention
         cdef Token token
@@ -103,11 +104,11 @@ cdef class MentionDB(object):
                         ret.append(Mention(self._dictionary, text[start:end], start, end,
                                            *candidates[0]))
                     else:
-                        for (index, *args) in candidates:
-                            if index in entity_indices_in_page:
-                                ret.append(Mention(self._dictionary, text[start:end], start, end,
-                                                   index, *args))
-                                break
+                        matched = [c for c in candidates if c[0] in entity_indices_in_page]
+                        if len(matched) == 1:
+                            (index, *args) = matched[0]
+                            ret.append(Mention(self._dictionary, text[start:end], start, end, index,
+                                               *args))
                     break
 
         return ret
