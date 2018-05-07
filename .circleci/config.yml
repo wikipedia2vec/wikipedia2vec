@@ -12,6 +12,11 @@ jobs:
           command: |
             sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8
 
+      - run:
+          name: install icu
+          command: |
+            sudo apt-get install libicu-dev
+
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "requirements.txt" }}
@@ -22,7 +27,7 @@ jobs:
             virtualenv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            pip install mecab-python nose
+            pip install mecab-python PyICU nose
 
       - save_cache:
           paths:
@@ -57,6 +62,11 @@ jobs:
           command: |
             sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8
 
+      - run:
+          name: install icu
+          command: |
+            sudo apt-get install libicu-dev
+
       - restore_cache:
           keys:
           - v1-dependencies-{{ checksum "requirements.txt" }}
@@ -67,7 +77,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            pip install mecab-python3 nose
+            pip install mecab-python3 PyICU nose
 
       - save_cache:
           paths:
