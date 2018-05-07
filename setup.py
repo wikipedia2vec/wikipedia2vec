@@ -9,7 +9,7 @@ try:
     import pypandoc
     long_description = pypandoc.convert('README.md', 'rst')
 except(IOError, ImportError):
-    long_description = open('README.md').read()
+    long_description = open('README.md', encoding='utf-8').read()
 
 
 def list_cpp_files(package_dir='wikipedia2vec'):
@@ -53,7 +53,7 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='0.1.15',
+    version='0.2',
     description='A tool for learning embeddings of words and entities from Wikipedia',
     long_description=long_description,
     author='Studio Ousia',
@@ -75,7 +75,6 @@ setup(
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.6',
         'Programming Language :: Python :: 2.7',
         'Programming Language :: Python :: 3.3',
         'Programming Language :: Python :: 3.4',
