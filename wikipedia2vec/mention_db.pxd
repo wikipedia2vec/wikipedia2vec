@@ -23,6 +23,7 @@ cdef class Mention:
 
 cdef class MentionDB:
     cdef readonly mention_trie
+    cdef readonly data_trie
     cdef readonly unicode uuid
     cdef readonly dict build_params
     cdef Dictionary _dictionary

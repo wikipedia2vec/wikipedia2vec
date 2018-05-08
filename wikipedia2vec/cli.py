@@ -137,6 +137,8 @@ def train(ctx, out_file, link_graph, link_mentions, tokenizer, **kwargs):
         invoke(build_link_graph, dictionary_file=dictionary_file, out_file=link_graph_file)
 
         train_embedding_kwargs['link_graph'] = link_graph_file
+    else:
+        train_embedding_kwargs['link_graph'] = None
 
     if link_mentions:
         logger.info('Starting to build a mention DB...')
@@ -145,6 +147,8 @@ def train(ctx, out_file, link_graph, link_mentions, tokenizer, **kwargs):
                out_file=mention_db_file)
 
         train_embedding_kwargs['mention_db'] = mention_db_file
+    else:
+        train_embedding_kwargs['mention_db'] = None
 
     logger.info('Starting to train embeddings...')
 

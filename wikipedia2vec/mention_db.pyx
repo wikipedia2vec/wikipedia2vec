@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# cython: profile=False
 
 import joblib
 import logging
@@ -59,9 +60,10 @@ cdef class Mention:
 
 
 cdef class MentionDB(object):
-    def __init__(self, mention_trie, dictionary, bint case_sensitive, int32_t max_mention_len,
-                 dict build_params, unicode uuid):
+    def __init__(self, mention_trie, data_trie, dictionary, bint case_sensitive,
+                 int32_t max_mention_len, dict build_params, unicode uuid):
         self.mention_trie = mention_trie
+        self.data_trie = data_trie
         self.uuid = uuid
         self.build_params = build_params
 
@@ -70,8 +72,9 @@ cdef class MentionDB(object):
         self._max_mention_len = max_mention_len
 
     cpdef list prefix_search(self, unicode text, int32_t start=0):
-        return sorted(self.mention_trie.prefixes(text[start:start+self._max_mention_len]), key=len,
-                      reverse=True)
+        cdef list ret = self.mention_trie.prefixes(text[start:start+self._max_mention_len])
+        ret.sort(key=len, reverse=True)
+        return ret
 
     cpdef list detect_mentions(self, unicode text, list tokens, set entity_indices_in_page=set()):
         cdef int32_t cur, start, end, index
@@ -99,7 +102,7 @@ cdef class MentionDB(object):
                 end = start + len(prefix)
                 if end in end_offsets:
                     cur = end
-                    candidates = self.mention_trie[prefix]
+                    candidates = self.data_trie[prefix]
                     if len(candidates) == 1:
                         ret.append(Mention(self._dictionary, text[start:end], start, end,
                                            *candidates[0]))
@@ -168,7 +171,8 @@ cdef class MentionDB(object):
 
                     yield (name, (index, link_count, total_link_count, doc_count))
 
-        mention_trie = RecordTrie('<IIII', item_generator())
+        data_trie = RecordTrie('<IIII', item_generator())
+        mention_trie = Trie(data_trie.keys())
 
         uuid = six.text_type(uuid1().hex)
 
@@ -178,11 +182,12 @@ cdef class MentionDB(object):
                             build_time=time.time() - start_time,
                             version=pkg_resources.get_distribution('wikipedia2vec').version)
 
-        return MentionDB(mention_trie, dictionary, case_sensitive, max_mention_len, build_params,
-                         uuid)
+        return MentionDB(mention_trie, data_trie, dictionary, case_sensitive, max_mention_len,
+                         build_params, uuid)
 
     def serialize(self):
         return dict(mention_trie=self.mention_trie.tobytes(),
+                    data_trie=self.data_trie.tobytes(),
                     kwargs=dict(max_mention_len=self._max_mention_len,
                                 case_sensitive=self._case_sensitive,
                                 build_params=self.build_params, uuid=self.uuid))
@@ -198,10 +203,12 @@ cdef class MentionDB(object):
         if target['kwargs']['build_params']['dictionary'] != dictionary.uuid:
             raise RuntimeError('The specified dictionary is different from the one used to build this DB')
 
-        mention_trie = RecordTrie('<IIII')
+        mention_trie = Trie()
         mention_trie = mention_trie.frombytes(target['mention_trie'])
+        data_trie = RecordTrie('<IIII')
+        data_trie = data_trie.frombytes(target['data_trie'])
 
-        return MentionDB(mention_trie, dictionary, **target['kwargs'])
+        return MentionDB(mention_trie, data_trie, dictionary, **target['kwargs'])
 
 
 cdef Dictionary _dictionary = None
