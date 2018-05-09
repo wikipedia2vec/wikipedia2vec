@@ -7,7 +7,10 @@ def get_default_tokenizer(language):
     elif language == 'zh':
         return get_tokenizer('jieba')
     else:
-        return get_tokenizer('regexp')
+        try:
+            return get_tokenizer('icu', language)
+        except:
+            return get_tokenizer('regexp')
 
 
 def get_tokenizer(name, language=None):
