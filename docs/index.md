@@ -105,7 +105,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 
 - *--dim-size*: The number of dimensions of the embeddings (default: 100)
 - *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
-- *--iteration*: The number of iterations for Wikipedia pages (default: 3)
+- *--iteration*: The number of iterations for Wikipedia pages (default: 5)
 - *--negative*: The number of negative samples (default: 5)
 - *--lowercase/--no-lowercase*: Whether to lowercase words (default: True)
 - *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
@@ -115,7 +115,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
-- *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 5)
+- *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 10)
 - *--link-mentions*: Whether to convert entity names into links (default: True)
 - *--min-link-prob*: An entity name is ignored if the probability of the name appearing as a link is less than this value (default: 0.2)
 - *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.1)
@@ -230,7 +230,7 @@ The *train_embedding* command runs the training of the embeddings.
 - *--mention-db*: The mention DB file generated using the *build\_mention\_db* command
 - *--dim-size*: The number of dimensions of the embeddings (default: 100)
 - *--window*: The maximum distance between the target item (word or entity) and the context word to be predicted (default: 5)
-- *--iteration*: The number of iterations for Wikipedia pages (default: 3)
+- *--iteration*: The number of iterations for Wikipedia pages (default: 5)
 - *--negative*: The number of negative samples (default: 5)
 - *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible values are *regexp*, *icu*, *mecab*, and *jieba*
 - *--sent-detect*: The sentence detector used to split texts into sentences. Currently, only *icu* is the possible value (default: None)
