@@ -8,7 +8,7 @@ import unittest
 from tempfile import NamedTemporaryFile
 
 from wikipedia2vec.dictionary import Dictionary, Item, Word, Entity
-from wikipedia2vec.utils.tokenizer import get_default_tokenizer
+from wikipedia2vec.utils.tokenizer import get_tokenizer
 
 from . import get_dump_db
 
@@ -69,7 +69,7 @@ class TestEntity(unittest.TestCase):
 
 class TestDictionary(unittest.TestCase):
     def setUp(self):
-        tokenizer = get_default_tokenizer('en')
+        tokenizer = get_tokenizer('regexp')
         self.dictionary = Dictionary.build(get_dump_db(), tokenizer=tokenizer, lowercase=True,
                                            min_word_count=2, min_entity_count=1,
                                            min_paragraph_len=5, category=True, pool_size=1,
