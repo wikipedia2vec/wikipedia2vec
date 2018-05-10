@@ -118,7 +118,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 10)
 - *--link-mentions*: Whether to convert entity names into links (default: True)
 - *--min-link-prob*: An entity name is ignored if the probability of the name appearing as a link is less than this value (default: 0.2)
-- *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.1)
+- *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.01)
 - *--max-mention-len*: The maximum number of characters in an entity name (default: 20)
 - *--init-alpha*: The initial learning rate (default: 0.025)
 - *--min-alpha*: The minimum learning rate (default: 0.0001)
@@ -204,7 +204,7 @@ The *build\_mention\_db* command builds a database that contains the mappings of
 **Options:**
 
 - *--min-link-prob*: An entity name is ignored if the probability of the name appearing as a link is less than this value (default: 0.2)
-- *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.1)
+- *--min-prior-prob*: An entity is not registered as a referent of an entity name if the probability of the entity name referring to the entity is less than this value (default: 0.01)
 - *--max-mention-len*: The maximum number of characters in an entity name (default: 20)
 - *--case-sensitive*: Whether to detect entity names in a case sensitive manner (default: False)
 - *--tokenizer*: The name of the tokenizer used to tokenize a text into words. Possible choices are *regexp*, *icu*, *mecab*, and *jieba*
