@@ -72,8 +72,8 @@ class TestDictionary(unittest.TestCase):
         tokenizer = get_tokenizer('regexp')
         self.dictionary = Dictionary.build(get_dump_db(), tokenizer=tokenizer, lowercase=True,
                                            min_word_count=2, min_entity_count=1,
-                                           min_paragraph_len=5, category=True, pool_size=1,
-                                           chunk_size=1, progressbar=False)
+                                           min_paragraph_len=5, category=True, disambi=False,
+                                           pool_size=1, chunk_size=1, progressbar=False)
 
     def test_uuid_property(self):
         ok_(isinstance(self.dictionary.uuid, six.text_type))

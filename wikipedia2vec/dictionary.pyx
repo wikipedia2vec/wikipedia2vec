@@ -174,10 +174,10 @@ cdef class Dictionary:
 
     @staticmethod
     def build(dump_db, tokenizer, lowercase, min_word_count, min_entity_count, min_paragraph_len,
-              category, pool_size, chunk_size, progressbar=True):
+              category, disambi, pool_size, chunk_size, progressbar=True):
         start_time = time.time()
 
-        logger.info('Step 1/3: Processing Wikipedia pages...')
+        logger.info('Step 1/2: Processing Wikipedia pages...')
 
         word_counter = Counter()
         word_doc_counter = Counter()
@@ -203,7 +203,7 @@ cdef class Dictionary:
 
                     bar.update(1)
 
-        logger.info('Step 2/3: Processing Wikipedia redirects...')
+        logger.info('Step 2/2: Processing Wikipedia redirects...')
 
         for (title, dest_title) in dump_db.redirects():
             entity_counter[dest_title] += entity_counter[title]
@@ -211,8 +211,6 @@ cdef class Dictionary:
 
             entity_doc_counter[dest_title] += entity_doc_counter[title]
             del entity_doc_counter[title]
-
-        logger.info('Step 3/3: Building dictionary...')
 
         word_dict = Trie([w for (w, c) in six.iteritems(word_counter) if c >= min_word_count])
         word_stats = np.zeros((len(word_counter), 2), dtype=np.int32)
@@ -223,8 +221,17 @@ cdef class Dictionary:
         del word_counter
         del word_doc_counter
 
-        entity_dict = Trie([e for (e, c) in six.iteritems(entity_counter)
-                            if c >= min_entity_count])
+        entities = []
+        for (entity, count) in six.iteritems(entity_counter):
+            if count < min_entity_count:
+                continue
+
+            if not disambi and dump_db.is_disambiguation(entity):
+                continue
+
+            entities.append(entity)
+
+        entity_dict = Trie(entities)
         entity_stats = np.zeros((len(entity_counter), 2), dtype=np.int32)
         for (entity, index) in six.iteritems(entity_dict):
             entity_stats[index][0] = entity_counter[entity]

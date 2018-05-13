@@ -114,6 +114,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
+- *--disambi/--no-disambi*: Whether to include disambiguation entities in the dictionary (default:False)
 - *--link-graph/--no-link-graph*: Whether to learn from the Wikipedia link graph (default: True)
 - *--entities-per-page*: For processing each page, the specified number of randomly chosen entities are used to predict their neighboring entities in the link graph (default: 10)
 - *--link-mentions*: Whether to convert entity names into links (default: True)
@@ -167,6 +168,7 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 - *--min-entity-count*: An entity is ignored if the total frequency of the entity appearing as the referent of an anchor link is less than this value (default: 5)
 - *--min-paragraph-len*: A paragraph is ignored if its length is shorter than this value (default: 5)
 - *--category/--no-category*: Whether to include Wikipedia categories in the dictionary (default:False)
+- *--disambi/--no-disambi*: Whether to include disambiguation entities in the dictionary (default:False)
 - *--pool-size*: The number of worker processes (default: the number of CPUs)
 
 ### Building Link Graph (Optional)

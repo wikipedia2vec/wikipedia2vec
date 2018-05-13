@@ -44,6 +44,8 @@ def build_dictionary_options(func):
                   'shorter than this value')
     @click.option('--category/--no-category', default=False, help='Whether to include Wikipedia '
                   'categories in the dictionary')
+    @click.option('--disambi/--no-disambi', default=False, help='Whether to include disambiguation '
+                  'entities in the dictionary')
     @functools.wraps(func)
     def wrapper(*args, **kwargs):
         return func(*args, **kwargs)

@@ -22,7 +22,7 @@ class TestLinkGraph(unittest.TestCase):
         self.dictionary = Dictionary.build(get_dump_db(), tokenizer=tokenizer, lowercase=True,
                                            min_word_count=2, min_entity_count=1, pool_size=1,
                                            chunk_size=1, min_paragraph_len=5, category=True,
-                                           progressbar=False)
+                                           disambi=False, progressbar=False)
         self.link_graph = LinkGraph.build(get_dump_db(), self.dictionary, pool_size=1, chunk_size=1,
                                           progressbar=False)
 
