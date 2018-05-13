@@ -22,9 +22,10 @@ STYLE_RE = re.compile("'''*")
 
 
 cdef class Paragraph:
-    def __init__(self, unicode text, list wiki_links):
+    def __init__(self, unicode text, list wiki_links, bint abstract):
         self.text = text
         self.wiki_links = wiki_links
+        self.abstract = abstract
 
     def __repr__(self):
         if six.PY2:
@@ -33,7 +34,7 @@ cdef class Paragraph:
             return '<Paragraph %s>' % (self.text[:50] + '...')
 
     def __reduce__(self):
-        return (self.__class__, (self.text, self.wiki_links))
+        return (self.__class__, (self.text, self.wiki_links, self.abstract))
 
 
 cdef class WikiLink:
@@ -104,6 +105,29 @@ cdef class DumpDB:
             for (key, value) in iter(cur):
                 yield (key.decode('utf-8'), value.decode('utf-8'))
 
+    cpdef unicode resolve_redirect(self, unicode title):
+        with self._env.begin(db=self._redirect_db) as txn:
+            value = txn.get(title.encode('utf-8'))
+            if value:
+                return value.decode('utf-8')
+            else:
+                return title
+
+    cpdef is_redirect(self, unicode title):
+        with self._env.begin(db=self._redirect_db) as txn:
+            value = txn.get(title.encode('utf-8'))
+
+        return bool(value)
+
+    cpdef is_disambiguation(self, unicode title):
+        with self._env.begin(db=self._page_db) as txn:
+            value = txn.get(title.encode('utf-8'))
+
+        if not value:
+            return False
+
+        return pickle.loads(zlib.decompress(value))[1]
+
     cpdef list get_paragraphs(self, unicode key):
         cdef bytes value
 
@@ -118,9 +142,9 @@ cdef class DumpDB:
         cdef list ret, wiki_links
 
         ret = []
-        for obj in pickle.loads(zlib.decompress(value)):
-            wiki_links = [WikiLink(*args) for args in obj['links']]
-            ret.append(Paragraph(obj['text'], wiki_links))
+        for obj in pickle.loads(zlib.decompress(value))[0]:
+            wiki_links = [WikiLink(*args) for args in obj[1]]
+            ret.append(Paragraph(obj[0], wiki_links, obj[2]))
 
         return ret
 
@@ -180,8 +204,9 @@ cdef class DumpDB:
 
 def _parse(WikiPage page):
     cdef int32_t n, start, end
+    cdef bint abstract
     cdef unicode title, text, cur_text, wiki_text
-    cdef list ret, cur_links
+    cdef list paragraphs, cur_links, ret
 
     if page.is_redirect:
         return ('redirect', (page.title.encode('utf-8'), page.redirect.encode('utf-8')))
@@ -194,9 +219,10 @@ def _parse(WikiPage page):
         logger.warn('Failed to parse wiki text: %s', page.title)
         return None
 
-    ret = []
+    paragraphs = []
     cur_text = ''
     cur_links = []
+    abstract = True
 
     for node in parsed.nodes:
         if isinstance(node, mwparserfromhell.nodes.Text):
@@ -205,7 +231,7 @@ def _parse(WikiPage page):
                     cur_text += text
                 else:
                     if cur_text and not cur_text.isspace():
-                        ret.append(dict(text=cur_text, links=cur_links))
+                        paragraphs.append([cur_text, cur_links, abstract])
 
                     cur_text = text
                     cur_links = []
@@ -244,8 +270,13 @@ def _parse(WikiPage page):
             text = node.contents.strip_code()
             cur_text += text
 
+        elif isinstance(node, mwparserfromhell.nodes.Heading):
+            abstract = False
+
     if cur_text and not cur_text.isspace():
-        ret.append(dict(text=cur_text, links=cur_links))
+        paragraphs.append([cur_text, cur_links, abstract])
+
+    ret = [paragraphs, page.is_disambiguation]
 
     return ('page', ((page.title.encode('utf-8'), zlib.compress(pickle.dumps(ret, protocol=-1)))))
 

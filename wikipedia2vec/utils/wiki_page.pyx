@@ -9,6 +9,7 @@ import six
 # https://github.com/studio-ousia/wikipedia-miner/blob/master/src/org/wikipedia/miner/extraction/LanguageConfiguration.java
 REDIRECT_REGEXP = re.compile(r"(?:\#|＃)(?:REDIRECT|転送)[:\s]*(?:\[\[(.*)\]\]|(.*))",
                              re.IGNORECASE)
+DISAMBI_REGEXP = re.compile(r"{{\s*(disambiguation|disambig|disamb|dab)\s*(\||})", re.IGNORECASE)
 
 
 cdef class WikiPage:
@@ -29,6 +30,10 @@ cdef class WikiPage:
     @property
     def is_redirect(self):
         return bool(self.redirect)
+
+    @property
+    def is_disambiguation(self):
+        return bool(DISAMBI_REGEXP.search(self.wiki_text))
 
     @property
     def redirect(self):

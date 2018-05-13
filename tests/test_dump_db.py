@@ -17,17 +17,17 @@ from nose.tools import *
 
 class TestParagraph(unittest.TestCase):
     def test_text_property(self):
-        paragraph = Paragraph('paragraph text', [])
+        paragraph = Paragraph('paragraph text', [], False)
         eq_('paragraph text', paragraph.text)
 
     def test_wiki_link_property(self):
         wiki_link = WikiLink('Title', 'link text', 0, 3)
-        paragraph = Paragraph('paragraph text', [wiki_link])
+        paragraph = Paragraph('paragraph text', [wiki_link], False)
         eq_([wiki_link], paragraph.wiki_links)
 
     def test_pickle(self):
         wiki_link = WikiLink('Title', 'link text', 0, 3)
-        paragraph = Paragraph('paragraph text', [wiki_link])
+        paragraph = Paragraph('paragraph text', [wiki_link], False)
 
         paragraph2 = pickle.loads(pickle.dumps(paragraph))
         eq_('paragraph text', paragraph2.text)
@@ -92,6 +92,15 @@ class TestDumpDB(unittest.TestCase):
     def test_redirects_generator(self):
         eq_([('AccessibleComputing', 'Computer accessibility')], list(self.db.redirects()))
 
+    def test_resolve_redirect(self):
+        eq_('Computer accessibility', self.db.resolve_redirect('AccessibleComputing'))
+
+    def test_is_redirect(self):
+        eq_(True, self.db.is_redirect('AccessibleComputing'))
+
+    def test_is_disambiguation(self):
+        eq_(False, self.db.is_disambiguation('Computer accessibility'))
+
     def test_get_paragraphs(self):
         paragraphs = self.db.get_paragraphs('Computer accessibility')
         paragraph = paragraphs[0]
@@ -121,12 +130,12 @@ class TestDumpDB(unittest.TestCase):
         ret = dump_db._parse(page)
         eq_('page', ret[0])
         eq_(b'Japan', ret[1][0])
-        paragraph = pickle.loads(zlib.decompress(ret[1][1]))[0]
-        eq_('Japan is a sovereign island nation in East Asia', paragraph['text'])
+        paragraph = pickle.loads(zlib.decompress(ret[1][1]))[0][0]
+        eq_('Japan is a sovereign island nation in East Asia', paragraph[0])
         eq_([('Sovereign state', 'sovereign', 11, 20),
              ('Island country', 'island nation', 21, 34),
              ('East Asia', 'East Asia', 38, 47)],
-            paragraph['links'])
+            paragraph[1])
 
     def test_parse_redirect(self):
         page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]')

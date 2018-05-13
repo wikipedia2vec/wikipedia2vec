@@ -9,6 +9,9 @@ cdef class DumpDB:
     cdef _page_db
     cdef _redirect_db
 
+    cpdef unicode resolve_redirect(self, unicode)
+    cpdef is_redirect(self, unicode)
+    cpdef is_disambiguation(self, unicode)
     cpdef list get_paragraphs(self, unicode)
     cdef list _deserialize_paragraphs(self, bytes)
 
@@ -16,6 +19,7 @@ cdef class DumpDB:
 cdef class Paragraph:
     cdef readonly unicode text
     cdef readonly list wiki_links
+    cdef readonly bint abstract
 
 
 cdef class WikiLink:
