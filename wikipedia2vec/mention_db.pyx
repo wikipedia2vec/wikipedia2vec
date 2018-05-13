@@ -22,15 +22,15 @@ logger = logging.getLogger(__name__)
 
 
 cdef class Mention:
-    def __init__(self, Dictionary dictionary, unicode text, int32_t start, int32_t end,
-                 int32_t index, int32_t link_count, int32_t total_link_count, int32_t doc_count):
+    def __init__(self, Dictionary dictionary, unicode text, int32_t index, int32_t link_count,
+                 int32_t total_link_count, int32_t doc_count, int32_t start=-1, int32_t end=-1):
         self.text = text
-        self.start = start
-        self.end = end
         self.index = index
         self.link_count = link_count
         self.total_link_count = total_link_count
         self.doc_count = doc_count
+        self.start = start
+        self.end = end
 
         self._dictionary = dictionary
 
@@ -71,7 +71,19 @@ cdef class MentionDB(object):
         self._case_sensitive = case_sensitive
         self._max_mention_len = max_mention_len
 
+    cpdef list query(self, unicode text):
+        if not self._case_sensitive:
+            text = text.lower()
+
+        return [Mention(self._dictionary, text, *o) for o in self.data_trie[text]]
+
     cpdef list prefix_search(self, unicode text, int32_t start=0):
+        if not self._case_sensitive:
+            text = text.lower()
+
+        return self._prefix_search(text, start)
+
+    cdef inline list _prefix_search(self, unicode text, int32_t start=0):
         cdef list ret = self.mention_trie.prefixes(text[start:start+self._max_mention_len])
         ret.sort(key=len, reverse=True)
         return ret
@@ -98,20 +110,20 @@ cdef class MentionDB(object):
             if cur > start:
                 continue
 
-            for prefix in self.prefix_search(target_text, start=start):
+            for prefix in self._prefix_search(target_text, start=start):
                 end = start + len(prefix)
                 if end in end_offsets:
                     cur = end
                     candidates = self.data_trie[prefix]
                     if len(candidates) == 1:
-                        ret.append(Mention(self._dictionary, text[start:end], start, end,
-                                           *candidates[0]))
+                        ret.append(Mention(self._dictionary, text[start:end], *candidates[0],
+                                           start=start, end=end))
                     else:
                         matched = [c for c in candidates if c[0] in entity_indices_in_page]
                         if len(matched) == 1:
                             (index, *args) = matched[0]
-                            ret.append(Mention(self._dictionary, text[start:end], start, end, index,
-                                               *args))
+                            ret.append(Mention(self._dictionary, text[start:end], index, *args,
+                                               start=start, end=end))
                     break
 
         return ret
