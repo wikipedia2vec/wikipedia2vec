@@ -42,7 +42,87 @@ Then, it converts an entity name to a link pointing to an entity if the entity n
 Pretrained Embeddings
 ---------------------
 
-(coming soon)
+- **English** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_300d.txt.bz2)
+  [500d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_500d.pkl.bz2)
+  [500d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_500d.txt.bz2)
+- **English** (window=5, iteration=10, negative=15, no link graph):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_nolg_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_nolg_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_nolg_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_nolg_300d.txt.bz2)
+  [500d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_nolg_500d.pkl.bz2)
+  [500d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_nolg_500d.txt.bz2)
+- **English** (window=10, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_300d.txt.bz2)
+  [500d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_500d.pkl.bz2)
+  [500d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_500d.txt.bz2)
+- **Arabic** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/ar/2018-04-20/arwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/ar/2018-04-20/arwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/ar/2018-04-20/arwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/ar/2018-04-20/arwiki_20180420_300d.txt.bz2)
+- **Chinese** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/zh/2018-04-20/zhwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/zh/2018-04-20/zhwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/zh/2018-04-20/zhwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/zh/2018-04-20/zhwiki_20180420_300d.txt.bz2)
+- **Dutch** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/nl/2018-04-20/nlwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/nl/2018-04-20/nlwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/nl/2018-04-20/nlwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/nl/2018-04-20/nlwiki_20180420_300d.txt.bz2)
+- **French** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/fr/2018-04-20/frwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/fr/2018-04-20/frwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/fr/2018-04-20/frwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/fr/2018-04-20/frwiki_20180420_300d.txt.bz2)
+- **German** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/de/2018-04-20/dewiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/de/2018-04-20/dewiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/de/2018-04-20/dewiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/de/2018-04-20/dewiki_20180420_300d.txt.bz2)
+- **Italian** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/it/2018-04-20/itwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/it/2018-04-20/itwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/it/2018-04-20/itwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/it/2018-04-20/itwiki_20180420_300d.txt.bz2)
+- **Japanese** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/ja/2018-04-20/jawiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/ja/2018-04-20/jawiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/ja/2018-04-20/jawiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/ja/2018-04-20/jawiki_20180420_300d.txt.bz2)
+- **Polish** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/pl/2018-04-20/plwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/pl/2018-04-20/plwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/pl/2018-04-20/plwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/pl/2018-04-20/plwiki_20180420_300d.txt.bz2)
+- **Portuguese** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/pt/2018-04-20/ptwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/pt/2018-04-20/ptwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/pt/2018-04-20/ptwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/pt/2018-04-20/ptwiki_20180420_300d.txt.bz2)
+- **Russian** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/ru/2018-04-20/ruwiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/ru/2018-04-20/ruwiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/ru/2018-04-20/ruwiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/ru/2018-04-20/ruwiki_20180420_300d.txt.bz2)
+- **Spanish** (window=5, iteration=10, negative=15):
+  [100d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/es/2018-04-20/eswiki_20180420_100d.pkl.bz2)
+  [100d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/es/2018-04-20/eswiki_20180420_100d.txt.bz2)
+  [300d (bin)](http://wikipedia2vec.s3.amazonaws.com/models/es/2018-04-20/eswiki_20180420_300d.pkl.bz2)
+  [300d (txt)](http://wikipedia2vec.s3.amazonaws.com/models/es/2018-04-20/eswiki_20180420_300d.txt.bz2)
+
+The binary files can be loaded using the `Wikipedia2Vec.load()` method (see the Sample Usage section below).
+The text files are compatible with the format of the [Word2vec](https://code.google.com/archive/p/word2vec/).
+Therefore, these files can be loaded using other libraries such as Gensim's [`load_word2vec_format()`](https://radimrehurek.com/gensim/models/keyedvectors.html#gensim.models.keyedvectors.Word2VecKeyedVectors.load_word2vec_format).
+In the text files, all entities has a prefix *ENTITY/* to distinguish them from words.
 
 Installation
 ------------
@@ -269,24 +349,24 @@ Sample Usage
 
 >>> wiki2vec = Wikipedia2Vec.load(MODEL_FILE)
 
->>> wiki2vec.get_word_vector(u'the')
+>>> wiki2vec.get_word_vector('the')
 memmap([ 0.01617998, -0.03325786, -0.01397999, -0.00150471,  0.03237337,
 ...
        -0.04226106, -0.19677088, -0.31087297,  0.1071524 , -0.09824426], dtype=float32)
 
->>> wiki2vec.get_entity_vector(u'Scarlett Johansson')
+>>> wiki2vec.get_entity_vector('Scarlett Johansson')
 memmap([-0.19793572,  0.30861306,  0.29620451, -0.01193621,  0.18228433,
 ...
         0.04986198,  0.24383858, -0.01466644,  0.10835337, -0.0697331 ], dtype=float32)
 
->>> wiki2vec.most_similar(wiki2vec.get_word(u'yoda'), 5)
+>>> wiki2vec.most_similar(wiki2vec.get_word('yoda'), 5)
 [(<Word yoda>, 1.0),
  (<Entity Yoda>, 0.84333622),
  (<Word darth>, 0.73328167),
  (<Word kenobi>, 0.7328127),
  (<Word jedi>, 0.7223742)]
 
->>> wiki2vec.most_similar(wiki2vec.get_entity(u'Scarlett Johansson'), 5)
+>>> wiki2vec.most_similar(wiki2vec.get_entity('Scarlett Johansson'), 5)
 [(<Entity Scarlett Johansson>, 1.0),
  (<Entity Natalie Portman>, 0.75090045),
  (<Entity Eva Mendes>, 0.73651594),
