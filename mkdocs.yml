@@ -7,5 +7,6 @@ pages:
     - Features: features.md
     - Pretrained Embeddings: pretrained.md
     - Learning Embeddings: commands.md
+    - Basic Usage: usage.md
 theme:
     name: readthedocs
