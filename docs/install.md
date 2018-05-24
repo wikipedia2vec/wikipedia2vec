@@ -25,7 +25,7 @@ We recommend using [OpenBLAS](https://www.openblas.net/) or [Intel Math Kernel L
 Note that, the BLAS library needs to be recognized properly from SciPy.
 This can be confirmed by using the following command:
 
-```
+```bash
 % python -c 'import scipy; scipy.show_config()'
 ```
 

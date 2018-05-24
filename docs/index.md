@@ -11,7 +11,7 @@ They are used in the state-of-the-art models of various tasks such as [entity li
 The embeddings can be easily trained by a single command with a publicly available Wikipedia dump as input.
 The code is implemented in Python, and optimized using Cython and BLAS.
 
-The pretrained embeddings for 12 languages can be downloaded from [this page](pretrained.md).
+Pretrained embeddings for 12 languages can be downloaded from [this page](pretrained.md).
 
 Reference
 ---------

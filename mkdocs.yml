@@ -3,10 +3,11 @@ repo_url: https://github.com/studio-ousia/wikipedia2vec
 site_author: Studio Ousia
 pages:
     - Home: index.md
-    - Installation: install.md
     - Features: features.md
+    - User Guide:
+      - Installation: install.md
+      - Learning Embeddings: commands.md
+      - Basic Usage: usage.md
     - Pretrained Embeddings: pretrained.md
-    - Learning Embeddings: commands.md
-    - Basic Usage: usage.md
 theme:
-    name: readthedocs
+    name: mkdocs
