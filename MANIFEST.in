@@ -1,4 +1,4 @@
-include README.md LICENSE requirements.txt
+include README.md LICENSE
 recursive-include wikipedia2vec *.cpp
 recursive-include wikipedia2vec *.pxd
 recursive-include wikipedia2vec *.pyx
