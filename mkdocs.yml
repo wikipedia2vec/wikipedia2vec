@@ -13,3 +13,4 @@ extra_css:
     - css/extra.css
 theme:
     name: mkdocs
+    custom_dir: docs/custom_theme
