@@ -57,7 +57,7 @@ class custom_build_ext(build_ext):
 setup(
     name='wikipedia2vec',
     version='0.2.4',
-    description='A tool for learning embeddings of words and entities from Wikipedia',
+    description='A tool for learning vector representations of words and entities from Wikipedia',
     long_description=long_description,
     author='Studio Ousia',
     author_email='ikuya@ousia.jp',
