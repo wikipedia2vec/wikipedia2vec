@@ -5,7 +5,7 @@ Wikipedia2Vec has two unique features that are designed to effectively learn emb
 
 ## Extended Skip-Gram Model to Learn Embeddings of Words and Entities
 
-<img src="http://studio-ousia.github.io/wikipedia2vec/img/model.png" width="600" />
+![Extended Skip-Gram Model](img/model.png)
 
 Wikipedia2Vec is based on the [Word2vec's skip-gram model](https://en.wikipedia.org/wiki/Word2vec) that learns to predict neighboring words given each word in corpora.
 We extend the skip-gram model by adding the following two submodels:
