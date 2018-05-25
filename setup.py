@@ -61,7 +61,7 @@ setup(
     long_description=long_description,
     author='Studio Ousia',
     author_email='ikuya@ousia.jp',
-    url='http://studio-ousia.github.io/wikipedia2vec/',
+    url='http://wikipedia2vec.github.io/',
     packages=find_packages(exclude=('tests*',)),
     cmdclass=dict(build_ext=custom_build_ext),
     ext_modules=[Extension(module_name, **kwargs) for (module_name, kwargs) in list_cpp_files()],
