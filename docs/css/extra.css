@@ -24,3 +24,7 @@
   font-size: 18px;
   font-weight: 400;
 }
+
+pre code {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
