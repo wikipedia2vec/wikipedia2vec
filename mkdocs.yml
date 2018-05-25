@@ -1,5 +1,5 @@
 site_name: Wikipedia2Vec
-repo_url: https://github.com/studio-ousia/wikipedia2vec
+repo_url: https://github.com/wikipedia2vec/wikipedia2vec
 site_author: Studio Ousia
 pages:
     - Home: index.md
