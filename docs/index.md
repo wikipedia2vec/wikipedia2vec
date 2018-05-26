@@ -1,4 +1,5 @@
 <h1 id="main_title">Wikipedia2Vec</h1>
+---
 
 Introduction
 ------------

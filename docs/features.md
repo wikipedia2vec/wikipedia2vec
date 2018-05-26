@@ -1,5 +1,6 @@
 Features
 ========
+---
 
 Wikipedia2Vec has two unique features that are designed to effectively learn embeddings from Wikipedia.
 

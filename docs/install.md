@@ -1,5 +1,6 @@
 Installation
 ============
+---
 
 Wikipedia2Vec can be installed from PyPI:
 

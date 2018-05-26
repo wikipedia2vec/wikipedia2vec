@@ -6,12 +6,15 @@ pages:
     - Home: index.md
     - Features: features.md
     - User Guide:
-      - Installation: install.md
-      - Learning Embeddings: commands.md
-      - Basic Usage: usage.md
+        - Installation: install.md
+        - Learning Embeddings: commands.md
+        - Basic Usage: usage.md
     - Pretrained Embeddings: pretrained.md
 extra_css:
     - css/extra.css
 theme:
     name: mkdocs
     custom_dir: docs/custom_theme
+markdown_extensions:
+    - toc:
+        permalink: 

@@ -1,3 +1,31 @@
+#main_title {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 500;
+}
+
+.navbar-brand {
+  font-family: 'Raleway', sans-serif;
+  font-size: 18px;
+  font-weight: 400;
+}
+
+pre code {
+  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
+}
+
+code.no-highlight {
+    color: black;
+}
+
+div.col-md-9 h1:first-of-type .headerlink {
+    display: none;
+}
+
+div.col-md-9 h1:first-of-type {
+    font-size: 55px;
+    font-weight: 300;
+}
+
 @media screen and (min-width: 768px) and (max-width: 1000px) {
   .nav>li>a[href^="https://github.com/"] {
     display: none;
@@ -12,19 +40,4 @@
   .nav>li>a[rel="next"] {
     display: none;
   }
-}
-
-#main_title {
-  font-family: 'Raleway', sans-serif;
-  font-weight: 500;
-}
-
-.navbar-brand {
-  font-family: 'Raleway', sans-serif;
-  font-size: 18px;
-  font-weight: 400;
-}
-
-pre code {
-  font-family: Menlo, Monaco, Consolas, "Courier New", monospace;
 }

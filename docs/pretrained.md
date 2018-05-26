@@ -1,4 +1,5 @@
 # Pretrained Embeddings
+---
 
 We provide the embeddings in binary and text format.
 The binary files can be loaded using the `Wikipedia2Vec.load()` method (see [Basic Usage](usage.md)).

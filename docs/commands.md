@@ -1,5 +1,6 @@
 Learning Embeddings
 ===================
+---
 
 First, you need to download a source Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
 The English dump file can be obtained by running the following command.

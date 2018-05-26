@@ -1,5 +1,6 @@
 Basic Usage
 ===========
+---
 
 ```python
 >>> from wikipedia2vec import Wikipedia2Vec
