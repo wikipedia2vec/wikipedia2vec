@@ -1,9 +1,9 @@
 # Pretrained Embeddings
 ---
 
-We provide the embeddings in binary and text format.
+We provide pretrained embeddings for 12 languages in binary and text format.
 The binary files can be loaded using the `Wikipedia2Vec.load()` method (see [Basic Usage](usage.md)).
-The text files are compatible with the format of the [Word2vec](https://code.google.com/archive/p/word2vec/).
+The text files are compatible with the text format of [Word2vec](https://code.google.com/archive/p/word2vec/).
 Therefore, these files can be loaded using other libraries such as Gensim's [`load_word2vec_format()`](https://radimrehurek.com/gensim/models/keyedvectors.html#gensim.models.keyedvectors.Word2VecKeyedVectors.load_word2vec_format).
 In the text files, all entities have a prefix *ENTITY/* to distinguish them from words.
 
