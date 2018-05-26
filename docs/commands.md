@@ -5,7 +5,7 @@ Learning Embeddings
 First, you need to download a source Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from [Wikimedia Downloads](https://dumps.wikimedia.org/).
 The English dump file can be obtained by running the following command.
 
-```bash
+```text
 % wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 ```
 
@@ -13,7 +13,7 @@ Note that you do not need to decompress the dump file.
 
 Then, the embeddings can be trained from a Wikipedia dump using the *train* command.
 
-```bash
+```text
 % wikipedia2vec train DUMP_FILE OUT_FILE
 ```
 
@@ -55,7 +55,7 @@ The *train* command internally calls the five commands described below (namely, 
 
 The *build_dump_db* command creates a database that contains Wikipedia pages each of which consists of texts and anchor links in it.
 
-```bash
+```text
 % wikipedia2vec build_dump_db DUMP_FILE OUT_FILE
 ```
 
@@ -72,7 +72,7 @@ The *build_dump_db* command creates a database that contains Wikipedia pages eac
 
 The *build\_dictionary* command builds a dictionary of words and entities.
 
-```bash
+```text
 % wikipedia2vec build_dictionary DUMP_DB_FILE OUT_FILE
 ```
 
@@ -96,7 +96,7 @@ The *build\_dictionary* command builds a dictionary of words and entities.
 
 The *build\_link\_graph* command generates a sparse matrix representing the link structure between Wikipedia entities.
 
-```bash
+```text
 % wikipedia2vec build_link_graph DUMP_DB_FILE DIC_FILE OUT_FILE
 ```
 
@@ -114,7 +114,7 @@ The *build\_link\_graph* command generates a sparse matrix representing the link
 
 The *build\_mention\_db* command builds a database that contains the mappings of entity names (mentions) and their possible referent entities.
 
-```bash
+```text
 % wikipedia2vec build_mention_db DUMP_DB_FILE DIC_FILE OUT_FILE
 ```
 
@@ -137,7 +137,7 @@ The *build\_mention\_db* command builds a database that contains the mappings of
 
 The *train_embedding* command runs the training of the embeddings.
 
-```bash
+```text
 % wikipedia2vec train_embedding DUMP_DB_FILE DIC_FILE OUT_FILE
 ```
 
@@ -169,7 +169,7 @@ The *train_embedding* command runs the training of the embeddings.
 
 *save\_text* outputs a model in a text format.
 
-```bash
+```text
 % wikipedia2vec save_text MODEL_FILE OUT_FILE
 ```
 

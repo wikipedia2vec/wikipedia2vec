@@ -21,16 +21,18 @@ Reference
 
 If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
 
-    @InProceedings{yamada-EtAl:2016:CoNLL,
-      author    = {Yamada, Ikuya  and  Shindo, Hiroyuki  and  Takeda, Hideaki  and  Takefuji, Yoshiyasu},
-      title     = {Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
-      booktitle = {Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
-      month     = {August},
-      year      = {2016},
-      address   = {Berlin, Germany},
-      pages     = {250--259},
-      publisher = {Association for Computational Linguistics}
-    }
+```text
+@InProceedings{yamada-EtAl:2016:CoNLL,
+  author    = {Yamada, Ikuya  and  Shindo, Hiroyuki  and  Takeda, Hideaki  and  Takefuji, Yoshiyasu},
+  title     = {Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
+  booktitle = {Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
+  month     = {August},
+  year      = {2016},
+  address   = {Berlin, Germany},
+  pages     = {250--259},
+  publisher = {Association for Computational Linguistics}
+}
+```
 
 License
 -------

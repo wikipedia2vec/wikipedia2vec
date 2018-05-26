@@ -4,13 +4,13 @@ Installation
 
 Wikipedia2Vec can be installed from PyPI:
 
-```bash
+```text
 % pip install wikipedia2vec
 ```
 
 Alternatively, you can install the development version of this software from the GitHub repository:
 
-```bash
+```text
 % git clone https://github.com/studio-ousia/wikipedia2vec.git
 % cd wikipedia2vec
 % pip install Cython
