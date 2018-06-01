@@ -1,6 +1,8 @@
 <h1 id="main_title">Wikipedia2Vec</h1>
 ---
 
+<a class="github-button" href="https://github.com/wikipedia2vec/wikipedia2vec" data-size="large" data-show-count="true" aria-label="Star wikipedia2vec/wikipedia2vec on GitHub">Star</a>
+
 Introduction
 ------------
 
