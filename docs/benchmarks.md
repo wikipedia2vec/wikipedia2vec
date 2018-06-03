@@ -44,11 +44,12 @@ We do not compare the performance on Entity Relatedness here.
 
 For both embeddings, we set the `window_size` to 5, `iteration` to 10, and
 `negative_sampling_count` to 15.  
+For training, we only use English Wikipedia dump, without adding any additional large-scale corpora.
 You can train gensim word embedding by running [gensim_wikipedia.py](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/scripts/gensim_wikipedia.py) under `script` directory of Wikipedia2ec.
 
 The results on a variety of benckmarks show that Wikipedia2Vec pretrained model
 ([enwiki_20180420_300d.pkl](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_300d.txt.bz2)) outperforms gensim pretrained model.
-For training, we only use English Wikipedia dump, without adding any additional large-scale corpora.
+
 <!-- - enwiki_20180420_win10_300d.pkl
 - gensim_model_300d.pkl -->
 
@@ -131,8 +132,74 @@ We also provide benchmark accuracies of Wikipedia2Vec pretrained models
 with different training settings to show how the performance varies on various hyperparameters.
 All of the pre-trained models are available, and you can download them from the [pretrained](https://wikipedia2vec.github.io/wikipedia2vec/pretrained/) page.
 
-### Word Similarity
+### Link Graph
+The link graph model that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities.  
+We compared the performance of the link graph model with the no link graoh model to
+see the effectiveness of the link graphs between entities.
+
+#### Word Similarity
+| Dataset | Wikipedia2Vec | Wikipedia2Vec_no_link_graph |
+|-----------|------------|------------|
+| MEN-TR-3k | **0.749** | -- |
+| RG-65 | **0.7837** | --|
+| SimLex999 | **0.3815** | -- |
+| WS-353-ALL | **0.6952** | -- |
+| WS-353-REL | **0.6233** | -- |
+| WS-353-SIM | 0.7597 | -- |
+
+#### Word Analogy
+| Dataset | Wikipedia2Vec | Wikipedia2Vec_no_link_graph |
+|-----------|------------|------------|
+| GOOGLE ANALOGY (Semantic) | **0.7892** | -- |
+| GOOGLE ANALOGY (Syntactic) | **0.6812** | -- |
+
+#### Entity Relatedness
+| Dataset | Wikipedia2Vec | Wikipedia2Vec_no_link_graph |
+|-----------|------------|------------|
+| KORE | **0.7892** | -- |
+
+### Window Size
+Previous work show that the window size for word embedding training does matter.
+We conducted evaluation on Wikipedia2Vec models with different window sizes,
+to see how important the window size is for the performance on intrinsic embedding tasks.
+
+We compare the performance of [enwiki_20180420 (300d)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_300d.pkl.bz2) (Wikipedia2Vec (window=5)) with the one of
+[enwiki_20180420_win10 (300d)](http://wikipedia2vec.s3.amazonaws.com/models/en/2018-04-20/enwiki_20180420_win10_300d.pkl.bz2) (Wikipedia2Vec (window=10)).
+
+For both embeddings, we set the `iteration` to 10, and
+`negative_sampling_count` to 15.  
+For training, we only use English Wikipedia dump, without adding any additional large-scale corpora.
 
 
-### Multilingual Evaluation
+#### Word Similarity
+Our experimental results show that larger window size seems to improve the
+performance on Word Similarity.  
+Wikipedia2Vec (window=10) outperforms the Wikipedia2Vec (window=5) model on almost all of the
+Word Similarity benchmarks.
+
+| Dataset | Wikipedia2Vec (window=5)| Wikipedia2Vec (window=10) |
+|-----------|------------|------------|
+| MEN-TR-3k | 0.749 | **0.7541** |
+| RG-65 | 0.7837 | **0.7861** |
+| SimLex999 | **0.3815** | 0.3578 |
+| WS-353-ALL | 0.6952 | **0.71** |
+| WS-353-REL | 0.6233 | **0.6435** |
+| WS-353-SIM | 0.7597 | **0.7848** |
+
+#### Word Analogy
+
+| Dataset | Wikipedia2Vec (window=5)| Wikipedia2Vec (window=10) |
+|-----------|------------|------------|
+| GOOGLE ANALOGY (Semantic) | **0.7892** | 0.789 |
+| GOOGLE ANALOGY (Syntactic) | **0.6812** | 0.6529 |
+
+#### Entity Relatedness
+| Dataset | Wikipedia2Vec (window=5)| Wikipedia2Vec (window=10) |
+|-----------|------------|------------|
+| KORE | **0.6905** | 0.6811 |
+
+
+## Multilingual Evaluation
 ### Chinese
+### Spanish
+### German
