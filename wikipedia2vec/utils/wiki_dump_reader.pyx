@@ -36,13 +36,13 @@ class WikiDumpReader(object):
     def __iter__(self):
         with bz2.BZ2File(self._dump_file) as f:
             c = 0
-            for (title, wiki_text) in _extract_pages(f):
+            for (title, wiki_text, redirect) in _extract_pages(f):
                 lower_title = title.lower()
                 if any([lower_title.startswith(ns) for ns in self._ignored_ns]):
                     continue
                 c += 1
 
-                yield WikiPage(title, self._language, wiki_text)
+                yield WikiPage(title, self._language, wiki_text, redirect)
 
                 if c % 100000 == 0:
                     logger.info('Processed: %d pages', c)
@@ -58,13 +58,17 @@ def _extract_pages(in_file):
     page_tag = '{%s}page' % namespace
     text_path = './{%s}revision/{%s}text' % (namespace, namespace)
     title_path = './{%s}title' % namespace
+    redirect_path = './{%s}redirect' % namespace
 
     for elem in elems:
         if elem.tag == page_tag:
             title = elem.find(title_path).text
             text = elem.find(text_path).text or ''
+            redirect = elem.find(redirect_path)
+            if redirect is not None:
+                redirect = _normalize_title(_to_unicode(redirect.attrib['title']))
 
-            yield _to_unicode(title), _to_unicode(text)
+            yield _to_unicode(title), _to_unicode(text), redirect
 
             elem.clear()
 
@@ -85,3 +89,7 @@ cdef unicode _to_unicode(basestring s):
     if isinstance(s, unicode):
         return s
     return s.decode('utf-8')
+
+
+cdef unicode _normalize_title(unicode title):
+    return (title[0].upper() + title[1:]).replace('_', ' ')

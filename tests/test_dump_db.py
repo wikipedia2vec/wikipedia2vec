@@ -125,7 +125,8 @@ class TestDumpDB(unittest.TestCase):
 
     def test_parse(self):
         page = WikiPage('Japan', 'en',
-            "'''Japan''' is a [[Sovereign state|sovereign]] [[island country|island nation]] in [[East Asia]]"
+            "'''Japan''' is a [[Sovereign state|sovereign]] [[island country|island nation]] in [[East Asia]]",
+            None
         )
         ret = dump_db._parse(page)
         eq_('page', ret[0])
@@ -138,7 +139,7 @@ class TestDumpDB(unittest.TestCase):
             paragraph[1])
 
     def test_parse_redirect(self):
-        page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]')
+        page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]', None)
         ret = dump_db._parse(page)
         eq_('redirect', ret[0])
         eq_('日本'.encode('utf-8'), ret[1][0])
