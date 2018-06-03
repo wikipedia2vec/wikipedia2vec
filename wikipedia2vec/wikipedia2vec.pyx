@@ -216,8 +216,8 @@ cdef class Wikipedia2Vec:
         word_stats = np.zeros((len(word_dict), 2), dtype=np.int32)
         entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int32)
 
-        dictionary = Dictionary(word_dict, entity_dict, redirect_dict, None, word_stats,
-                                entity_stats, None, False, dict())
+        dictionary = Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats,
+                                None, False, dict())
         ret = Wikipedia2Vec(dictionary)
         ret.syn0 = syn0
         ret.syn1 = None
