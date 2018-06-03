@@ -2,27 +2,38 @@ Benchmarks
 ===========
 ---
 
-We provide benchmark accuracies for the Wikipedia2Vec pre-trained model.
-Evaluations are conducted end-to-end.
+We provide benchmark accuracies for the Wikipedia2Vec pre-trained model.  
 
-## About The Evaluations
-We conducted evaluations on various intrinsic tasks,
-and the tasks could be divided into three categories:
-word similarity, word analogy, entity relatedness.
+Evaluations are conducted end-to-end, and you could run evaluation on your learned embeding by running [intrinsic_eval.py](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/scripts/intrinsic_eval.py)
 
-### Word Similarity
-- MEN-TR-3k
-- RG-65
-- SimLex999
-- WS-353-REL
-- WS-353-SIM
+### About The Evaluations
+We conducted evaluations on a variety of intrinsic tasks.
+
+Wikipedia2Vec learns embeddings that map words and entities into a unified continuous vector space.  
+Thus, we evaluate the learned embeddings with Word Similarity and Word Analogy for words, while we evaluate them with Entity Relatedness for entities.
+
+#### Word Similarity
+Word Similarity is a task for intrinsic evaluation of word vectors, which correlates the distance between vectors and human judgments of semantic similarity.
+
+- [MEN-TR-3k](http://clic.cimec.unitn.it/~elia.bruni/MEN.html) ([Bruni et al.,2014](https://staff.fnwi.uva.nl/e.bruni/publications/bruni2014multimodal.pdf))
+- [RG-65](https://aclweb.org/aclwiki/RG-65_Test_Collection_(State_of_the_art))
+([Rubenstein et al., 1965](https://dl.acm.org/citation.cfm?id=365657))
+- [SimLex999](https://www.cl.cam.ac.uk/~fh295/simlex.html) ([Hill et al, 2014](https://arxiv.org/abs/1408.3456?context=cs))
+- [WS-353-REL](http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/) ([Finkelstein et al., 2002](https://dl.acm.org/citation.cfm?id=503110))
+- [WS-353-SIM](http://www.cs.technion.ac.il/~gabr/resources/data/wordsim353/) ([Finkelstein et al., 2002](https://dl.acm.org/citation.cfm?id=503110))
 
 
-### Word Analogy
-- GOOGLE ANALOGY (Syntactic)
-- GOOGLE ANALOGY (Semantic)
-### Entity Relatedness
-- KORE
+#### Word Analogy
+Word Analogy is the task, which inspects syntactic,
+morphosyntactic and semantic properties of words and phrases.
+
+- [GOOGLE ANALOGY (Syntactic)](http://download.tensorflow.org/data/questions-words.txt) ([Mikolov et al., 2013](https://arxiv.org/pdf/1301.3781))
+- [GOOGLE ANALOGY (Semantic)](http://download.tensorflow.org/data/questions-words.txt) ([Mikolov et al., 2013](https://arxiv.org/pdf/1301.3781))
+
+#### Entity Relatedness
+Entity Relatedness is the intrinsic evaluation task for entities, where the relatedness between Named Entities are measured.
+
+-  [KORE](https://www.mpi-inf.mpg.de/departments/databases-and-information-systems/research/yago-naga/aida/downloads/) ([Hoffart et al., 2012](https://dl.acm.org/citation.cfm?id=2396832))
 
 
 ## Model Comparison with Gensim
@@ -56,7 +67,7 @@ these benchmarks.
 | GOOGLE ANALOGY (Semantic) | **0.789** | 0.7516 |
 | GOOGLE ANALOGY (Syntactic) | **0.6529** | 0.5719 |
 
-## Model Comparison with word2vec, GloVE
+## Model Comparison with word2vec, GloVe
 In this section, we compare the performance of
 [word2vec](https://code.google.com/archive/p/word2vec/) and [GloVe](https://nlp.stanford.edu/projects/glove/) pretrained embeddings
 and our Wikipedia2Vec word embeddings.  
