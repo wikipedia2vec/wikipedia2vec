@@ -139,7 +139,7 @@ class TestDumpDB(unittest.TestCase):
             paragraph[1])
 
     def test_parse_redirect(self):
-        page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]', None)
+        page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]', 'Japan')
         ret = dump_db._parse(page)
         eq_('redirect', ret[0])
         eq_('日本'.encode('utf-8'), ret[1][0])
