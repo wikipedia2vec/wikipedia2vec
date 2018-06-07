@@ -60,12 +60,12 @@ the benchmarks.
 
 | Dataset | Wikipedia2Vec | gensim |
 |-----------|------------|------------|
-| MEN-TR-3k | **0.749** | 0.7259 |
-| RG-65 | **0.7837** | 0.7536 |
-| SimLex999 | **0.3815** | 0.3451 |
-| WS-353-ALL | **0.6952** | 0.6795 |
-| WS-353-REL | **0.6233** | 0.6132 |
-| WS-353-SIM | 0.7597 | **0.7742** |
+| MEN-TR-3k | **0.749** | 0.7315 |
+| RG-65 | **0.7837** | 0.7582 |
+| SimLex999 | **0.3815** | 0.3471 |
+| WS-353-ALL | **0.6952** | 0.6933 |
+| WS-353-REL | 0.6233 |  **0.625** |
+| WS-353-SIM | 0.7597 | **0.7833** |
 
 ### Word Analogy
 In both of the Word Analogy tasks, the embedding trained by Wikipedia2Vec
@@ -73,8 +73,8 @@ significantly outperform than the embedding trained by gensim.
 
 | Dataset | Wikipedia2Vec | gensim |
 |-----------|------------|------------|
-| GOOGLE ANALOGY (Semantic) | **0.7892** | 0.7516 |
-| GOOGLE ANALOGY (Syntactic) | **0.6812** | 0.5719 |
+| GOOGLE ANALOGY (Semantic) | **0.7892** | 0.782 |
+| GOOGLE ANALOGY (Syntactic) | **0.6812** | 0.5783 |
 
 ## Model Comparison with word2vec, GloVe
 In this section, we compare the performance of
