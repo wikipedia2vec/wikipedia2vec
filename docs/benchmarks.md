@@ -129,34 +129,47 @@ and Wikipedia2Vec embedding shows competitive performance despite of its smaller
 
 ## The Effects of Parameter Tuning
 We also provide benchmark accuracies of Wikipedia2Vec pretrained models
-with different training settings to show how the performance varies on various hyperparameters.
+with different training settings to show how the performance varies on various hyper-parameters.
 All of the pre-trained models are available, and you can download them from the [pretrained](https://wikipedia2vec.github.io/wikipedia2vec/pretrained/) page.
 
 ### Link Graph
-The link graph model that learns to estimate neighboring entities given an entity in the link graph of Wikipedia entities.  
-We compared the performance of the link graph model with the no link graoh model to
-see the effectiveness of the link graphs between entities.
+The link graph model that learns to estimate neighboring entities given an entity
+ in the link graph of Wikipedia entities.  
+We compared the performance of the link graph model with the no link graph model to
+see the effectiveness of the link graphs between entities.  
+Except for the link graph, we set all of the parameters to the same.
+For both embeddings, we set the `window_size` to 5, `iteration` to 10, and
+`negative_sampling_count` to 15.
 
 #### Word Similarity
+In terms of the performance on Word Similarity task, no link graph model
+outperforms the link graph model.
+
 | Dataset | Wikipedia2Vec | Wikipedia2Vec_no_link_graph |
 |-----------|------------|------------|
-| MEN-TR-3k | **0.749** | -- |
-| RG-65 | **0.7837** | --|
-| SimLex999 | **0.3815** | -- |
-| WS-353-ALL | **0.6952** | -- |
-| WS-353-REL | **0.6233** | -- |
-| WS-353-SIM | 0.7597 | -- |
+| MEN-TR-3k | 0.749 | **0.7467** |
+| RG-65 | 0.7837 | **0.7987** |
+| SimLex999 | 0.3815 | **0.3867** |
+| WS-353-ALL | 0.6952 | **0.7009** |
+| WS-353-REL | 0.6233 | **0.6304** |
+| WS-353-SIM | 0.7597 | **0.7643** |
 
 #### Word Analogy
+The link graph model achieves higher performance on both of the Word Analogy task.
+
 | Dataset | Wikipedia2Vec | Wikipedia2Vec_no_link_graph |
 |-----------|------------|------------|
-| GOOGLE ANALOGY (Semantic) | **0.7892** | -- |
-| GOOGLE ANALOGY (Syntactic) | **0.6812** | -- |
+| GOOGLE ANALOGY (Semantic) | **0.7892** | 0.7804 |
+| GOOGLE ANALOGY (Syntactic) | **0.6812** | 0.6703 |
 
 #### Entity Relatedness
+Unsurprisingly, without link graph, the model shows significantly huge drop in its
+performance in Entity Relatedness tasks, because of the lacking of the information
+about the entity relationship.
+
 | Dataset | Wikipedia2Vec | Wikipedia2Vec_no_link_graph |
 |-----------|------------|------------|
-| KORE | **0.7892** | -- |
+| KORE | **0.6905** | 0.5892 |
 
 ### Window Size
 Previous work show that the window size for word embedding training does matter.
