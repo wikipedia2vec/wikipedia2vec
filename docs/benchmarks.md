@@ -213,6 +213,21 @@ Word Similarity benchmarks.
 
 
 ## Multilingual Evaluation
-### Chinese
-### Spanish
-### German
+We evaluate our word vectors (300d) on German, Spanish, Portuguese and Chinese
+word analogy task.
+
+#### Multilingual Word Analogy Dataset
+We use the same word analogy dataset as [Grave et.al](https://arxiv.org/abs/1802.06893).
+
+- [Google Analogy Dataset (German)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/de/word/analogy/DE-GOOGLE.txt)
+- [Google Analogy Dataset (Spanish)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/es/word/analogy/ES-GOOGLE.txt)
+- [Google Analogy Dataset (Portuguese)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/pt/word/analogy/PT-GOOGLE.txt)
+- [Google Analogy Dataset (Chinese)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/zh/word/analogy/ZH-GOOGLE.txt)
+
+#### Multilingual Word Analogy Results
+| language | Wikipedia2Vec |
+|-----------|------------|
+| German| 0.5468 |
+| Spanish | 0.5370 |
+| Portuguese | 0.4769 |
+| Chinese| 0.5519 |
