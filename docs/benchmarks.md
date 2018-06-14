@@ -126,6 +126,19 @@ and Wikipedia2Vec embedding shows competitive performance despite of its smaller
 | GOOGLE ANALOGY (Semantic) | 0.7892 | OOV | **0.8185** | 0.794 |
 | GOOGLE ANALOGY (Syntactic) | 0.6812 | OOV | 0.6925 | **0.7567** |
 
+## Comparison with state of the art entity embeddings method
+[Ristoski et.al](http://www.semantic-web-journal.net/system/files/swj1495.pdf) proposed **RDF2Vec**, an approach that uses language modeling approaches for unsupervised feature extraction from sequences of words,
+and adapts them to RDF graphs, and showed that the the RDF2Vec model has achieved the state of the art performance on KORE dataset.   
+In this section, we compare entity relatedness performance of both of the models with the same word dimensionality.
+
+| Category | Wikipedia2Vec | DB2Vec Similarity  | DB2Vec Relatedness |
+|-----------|------------|------------|------------|
+| IT companies | 0.7934 | 0.743 | **0.811** |
+| Hollywood Celebrities | 0.6887 | 0.734 | **0.778** |
+| Television Series | 0.6415 | 0.635 | **0.711** |
+| Video Games | **0.7261** | 0.669 | 0.658 |
+| Chuck Norris | 0.6286 | 0.628 | **0.670** |
+| All | 0.7084 | 0.692 | **0.736** |
 
 ## The Effects of Parameter Tuning
 We also provide benchmark accuracies of Wikipedia2Vec pretrained models
@@ -211,7 +224,6 @@ Word Similarity benchmarks.
 |-----------|------------|------------|
 | KORE | **0.6905** | 0.6811 |
 
-
 ## Multilingual Evaluation
 We evaluate our word vectors (300d) on German, Spanish, Portuguese and Chinese
 word analogy task.
@@ -225,9 +237,15 @@ We use the same word analogy dataset as [Grave et.al](https://arxiv.org/abs/1802
 - [Google Analogy Dataset (Chinese)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/zh/word/analogy/ZH-GOOGLE.txt)
 
 #### Multilingual Word Analogy Results
-| language | Wikipedia2Vec |
-|-----------|------------|
-| German| 0.5468 |
-| Spanish | 0.5370 |
-| Portuguese | 0.4769 |
-| Chinese| 0.5519 |
+The results of word analogy task evaluation are as follow.  
+It should be noted that they restrict the vocabulary for
+the analogy tasks to the 200,000 most
+frequent words from the training data,
+while we use the entire vocabulary acquired by Wikipedia corpus on word analogy task.
+
+| language | Wikipedia2Vec | fastText ([Grave et.al](https://arxiv.org/abs/1802.06893))|
+|-----------|------------|------------|
+| German| 0.5468 | 0.61 |
+| Spanish | 0.5370 |0.574|
+| Portuguese | 0.4769 | 0.54 |
+| Chinese| 0.5519 | 0.631 |
