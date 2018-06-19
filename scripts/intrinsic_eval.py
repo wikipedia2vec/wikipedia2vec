@@ -28,9 +28,9 @@ KORE_CATEGORIES = {
 @click.option('--entity-similarity/--no-entity-similarity', default=True)
 @click.option('--lowercase/--no-lowercase', default=True)
 @click.option('--batch-size', default=1000)
-@click.option('--vocab-size', default=300000)
+@click.option('--analogy-vocab-size', default=None, type=int)
 def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity_similarity,
-         lowercase, batch_size, vocab_size):
+         lowercase, batch_size, analogy_vocab_size):
     model = Wikipedia2Vec.load(model_file)
 
     results = []
@@ -67,6 +67,19 @@ def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity
                 results.append((filename[:-4], spearmanr(gold, estimated)[0], oov_count))
 
     if word_analogy:
+        if analogy_vocab_size is None:
+            target_words = [w.text for w in model.dictionary.words()]
+        else:
+            target_words = [w.text for w in sorted(model.dictionary.words(), key=lambda w: w.count,
+                                                   reverse=True)[:analogy_vocab_size]]
+
+        word_emb = np.empty((len(target_words), model.syn0.shape[1]))
+        vocab = {}
+        for (n, word) in enumerate(target_words):
+            word_emb[n] = model.get_word_vector(word)
+            vocab[word] = n
+        word_emb = word_emb / np.linalg.norm(word_emb, 2, axis=1, keepdims=True)
+
         base_dir = os.path.join(os.path.join(data_dir, 'word'), 'analogy')
         for filename in os.listdir(base_dir):
             with open(os.path.join(base_dir, filename)) as f:
@@ -75,21 +88,18 @@ def main(data_dir, model_file, out_format, word_analogy, word_similarity, entity
                 for (n, line) in enumerate(f):
                     if not line.startswith(':'):
                         if lowercase:
-                            words = list(map(model.get_word, line.lower().split()))
+                            indices = list(map(vocab.get, line.lower().split()))
                         else:
-                            words = list(map(model.get_word, line.split()))
-                        if not all(w is not None for w in words):
+                            indices = list(map(vocab.get, line.split()))
+                        if not all(i is not None for i in indices):
                             oov_count += 1
                             continue
 
-                        (a_ind, b_ind, c_ind, d_ind) = map(lambda o: o.index, words)
+                        (a_ind, b_ind, c_ind, d_ind) = indices
                         A_ind.append(a_ind)
                         B_ind.append(b_ind)
                         C_ind.append(c_ind)
                         D_ind.append(d_ind)
-
-                offset = model.dictionary.entity_offset
-                word_emb = model.syn0[:offset] / np.linalg.norm(model.syn0[:offset], 2, axis=1, keepdims=True)
 
                 (A, B, C) = (word_emb[A_ind], word_emb[B_ind], word_emb[C_ind])
                 D = (B - A + C)
