@@ -94,10 +94,6 @@ GloVe's [glove.42B.300d](http://nlp.stanford.edu/data/glove.42B.300d.zip)
 (42B tokens, 1.9M vocab) and [glove.840B.300d](http://nlp.stanford.edu/data/glove.840B.300d.zip)
 (840B tokens, 2.2M vocab)pre-trained embedding.
 
-<!-- word2vec_gnews_300d.pkl
-glove_42b_300d.pkl
-glove_840b_300d.pkl -->
-
 ### Word Similarity
 The glove.840B.300d outperform our embeddings trained with Wikipedia on
 all of the benchmarks, benefiting from its huge vocabulary size and Common Crawl
@@ -107,38 +103,43 @@ On the other hand, our Wikipedia2Vec pretrained vector outperforms word2vec_gnew
 glove_42b_300d on some of the benchmarks, even though training corpora for these embeddings are three or four orders of magnitudes larger than Wikipedia only training corpus.  
 
 
-| Dataset | Wikipedia2Vec | word2vec_gnews | glove_42b_300d | glove_840b_300d|
+| Dataset | Wikipedia2Vec | fastText | glove_42b_300d | glove_840b_300d|
 |-----------|------------|------------|------------|------------|
-| MEN-TR-3k | 0.749 | OOV | 0.7362 | **0.8016** |
-| RG-65 | 0.7837 | 0.7608 | **0.8171** | 0.7696 |
-| SimLex999 | 0.3815 | **0.442** | 0.3738 | 0.4083 |
-| WS-353-ALL | 0.6952 | 0.7 |0.6321 | **0.7379** |
-| WS-353-REL | 0.6233 | 0.6355 | 0.5706 |  **0.6876**  |
-| WS-353-SIM | 0.7597 | 0.7717 | 0.6979 | **0.8031** |
+| MEN-TR-3k | 0.749 | - | 0.7362 | **0.8016** |
+| RG-65 | 0.7837 | - | **0.8171** | 0.7696 |
+| SimLex999 | 0.3815 | - | 0.3738 | 0.4083 |
+| WS-353-ALL | 0.6952 | - |0.6321 | **0.7379** |
+| WS-353-REL | 0.6233 | - | 0.5706 |  **0.6876**  |
+| WS-353-SIM | 0.7597 | - | 0.6979 | **0.8031** |
 
 
 ### Word Analogy
 In Word Analogy evaluations, we found the same trend as Word Similarity,
 and Wikipedia2Vec embedding shows competitive performance despite of its smaller scale training corpus.
 
-| Dataset | Wikipedia2Vec | word2vec_gnews | glove_42b_300d | glove_42b_300d|
+| Dataset | Wikipedia2Vec | fastText | glove_42b_300d | glove_42b_300d|
 |-----------|------------|------------|------------|------------|
-| GOOGLE ANALOGY (Semantic) | 0.7892 | OOV | **0.8185** | 0.794 |
-| GOOGLE ANALOGY (Syntactic) | 0.6812 | OOV | 0.6925 | **0.7567** |
+| GOOGLE ANALOGY (Semantic) | 0.7892 | - | **0.8185** | 0.794 |
+| GOOGLE ANALOGY (Syntactic) | 0.6812 | - | 0.6925 | **0.7567** |
 
 ## Comparison with state of the art entity embeddings method
-[Ristoski et.al](http://www.semantic-web-journal.net/system/files/swj1495.pdf) proposed **RDF2Vec**, an approach that uses language modeling approaches for unsupervised feature extraction from sequences of words,
-and adapts them to RDF graphs, and showed that the the RDF2Vec model has achieved the state of the art performance on KORE dataset.   
-In this section, we compare entity relatedness performance of both of the models with the same word dimensionality.
+[Ristoski et.al](http://www.semantic-web-journal.net/system/files/swj1495.pdf) proposed **RDF2Vec**,
+an approach that uses language modeling approaches for unsupervised feature extraction from sequences of words,
+and adapts them to RDF graphs.
+RDF2Vec model has achieved the state of the art performance on KORE dataset.   
+We compare entity relatedness performance of both of the models with the same word dimensionality.
 
-| Category | Wikipedia2Vec | DB2Vec Similarity  | DB2Vec Relatedness |
-|-----------|------------|------------|------------|
-| IT companies | 0.7934 | 0.743 | **0.811** |
-| Hollywood Celebrities | 0.6887 | 0.734 | **0.778** |
-| Television Series | 0.6415 | 0.635 | **0.711** |
-| Video Games | **0.7261** | 0.669 | 0.658 |
-| Chuck Norris | 0.6286 | 0.628 | **0.670** |
-| All | 0.7084 | 0.692 | **0.736** |
+As shown in the table below, except for the only one category, Hollywood celebrities,
+Wikipedia2Vec achieved higher performance on KORE dataset.
+
+| Category | Wikipedia2Vec | DB2Vec Similarity  |
+|-----------|------------|------------|
+| IT companies | **0.7934** | 0.743 |
+| Hollywood Celebrities | 0.6887 | **0.734** |
+| Television Series | **0.6415** | 0.635 |
+| Video Games | **0.7261** | 0.669 |
+| Chuck Norris | **0.6286** | 0.628 |
+| All | **0.7084** | 0.692 |
 
 ## The Effects of Parameter Tuning
 We also provide benchmark accuracies of Wikipedia2Vec pretrained models
@@ -238,14 +239,11 @@ We use the same word analogy dataset as [Grave et.al](https://arxiv.org/abs/1802
 
 #### Multilingual Word Analogy Results
 The results of word analogy task evaluation are as follow.  
-It should be noted that they restrict the vocabulary for
-the analogy tasks to the 200,000 most
-frequent words from the training data,
-while we use the entire vocabulary acquired by Wikipedia corpus on word analogy task.
+We restrict the vocabulary for the analogy tasks to the 200,000 most frequent words from the training data.
 
 | language | Wikipedia2Vec | fastText ([Grave et.al](https://arxiv.org/abs/1802.06893))|
 |-----------|------------|------------|
-| German| 0.5468 | 0.61 |
-| Spanish | 0.5370 |0.574|
-| Portuguese | 0.4769 | 0.54 |
-| Chinese| 0.5519 | 0.631 |
+| German| **0.617** | 0.61 |
+| Spanish | **0.574** | **0.574** |
+| Portuguese | 0.53 | **0.54** |
+| Chinese| 0.572 | **0.631** |
