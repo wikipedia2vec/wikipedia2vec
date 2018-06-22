@@ -226,15 +226,17 @@ Word Similarity benchmarks.
 | KORE | **0.6905** | 0.6811 |
 
 ## Multilingual Evaluation
-We evaluate our word vectors (300d) on German, Spanish, Portuguese and Chinese
+We evaluate our word vectors (300d) on German, French, Spanish, Portuguese, Polish and Chinese
 word analogy task.
 
 #### Multilingual Word Analogy Dataset
 We use the same word analogy dataset as [Grave et.al](https://arxiv.org/abs/1802.06893).
 
 - [Google Analogy Dataset (German)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/de/word/analogy/DE-GOOGLE.txt)
+- [Google Analogy Dataset (French)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/fr/word/analogy/FR-GOOGLE.txt)
 - [Google Analogy Dataset (Spanish)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/es/word/analogy/ES-GOOGLE.txt)
 - [Google Analogy Dataset (Portuguese)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/pt/word/analogy/PT-GOOGLE.txt)
+- [Google Analogy Dataset (Polish)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/pl/word/analogy/PL-GOOGLE.txt)
 - [Google Analogy Dataset (Chinese)](https://github.com/wikipedia2vec/wikipedia2vec/blob/master/data/zh/word/analogy/ZH-GOOGLE.txt)
 
 #### Multilingual Word Analogy Results
@@ -244,6 +246,8 @@ We restrict the vocabulary for the analogy tasks to the 200,000 most frequent wo
 | language | Wikipedia2Vec | fastText ([Grave et.al](https://arxiv.org/abs/1802.06893))|
 |-----------|------------|------------|
 | German| **0.617** | 0.61 |
+| French | **0.68** | 0.642 |
 | Spanish | **0.574** | **0.574** |
 | Portuguese | 0.53 | **0.54** |
+| Polish | 0.516 | **0.534** |
 | Chinese| 0.572 | **0.631** |
