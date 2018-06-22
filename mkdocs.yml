@@ -11,6 +11,7 @@ pages:
         - Learning Embeddings: commands.md
         - Basic Usage: usage.md
     - Pretrained Embeddings: pretrained.md
+    - Benchmarks: benchmarks.md
 extra_css:
     - css/extra.css
 theme:
