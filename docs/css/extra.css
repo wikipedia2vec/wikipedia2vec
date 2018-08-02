@@ -26,13 +26,23 @@ div.col-md-9 h1:first-of-type {
     font-weight: 300;
 }
 
-@media screen and (min-width: 768px) and (max-width: 1000px) {
-  .nav>li>a[href^="https://github.com/"] {
+@media screen and (min-width: 768px) and (max-width: 999px) {
+  .nav>li>a {
+    padding-left: 15px;
+    padding-right: 15px;
+  }
+}
+
+@media screen and (min-width: 768px) and (max-width: 991px) {
+  .nav>li>a[href="#"] {
     display: none;
   }
 }
 
-@media screen and (min-width: 768px) and (max-width: 1200px) {
+@media screen and (min-width: 768px) and (max-width: 1199px) {
+  .nav>li>a[href^="https://github.com/"] {
+    display: none;
+  }
   .nav>li>a[rel="prev"] {
     display: none;
   }
