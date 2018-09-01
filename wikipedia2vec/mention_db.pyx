@@ -52,6 +52,10 @@ cdef class Mention:
         else:
             return 0.0
 
+    @property
+    def commonness(self):
+        return self.prior_prob
+
     def __repr__(self):
         if six.PY2:
             return b'<Mention %s -> %s>' % (self.text.encode('utf-8'), self.entity.title.encode('utf-8'))
