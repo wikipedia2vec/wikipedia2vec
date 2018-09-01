@@ -71,6 +71,11 @@ cdef class MentionDB(object):
         self._case_sensitive = case_sensitive
         self._max_mention_len = max_mention_len
 
+    def __iter__(self):
+        for text in self.mention_trie:
+            for obj in self.data_trie[text]:
+                yield Mention(self._dictionary, text, *obj)
+
     cpdef list query(self, unicode text):
         if not self._case_sensitive:
             text = text.lower()
