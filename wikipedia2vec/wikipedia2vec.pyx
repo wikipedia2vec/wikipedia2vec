@@ -114,15 +114,23 @@ cdef class Wikipedia2Vec:
     cpdef np.ndarray get_vector(self, Item item):
         return self.syn0[item.index]
 
-    cpdef list most_similar(self, Item item, count=100):
+    cpdef list most_similar(self, Item item, count=100, min_count=None):
         cdef np.ndarray vec
 
         vec = self.get_vector(item)
-        return self.most_similar_by_vector(vec, count)
+        return self.most_similar_by_vector(vec, count, min_count=min_count)
 
-    cpdef list most_similar_by_vector(self, np.ndarray vec, count=100):
+    cpdef list most_similar_by_vector(self, np.ndarray vec, count=100, min_count=None):
+        if min_count is None:
+            min_count = 0
+        
+        counts = np.concatenate((
+            self._dictionary._word_stats[:, 0],
+            self._dictionary._entity_stats[:, 0]))
         dst = (np.dot(self.syn0, vec) / np.linalg.norm(self.syn0, axis=1) / np.linalg.norm(vec))
+        dst[counts<min_count] = -100
         indexes = np.argsort(-dst)
+        
 
         return [(self._dictionary.get_item_by_index(ind), dst[ind]) for ind in indexes[:count]]
 

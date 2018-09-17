@@ -27,8 +27,8 @@ cdef class Dictionary:
     cdef _word_dict
     cdef _entity_dict
     cdef _redirect_dict
-    cdef const int32_t [:, :] _word_stats
-    cdef const int32_t [:, :] _entity_stats
+    cdef readonly const int32_t [:, :] _word_stats
+    cdef readonly const int32_t [:, :] _entity_stats
     cdef int32_t _entity_offset
 
     cpdef get_word(self, unicode, default=?)
