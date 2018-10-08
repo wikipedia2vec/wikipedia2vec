@@ -1,0 +1,6 @@
+build
+dist
+wikipedia2vec.egg-info/
+wikipedia2vec/*.cpp
+wikipedia2vec/utils/*.cpp
+wikipedia2vec/utils/*/*.cpp
