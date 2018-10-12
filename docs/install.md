@@ -13,9 +13,19 @@ Alternatively, you can install the development version of this software from the
 ```text
 % git clone https://github.com/studio-ousia/wikipedia2vec.git
 % cd wikipedia2vec
-% pip install Cython
+% pip install -r requirements.txt
 % ./cythonize.sh
+```
+- For Linux
+```
 % pip install .
+```
+
+- For Mac
+
+```
+#based on your version of MACOSX
+MACOSX_DEPLOYMENT_TARGET=10.12 python setup.py install
 ```
 
 Wikipedia2Vec requires the 64-bit version of Python, and can be run on Linux, Windows, and Mac OSX.
