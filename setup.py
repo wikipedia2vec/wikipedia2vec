@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import os
+import platform
 import sys
 from setuptools import setup, find_packages, Extension
 from setuptools.command.build_ext import build_ext
@@ -19,6 +20,9 @@ def list_cpp_files(package_dir='wikipedia2vec'):
     if sys.platform.startswith("win"):
         compile_args = []
         link_args = []
+    elif platform.system() == 'Darwin':
+        compile_args = ['-Wno-unused-function', '-std=c++11', '-stdlib=libc++']
+        link_args = ['-std=c++11', '-stdlib=libc++']
     else:
         compile_args = ['-Wno-unused-function', '-std=c++11']
         link_args = ['-std=c++11']
