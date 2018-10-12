@@ -69,8 +69,9 @@ cdef class Dictionary:
         self._word_dict = word_dict
         self._entity_dict = entity_dict
         self._redirect_dict = redirect_dict
-        self._word_stats = word_stats
-        self._entity_stats = entity_stats
+        # Limit word_stats size in order to handle existing pretrained embeddings which is larger than it should be
+        self._word_stats = word_stats[:len(self._word_dict)]
+        self._entity_stats = entity_stats[:len(self._entity_dict)]
         self.min_paragraph_len = min_paragraph_len
         self.uuid = uuid
         self.language = language
@@ -213,7 +214,7 @@ cdef class Dictionary:
             del entity_doc_counter[title]
 
         word_dict = Trie([w for (w, c) in six.iteritems(word_counter) if c >= min_word_count])
-        word_stats = np.zeros((len(word_counter), 2), dtype=np.int32)
+        word_stats = np.zeros((len(word_dict), 2), dtype=np.int32)
         for (word, index) in six.iteritems(word_dict):
             word_stats[index][0] = word_counter[word]
             word_stats[index][1] = word_doc_counter[word]
@@ -232,7 +233,7 @@ cdef class Dictionary:
             entities.append(entity)
 
         entity_dict = Trie(entities)
-        entity_stats = np.zeros((len(entity_counter), 2), dtype=np.int32)
+        entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int32)
         for (entity, index) in six.iteritems(entity_dict):
             entity_stats[index][0] = entity_counter[entity]
             entity_stats[index][1] = entity_doc_counter[entity]
