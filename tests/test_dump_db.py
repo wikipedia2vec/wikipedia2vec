@@ -128,7 +128,7 @@ class TestDumpDB(unittest.TestCase):
             "'''Japan''' is a [[Sovereign state|sovereign]] [[island country|island nation]] in [[East Asia]]",
             None
         )
-        ret = dump_db._parse(page)
+        ret = dump_db._parse(page, None)
         eq_('page', ret[0])
         eq_(b'Japan', ret[1][0])
         paragraph = pickle.loads(zlib.decompress(ret[1][1]))[0][0]
@@ -140,7 +140,7 @@ class TestDumpDB(unittest.TestCase):
 
     def test_parse_redirect(self):
         page = WikiPage('日本', 'en', '#REDIRECT [[Japan]]', 'Japan')
-        ret = dump_db._parse(page)
+        ret = dump_db._parse(page, None)
         eq_('redirect', ret[0])
         eq_('日本'.encode('utf-8'), ret[1][0])
         eq_(b'Japan', ret[1][1])

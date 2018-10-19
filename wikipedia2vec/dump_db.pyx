@@ -8,6 +8,7 @@ import mwparserfromhell
 import pkg_resources
 import re
 import six
+from functools import partial
 from uuid import uuid1
 import zlib
 from contextlib import closing
@@ -149,8 +150,8 @@ cdef class DumpDB:
         return ret
 
     @staticmethod
-    def build(dump_reader, out_file, pool_size, chunk_size, init_map_size=500000000,
-              buffer_size=3000):
+    def build(dump_reader, out_file, pool_size, chunk_size, preprocess_func=None,
+              init_map_size=500000000, buffer_size=3000):
         with closing(lmdb.open(out_file, subdir=False, map_async=True, map_size=init_map_size,
                                max_dbs=3)) as env:
             map_size = [init_map_size]
@@ -180,7 +181,8 @@ cdef class DumpDB:
             with closing(Pool(pool_size)) as pool:
                 page_buf = []
                 redirect_buf = []
-                for ret in pool.imap_unordered(_parse, dump_reader, chunksize=chunk_size):
+                f = partial(_parse, preprocess_func=preprocess_func)
+                for ret in pool.imap_unordered(f, dump_reader, chunksize=chunk_size):
                     if ret:
                         if ret[0] == 'page':
                             page_buf.append(ret[1])
@@ -202,7 +204,7 @@ cdef class DumpDB:
                     write_db(redirect_db, redirect_buf)
 
 
-def _parse(WikiPage page):
+def _parse(WikiPage page, preprocess_func):
     cdef int32_t n, start, end
     cdef bint abstract
     cdef unicode title, text, cur_text, wiki_text
@@ -224,16 +226,19 @@ def _parse(WikiPage page):
     cur_links = []
     abstract = True
 
+    if preprocess_func is None:
+        preprocess_func = lambda x: x
+
     for node in parsed.nodes:
         if isinstance(node, mwparserfromhell.nodes.Text):
             for (n, text) in enumerate(six.text_type(node).split('\n')):
                 if n == 0:
-                    cur_text += text
+                    cur_text += preprocess_func(text)
                 else:
                     if cur_text and not cur_text.isspace():
                         paragraphs.append([cur_text, cur_links, abstract])
 
-                    cur_text = text
+                    cur_text = preprocess_func(text)
                     cur_links = []
 
         elif isinstance(node, mwparserfromhell.nodes.Wikilink):
@@ -249,6 +254,7 @@ def _parse(WikiPage page):
             else:
                 text = node.title.strip_code()
 
+            text = preprocess_func(text)
             start = len(cur_text)
             cur_text += text
             end = len(cur_text)
@@ -259,7 +265,7 @@ def _parse(WikiPage page):
                 continue
 
             text = node.title.strip_code()
-            cur_text += text
+            cur_text += preprocess_func(text)
 
         elif isinstance(node, mwparserfromhell.nodes.Tag):
             if node.tag not in ('b', 'i', 'u'):
@@ -268,7 +274,7 @@ def _parse(WikiPage page):
                 continue
 
             text = node.contents.strip_code()
-            cur_text += text
+            cur_text += preprocess_func(text)
 
         elif isinstance(node, mwparserfromhell.nodes.Heading):
             abstract = False
