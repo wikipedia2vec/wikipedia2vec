@@ -60,7 +60,7 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='0.2.6',
+    version='0.2.7',
     description='A tool for learning vector representations of words and entities from Wikipedia',
     long_description=long_description,
     author='Studio Ousia',
