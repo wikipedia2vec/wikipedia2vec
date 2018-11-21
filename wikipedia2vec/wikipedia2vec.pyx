@@ -269,8 +269,6 @@ cdef class Wikipedia2Vec:
         else:
             link_indices = None
 
-        link_cursor = multiprocessing.Value(c_int32, 0)
-
         logger.info('Starting to train embeddings...')
 
         vocab_size = len(self.dictionary)
@@ -286,9 +284,6 @@ cdef class Wikipedia2Vec:
 
         self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
         self.syn1[:] = np.zeros((vocab_size, dim_size))
-
-        total_page_count = dump_db.page_size() * params.iteration
-        alpha = multiprocessing.RawValue(c_float, params.init_alpha)
 
         exp_table = multiprocessing.RawArray(c_float, EXP_TABLE_SIZE)
         for i in range(EXP_TABLE_SIZE):
@@ -317,18 +312,24 @@ cdef class Wikipedia2Vec:
             exp_table,
             sample_ints,
             link_indices,
-            link_cursor,
-            alpha,
-            params,
-            total_page_count
+            params
         )
+
+        total_page_count = dump_db.page_size() * params.iteration
+
+        def args_generator(titles, iteration):
+            random.shuffle(titles)
+            for (n, title) in enumerate(titles, len(titles) * iteration):
+                alpha = max(params.min_alpha,
+                            params.init_alpha * (1.0 - float(n) / total_page_count))
+                yield (n, title, alpha)
+
         with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
             titles = list(dump_db.titles())
             for i in range(params.iteration):
-                random.shuffle(titles)
                 with tqdm(total=len(titles), mininterval=0.5, disable=not progressbar,
                           desc='Iteration %d/%d' % (i + 1, params.iteration)) as bar:
-                    for _ in pool.imap_unordered(train_page, enumerate(titles, len(titles) * i),
+                    for _ in pool.imap_unordered(train_page, args_generator(titles, i),
                                                  chunksize=chunk_size):
                         bar.update(1)
 
@@ -408,20 +409,15 @@ cdef int32_t [:] entity_neg_table
 cdef float32_t [:] exp_table
 cdef int32_t [:] sample_ints
 cdef int32_t [:] link_indices
-cdef object link_cursor
-cdef object alpha
 cdef _Parameters params
-cdef float32_t total_page_count
 cdef float32_t [:] work
 
 
 def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokenizer_,
-                sentence_detector_, syn0_shared, syn1_shared, word_neg_table_, entity_neg_table_,
-                exp_table_, sample_ints_, link_indices_, link_cursor_, alpha_, params_,
-                total_page_count_):
+                sentence_detector_, syn0_shared, syn1_shared, word_neg_table_,
+                entity_neg_table_, exp_table_, sample_ints_, link_indices_, params_):
     global dump_db, dictionary, link_graph, mention_db, tokenizer, sentence_detector, syn0, syn1,\
-        word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, link_cursor, alpha,\
-        params, total_page_count, work
+        word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, params, work
 
     dump_db = dump_db_
     tokenizer = tokenizer_
@@ -431,10 +427,7 @@ def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokeni
     exp_table = exp_table_
     sample_ints = sample_ints_
     link_indices = link_indices_
-    link_cursor = link_cursor_
-    alpha = alpha_
     params = params_
-    total_page_count = total_page_count_
 
     np.random.seed()
     seed(np.random.randint(2 ** 31))
@@ -476,17 +469,12 @@ def train_page(tuple arg):
     cdef Mention mention
     cdef float32_t alpha_
 
-    (n, title) = arg
-
-    alpha_ = alpha.value
+    (n, title, alpha_) = arg
 
     # train using Wikipedia link graph
     if link_graph is not None:
         total_nodes = link_indices.size
-
-        with link_cursor.get_lock():
-            start = link_cursor.value
-            link_cursor.value = (start + params.entities_per_page) % total_nodes
+        start = n * params.entities_per_page
 
         for i in range(start, start + params.entities_per_page):
             entity = link_indices[i % total_nodes]
@@ -616,8 +604,6 @@ def train_page(tuple arg):
 
                 _train_pair(entity, word2, alpha_, params.negative, word_neg_table)
                 _train_pair(word2, entity, alpha_, params.negative, entity_neg_table)
-
-    alpha.value = max(params.min_alpha, params.init_alpha * (1.0 - n / total_page_count))
 
 
 @cython.boundscheck(False)
