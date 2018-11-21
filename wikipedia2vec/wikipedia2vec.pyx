@@ -3,8 +3,10 @@
 
 from __future__ import unicode_literals
 
+import ctypes
 import joblib
 import logging
+import mmap
 import multiprocessing
 import numpy as np
 import os
@@ -14,15 +16,16 @@ import re
 import time
 import six
 import six.moves.cPickle as pickle
-cimport numpy as np
 cimport cython
+cimport numpy as np
+np.import_array()
 from cpython cimport array
 from collections import defaultdict
 from ctypes import c_float, c_int32
 from contextlib import closing
 from itertools import islice
 from libc.math cimport exp
-from libc.stdint cimport int32_t
+from libc.stdint cimport int32_t, uintptr_t
 from libc.string cimport memset
 from marisa_trie import Trie, RecordTrie
 from multiprocessing.pool import Pool
@@ -123,14 +126,14 @@ cdef class Wikipedia2Vec:
     cpdef list most_similar_by_vector(self, np.ndarray vec, count=100, min_count=None):
         if min_count is None:
             min_count = 0
-        
+
         counts = np.concatenate((
             self._dictionary._word_stats[:, 0],
             self._dictionary._entity_stats[:, 0]))
         dst = (np.dot(self.syn0, vec) / np.linalg.norm(self.syn0, axis=1) / np.linalg.norm(vec))
         dst[counts<min_count] = -100
         indexes = np.argsort(-dst)
-        
+
 
         return [(self._dictionary.get_item_by_index(ind), dst[ind]) for ind in indexes[:count]]
 
@@ -234,6 +237,8 @@ cdef class Wikipedia2Vec:
 
     def train(self, dump_db, link_graph, mention_db, tokenizer, sentence_detector, pool_size,
               chunk_size, progressbar=True, **kwargs):
+        cdef float32_t [:, :] syn0_carr, syn1_carr
+
         start_time = time.time()
 
         params = _Parameters(kwargs)
@@ -271,20 +276,6 @@ cdef class Wikipedia2Vec:
 
         logger.info('Starting to train embeddings...')
 
-        vocab_size = len(self.dictionary)
-
-        logger.info('Initializing weights...')
-
-        dim_size = params.dim_size
-        syn0_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
-        syn1_shared = multiprocessing.RawArray(c_float, dim_size * vocab_size)
-
-        self.syn0 = np.frombuffer(syn0_shared, dtype=np.float32).reshape(vocab_size, dim_size)
-        self.syn1 = np.frombuffer(syn1_shared, dtype=np.float32).reshape(vocab_size, dim_size)
-
-        self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
-        self.syn1[:] = np.zeros((vocab_size, dim_size))
-
         exp_table = multiprocessing.RawArray(c_float, EXP_TABLE_SIZE)
         for i in range(EXP_TABLE_SIZE):
             exp_table[i] = <float32_t>exp((i / <float32_t>EXP_TABLE_SIZE * 2 - 1) * MAX_EXP)
@@ -298,6 +289,21 @@ cdef class Wikipedia2Vec:
         if mention_db is not None:
             mention_db_obj = mention_db.serialize()
 
+        logger.info('Initializing weights...')
+
+        dim_size = params.dim_size
+        vocab_size = len(self.dictionary)
+
+        syn0_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float))
+        syn1_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float))
+        self.syn0 = np.frombuffer(syn0_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
+        self.syn1 = np.frombuffer(syn1_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
+        syn0_carr = self.syn0
+        syn1_carr = self.syn1
+
+        self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
+        self.syn1[:] = np.zeros((vocab_size, dim_size))
+
         init_args = (
             dump_db,
             self.dictionary.serialize(shared_array=True),
@@ -305,8 +311,8 @@ cdef class Wikipedia2Vec:
             mention_db_obj,
             tokenizer,
             sentence_detector,
-            syn0_shared,
-            syn1_shared,
+            <uintptr_t>&syn0_carr[0, 0],
+            <uintptr_t>&syn1_carr[0, 0],
             word_neg_table,
             entity_neg_table,
             exp_table,
@@ -334,6 +340,11 @@ cdef class Wikipedia2Vec:
                         bar.update(1)
 
             logger.info('Terminating pool workers...')
+
+        self.syn0 = self.syn0.copy()
+        syn0_mmap.close()
+        self.syn1 = self.syn1.copy()
+        syn1_mmap.close()
 
         train_params = dict(
             dump_db=dump_db.uuid,
@@ -414,7 +425,7 @@ cdef float32_t [:] work
 
 
 def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokenizer_,
-                sentence_detector_, syn0_shared, syn1_shared, word_neg_table_,
+                sentence_detector_, uintptr_t syn0_ptr, uintptr_t syn1_ptr, word_neg_table_,
                 entity_neg_table_, exp_table_, sample_ints_, link_indices_, params_):
     global dump_db, dictionary, link_graph, mention_db, tokenizer, sentence_detector, syn0, syn1,\
         word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, params, work
@@ -444,8 +455,11 @@ def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokeni
     else:
         mention_db = None
 
-    syn0 = np.frombuffer(syn0_shared, dtype=np.float32).reshape(-1, params.dim_size)
-    syn1 = np.frombuffer(syn1_shared, dtype=np.float32).reshape(-1, params.dim_size)
+    vocab_size = len(dictionary)
+    syn0 = np.PyArray_SimpleNewFromData(2, [vocab_size, params.dim_size], np.NPY_FLOAT32,
+                                        <float32_t *>syn0_ptr)
+    syn1 = np.PyArray_SimpleNewFromData(2, [vocab_size, params.dim_size], np.NPY_FLOAT32,
+                                        <float32_t *>syn1_ptr)
     work = np.zeros(params.dim_size, dtype=np.float32)
 
 
