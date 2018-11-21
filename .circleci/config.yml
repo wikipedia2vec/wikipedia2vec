@@ -8,9 +8,9 @@ jobs:
       - checkout
       - run: mkdir test-results
       - run:
-          name: install mecab
+          name: install mecab and related packages
           command: |
-            sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8
+            sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8 swig
 
       - run:
           name: install icu
@@ -58,9 +58,9 @@ jobs:
       - checkout
       - run: mkdir test-results
       - run:
-          name: install mecab
+          name: install mecab and related packages
           command: |
-            sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8
+            sudo apt-get install mecab libmecab-dev mecab-ipadic-utf8 swig
 
       - run:
           name: install icu
@@ -77,7 +77,7 @@ jobs:
             python3 -m venv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            pip install mecab-python3 PyICU nose
+            pip install 'mecab-python3==0.7' PyICU nose
 
       - save_cache:
           paths:
