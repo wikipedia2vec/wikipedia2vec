@@ -6,6 +6,7 @@ from __future__ import unicode_literals
 import ctypes
 import joblib
 import logging
+import math
 import mmap
 import multiprocessing
 import numpy as np
@@ -267,10 +268,15 @@ cdef class Wikipedia2Vec:
 
         logger.info('Building tables for link indices...')
 
+        total_page_count = dump_db.page_size() * params.iteration
+
         if link_graph is not None:
             offset = self.dictionary.entity_offset
-            indices = np.arange(offset, offset + len(list(self.dictionary.entities())))
-            link_indices = multiprocessing.RawArray(c_int32, np.random.permutation(indices))
+            indices = np.arange(offset, offset + self.dictionary.entity_size)
+            rep = math.ceil(float(total_page_count) * params.entities_per_page / indices.size)
+            link_indices = multiprocessing.RawArray(c_int32,
+                np.concatenate([np.random.permutation(indices) for _ in range(rep)])
+            )
         else:
             link_indices = None
 
@@ -320,8 +326,6 @@ cdef class Wikipedia2Vec:
             link_indices,
             params
         )
-
-        total_page_count = dump_db.page_size() * params.iteration
 
         def args_generator(titles, iteration):
             random.shuffle(titles)
@@ -470,7 +474,7 @@ def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokeni
 def train_page(tuple arg):
     cdef bint matched
     cdef int32_t i, j, n, start, end, span_start, span_end, ent_start, ent_end, word, word2,\
-        entity, text_len, token_len, total_nodes, window
+        entity, text_len, token_len, window
     cdef int32_t [:] words, word_pos, sent_char_pos, sent_token_pos
     cdef char [:] link_flags
     cdef const int32_t [:] neighbors
@@ -487,11 +491,9 @@ def train_page(tuple arg):
 
     # train using Wikipedia link graph
     if link_graph is not None:
-        total_nodes = link_indices.size
         start = n * params.entities_per_page
-
         for i in range(start, start + params.entities_per_page):
-            entity = link_indices[i % total_nodes]
+            entity = link_indices[i]
             neighbors = link_graph.neighbor_indices(entity)
             for j in range(len(neighbors)):
                 _train_pair(entity, neighbors[j], alpha_, params.negative, entity_neg_table)
