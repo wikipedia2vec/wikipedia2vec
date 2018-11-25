@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
+# License: Apache License 2.0
 
 cdef mt19937 _rng
 cdef uniform_int_distribution[int32_t] _dist

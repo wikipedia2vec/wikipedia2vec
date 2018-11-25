@@ -28,3 +28,6 @@ def get_tokenizer(name, language=None):
         return JiebaTokenizer()
     else:
         raise NotImplementedError()
+# -*- coding: utf-8 -*-
+# Authors: Ikuya Yamada
+# License: Apache License 2.0

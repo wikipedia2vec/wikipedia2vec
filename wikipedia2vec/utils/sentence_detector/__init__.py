@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+# License: Apache License 2.0
 
 def get_sentence_detector(name, language=None):
     if name == 'icu':

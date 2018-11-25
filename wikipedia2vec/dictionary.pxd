@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+# License: Apache License 2.0
 
 cimport numpy as np
 from libc.stdint cimport int32_t

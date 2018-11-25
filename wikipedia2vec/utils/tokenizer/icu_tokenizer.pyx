@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 # cython: profile=False
+# License: Apache License 2.0
 
 import logging
 import re
