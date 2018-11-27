@@ -61,7 +61,7 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='0.2.8',
+    version='1.0.0',
     description='A tool for learning vector representations of words and entities from Wikipedia',
     long_description=long_description,
     author='Studio Ousia',
@@ -78,7 +78,7 @@ setup(
     },
     keywords=['wikipedia', 'embedding', 'wikipedia2vec'],
     classifiers=[
-        'Development Status :: 4 - Beta',
+        'Development Status :: 5 - Production/Stable',
         'Intended Audience :: Developers',
         'Natural Language :: English',
         'License :: OSI Approved :: Apache Software License',
