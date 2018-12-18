@@ -5,11 +5,11 @@ edit_uri: ""
 site_author: Studio Ousia
 pages:
     - Home: index.md
-    - Features: features.md
+    - Introduction: intro.md
     - User Guide:
         - Installation: install.md
         - Learning Embeddings: commands.md
-        - Basic Usage: usage.md
+        - API Usage: usage.md
     - Pretrained Embeddings: pretrained.md
 extra_css:
     - css/extra.css

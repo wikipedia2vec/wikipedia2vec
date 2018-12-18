@@ -50,6 +50,7 @@ Then, the embeddings can be trained from a Wikipedia dump using the *train* comm
 - *--pool-size*: The number of worker processes (default: the number of CPUs)
 
 The *train* command internally calls the five commands described below (namely, *build_dump_db*, *build_dictionary*, *build_link_graph*, *build_mention_db*, and *train_embedding*).
+Further, the learned model file can be converted to a text file compatible with the format of [Word2vec](https://code.google.com/archive/p/word2vec/) and [GloVe](https://nlp.stanford.edu/projects/glove/) using the <a href="#saving-embeddings-in-text-format">save_text</a> command.
 
 ## Building Dump Database
 
