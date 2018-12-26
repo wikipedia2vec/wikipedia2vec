@@ -18,11 +18,11 @@ Reference
 
 If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
 
-Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Wikipedia2Vec: An Optimized Implementation for Learning Embeddings from Wikipedia](https://arxiv.org/abs/1812.06280).
+Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia](https://arxiv.org/abs/1812.06280).
 
 ```text
 @article{yamada2018wikipedia2vec,
-  title={Wikipedia2Vec: An Optimized Implementation for Learning Embeddings from Wikipedia},
+  title={Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia},
   author={Yamada, Ikuya and Asai, Akari and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
   journal={arXiv preprint 1812.06280},
   year={2018}
