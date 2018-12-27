@@ -4,14 +4,39 @@ Wikipedia2Vec
 [![Fury badge](https://badge.fury.io/py/wikipedia2vec.png)](http://badge.fury.io/py/wikipedia2vec)
 [![CircleCI](https://circleci.com/gh/wikipedia2vec/wikipedia2vec.svg?style=svg)](https://circleci.com/gh/wikipedia2vec/wikipedia2vec)
 
-Wikipedia2Vec is a tool used for obtaining embeddings (vector representations) of words and entities from Wikipedia.
+Wikipedia2Vec is a tool used for obtaining embeddings (or vector representations) of words and entities (i.e., concepts that have corresponding pages in Wikipedia) from Wikipedia.
 It is developed and maintained by [Studio Ousia](http://www.ousia.jp).
 
 This tool enables you to learn embeddings of words and entities simultaneously, and places similar words and entities close to one another in a continuous vector space.
 Embeddings can be easily trained by a single command with a publicly available Wikipedia dump as input.
+
+This tool implements the [conventional skip-gram model](https://en.wikipedia.org/wiki/Word2vec) to learn the embeddings of words, and its extension proposed in [Yamada et al. (2016)](https://arxiv.org/abs/1601.01343) to learn the embeddings of entities.
 This tool has been used in several state-of-the-art NLP models such as [entity linking](https://arxiv.org/abs/1601.01343), [named entity recognition](http://www.aclweb.org/anthology/I17-2017), [entity relatedness](https://arxiv.org/abs/1601.01343), and [question answering](https://arxiv.org/abs/1803.08652).
 
-Documentation and pretrained embeddings are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
+This tool has been tested on Linux, Windows, and macOS.
+
+Documentation and pretrained embeddings for 12 languages (English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
+
+Basic Usage
+-----------
+
+Wikipedia2Vec can be installed via PyPI:
+
+```bash
+% pip install wikipedia2vec
+```
+
+With this tool, embeddings can be learned by running a *train* command with a Wikipedia dump as input.
+For example, the following commands download the latest English Wikipedia dump and learn embeddings from this dump:
+
+```bash
+% wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+% wikipedia2vec train enwiki-latest-pages-articles.xml.bz2 MODEL_FILE
+```
+
+Then, the learned embeddings are written to *MODEL\_FILE*.
+Note that this command can take many optional parameters.
+Please refer to [our documentation](https://wikipedia2vec.github.io/wikipedia2vec/commands/) for further details.
 
 Reference
 ---------
