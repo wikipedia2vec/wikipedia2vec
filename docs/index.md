@@ -14,7 +14,9 @@ This tool has been used in several state-of-the-art NLP models such as [entity l
 
 This tool has been tested on Linux, Windows, and macOS.
 
-Pretrained embeddings for 12 languages can be downloaded from [this page](pretrained.md).
+An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e., FastText, Gensim, RDF2Vec, and Wiki2vec) is available [here](https://arxiv.org/abs/1812.06280).
+
+Pretrained embeddings for 12 languages (i.e., English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) can be downloaded from [this page](pretrained.md).
 
 Reference
 ---------
