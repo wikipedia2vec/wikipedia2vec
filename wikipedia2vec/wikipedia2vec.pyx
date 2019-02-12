@@ -18,6 +18,8 @@ import re
 import time
 import six
 import six.moves.cPickle as pickle
+import sys
+import uuid
 cimport cython
 cimport numpy as np
 np.import_array()
@@ -301,12 +303,25 @@ cdef class Wikipedia2Vec:
         dim_size = params.dim_size
         vocab_size = len(self.dictionary)
 
-        syn0_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float))
-        syn1_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float))
-        self.syn0 = np.frombuffer(syn0_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
-        self.syn1 = np.frombuffer(syn1_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
-        syn0_carr = self.syn0
-        syn1_carr = self.syn1
+        if sys.platform == 'win32':
+            syn0_addr = uuid.uuid1().hex
+            syn0_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float),
+                                  tagname=syn0_addr)
+            syn1_addr = uuid.uuid1().hex
+            syn1_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float),
+                                  tagname=syn1_addr)
+            self.syn0 = np.frombuffer(syn0_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
+            self.syn1 = np.frombuffer(syn1_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
+
+        else:
+            syn0_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float))
+            syn1_mmap = mmap.mmap(-1, dim_size * vocab_size * ctypes.sizeof(c_float))
+            self.syn0 = np.frombuffer(syn0_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
+            self.syn1 = np.frombuffer(syn1_mmap, dtype=np.float32).reshape(vocab_size, dim_size)
+            syn0_carr = self.syn0
+            syn1_carr = self.syn1
+            syn0_addr = <uintptr_t>&syn0_carr[0, 0]
+            syn1_addr = <uintptr_t>&syn1_carr[0, 0]
 
         self.syn0[:] = (np.random.rand(vocab_size, dim_size) - 0.5) / dim_size
         self.syn1[:] = np.zeros((vocab_size, dim_size))
@@ -318,8 +333,8 @@ cdef class Wikipedia2Vec:
             mention_db_obj,
             tokenizer,
             sentence_detector,
-            <uintptr_t>&syn0_carr[0, 0],
-            <uintptr_t>&syn1_carr[0, 0],
+            syn0_addr,
+            syn1_addr,
             word_neg_table,
             entity_neg_table,
             exp_table,
@@ -430,10 +445,12 @@ cdef float32_t [:] work
 
 
 def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokenizer_,
-                sentence_detector_, uintptr_t syn0_ptr, uintptr_t syn1_ptr, word_neg_table_,
-                entity_neg_table_, exp_table_, sample_ints_, link_indices_, params_):
+                sentence_detector_,  syn0_addr, syn1_addr, word_neg_table_, entity_neg_table_,
+                exp_table_, sample_ints_, link_indices_, params_):
     global dump_db, dictionary, link_graph, mention_db, tokenizer, sentence_detector, syn0, syn1,\
         word_neg_table, entity_neg_table, exp_table, sample_ints, link_indices, params, work
+
+    cdef uintptr_t syn0_ptr, syn1_ptr
 
     dump_db = dump_db_
     tokenizer = tokenizer_
@@ -461,10 +478,19 @@ def init_worker(dump_db_, dictionary_obj, link_graph_obj, mention_db_obj, tokeni
         mention_db = None
 
     vocab_size = len(dictionary)
-    syn0 = np.PyArray_SimpleNewFromData(2, [vocab_size, params.dim_size], np.NPY_FLOAT32,
-                                        <float32_t *>syn0_ptr)
-    syn1 = np.PyArray_SimpleNewFromData(2, [vocab_size, params.dim_size], np.NPY_FLOAT32,
-                                        <float32_t *>syn1_ptr)
+    if sys.platform == 'win32':
+        syn0_mmap = mmap.mmap(-1, params.dim_size * vocab_size * ctypes.sizeof(c_float), tagname=syn0_addr)
+        syn1_mmap = mmap.mmap(-1, params.dim_size * vocab_size * ctypes.sizeof(c_float), tagname=syn1_addr)
+        syn0 = np.frombuffer(syn0_mmap, dtype=np.float32).reshape(-1, params.dim_size)
+        syn1 = np.frombuffer(syn1_mmap, dtype=np.float32).reshape(-1, params.dim_size)
+
+    else:
+        syn0_ptr = syn0_addr
+        syn1_ptr = syn1_addr
+        syn0 = np.PyArray_SimpleNewFromData(2, [vocab_size, params.dim_size], np.NPY_FLOAT32,
+                                            <float32_t *>syn0_ptr)
+        syn1 = np.PyArray_SimpleNewFromData(2, [vocab_size, params.dim_size], np.NPY_FLOAT32,
+                                            <float32_t *>syn1_ptr)
     work = np.zeros(params.dim_size, dtype=np.float32)
 
 
