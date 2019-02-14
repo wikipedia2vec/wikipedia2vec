@@ -51,7 +51,7 @@ class custom_build_ext(build_ext):
 
 setup(
     name='wikipedia2vec',
-    version='1.0.1',
+    version='1.0.2',
     description='A tool for learning vector representations of words and entities from Wikipedia',
     long_description=open('README.md').read(),
     long_description_content_type='text/markdown',
