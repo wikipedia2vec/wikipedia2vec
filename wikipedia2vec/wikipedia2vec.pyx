@@ -276,7 +276,7 @@ cdef class Wikipedia2Vec:
         if link_graph is not None:
             offset = self.dictionary.entity_offset
             indices = np.arange(offset, offset + self.dictionary.entity_size)
-            rep = <int32_t>math.ceil(float(total_page_count) * params.entities_per_page / indices.size)
+            rep = int(math.ceil(float(total_page_count) * params.entities_per_page / indices.size))
             link_indices = multiprocessing.RawArray(c_int32,
                 np.concatenate([np.random.permutation(indices) for _ in range(rep)])
             )
