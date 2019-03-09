@@ -11,7 +11,7 @@ This tool enables you to learn embeddings of words and entities simultaneously, 
 Embeddings can be easily trained by a single command with a publicly available Wikipedia dump as input.
 
 This tool implements the [conventional skip-gram model](https://en.wikipedia.org/wiki/Word2vec) to learn the embeddings of words, and its extension proposed in [Yamada et al. (2016)](https://arxiv.org/abs/1601.01343) to learn the embeddings of entities.
-This tool has been used in several state-of-the-art NLP models such as [entity linking](https://arxiv.org/abs/1601.01343), [named entity recognition](http://www.aclweb.org/anthology/I17-2017), [entity relatedness](https://arxiv.org/abs/1601.01343), and [question answering](https://arxiv.org/abs/1803.08652).
+This tool has been used in several state-of-the-art NLP models such as [entity linking](https://arxiv.org/abs/1601.01343), [named entity recognition](http://www.aclweb.org/anthology/I17-2017), [knowledge graph completion](https://www.aaai.org/Papers/AAAI/2019/AAAI-ShahH.6029.pdf), [entity relatedness](https://arxiv.org/abs/1601.01343), and [question answering](https://arxiv.org/abs/1803.08652).
 
 This tool has been tested on Linux, Windows, and macOS.
 
