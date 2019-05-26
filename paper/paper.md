@@ -71,12 +71,12 @@ Japanese, Polish, Portuguese, Russian, and Spanish) have been publicized at
 
 # Overview
 
-![Wikipedia2Vec learns embeddings by jointly optimizing three submodels.](model.png)
+![Wikipedia2Vec learns embeddings by jointly optimizing three submodels.\label{fig:model}](model.png)
 
 Wikipedia2Vec is an easy-to-use, optimized tool for learning embeddings of words
 and entities from Wikipedia. It learns embeddings of words and entities by
 iterating over entire Wikipedia pages and jointly optimizing the following three
-submodels (see also the figure above):
+submodels (see also Figure \ref{fig:model}):
 
 - _Wikipedia link graph model_, which learns entity embeddings by predicting
   neighboring entities in Wikipedia's link graph, an undirected graph whose
@@ -104,11 +104,10 @@ see @Mikolov2013, @Mikolov2013a, and @Yamada2016.
 
 Wikipedia2Vec can be installed via PyPI (`pip install wikipedia2vec`). With this
 tool, embeddings can be learned by running a `train` command with a Wikipedia
-dump as input. For example, the following commands download the latest English
-Wikipedia dump and learn embeddings from this dump:
+dump as input. For example, the following command learns embeddings from the
+latest English Wikipedia dump available at Wikimedia Downloads[^2]:
 
 ```bash
-% wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 % wikipedia2vec train enwiki-latest-pages-articles.xml.bz2 MODEL_FILE
 ```
 
@@ -147,7 +146,7 @@ task with the KORE entity relatedness data set [@Hoffart2012]. We report
 Spearman's rank correlation coefficient between human judgment scores and the
 cosine similarity between the entity embeddings. For baselines, we use two
 state-of-the-art entity embedding models implemented in the RDF2Vec
-[@ristoski2018rdf2vec] and [Wiki2vec](https://github.com/idio/wiki2vec) tools.
+[@ristoski2018rdf2vec] and Wiki2vec[^3] tools.
 
 Furthermore, we employ two standard tasks to evaluate the quality of the
 embeddings of words: (1) a word analogy task using the semantic subset (G-SEM)
@@ -165,11 +164,10 @@ the cosine similarity between word embeddings. As baselines for these tasks, we
 use the skip-gram model [@Mikolov2013] implemented in the Gensim library 3.6.0
 [@rehurek_lrec] and the extended skip-gram model implemented in the FastText
 tool 0.1.0 [@TACL999]. To create the training corpus for the baseline models, we
-extracted texts from the Wikipedia dump using
-[WikiExtractor](https://github.com/attardi/wikiextractor). We also report the
-time required for training based on the dump. Additionally, to the extent
+extracted texts from the Wikipedia dump using WikiExtractor[^4]. We also report
+the time required for training based on the dump. Additionally, to the extent
 possible, we use the same hyper-parameters to train our models and the baseline
-models. [^2]
+models.[^5]
 
 We conducted all experiments using Ubuntu Server 16.04 LTS with Python 3.5 and
 OpenBLAS 0.3.3 installed on the c5d.9xlarge instance with 36 CPU cores deployed
@@ -188,9 +186,9 @@ embeddings, we used the April 2018 version of the English Wikipedia dump.
 | Gensim                          | \-       | 0.75     | 0.67     | 0.37     | 0.70     | 197min |
 | FastText                        | \-       | 0.63     | **0.70** | 0.37     | 0.69     | 243min |
 
-Table: Empirical results of Wikipedia2Vec and the baselines.
+Table: Empirical results of Wikipedia2Vec and the baselines. \label{tb:results}
 
-In the above table, we provide the comparison of our models with the baseline
+Table \ref{tb:results} shows the comparison of our models with the baseline
 models in terms of the performance of the tasks described above, as well as the
 time needed for training. We obtained the results of the RDF2Vec and Wiki2vec
 models from @ristoski2018rdf2vec. Here, _w/o autolink_ and _w/o linkgraph_ stand
@@ -218,6 +216,18 @@ word analogy tasks.
   Wikipedia.
 
 [^2]:
+
+[https://dumps.wikimedia.org/enwiki/latest/](https://dumps.wikimedia.org/enwiki/latest/)
+
+[^3]:
+
+[https://github.com/idio/wiki2vec](https://github.com/idio/wiki2vec)
+
+[^4]:
+
+[https://github.com/attardi/wikiextractor](https://github.com/attardi/wikiextractor)
+
+[^5]:
 
   We used the following settings: $dim\_size=500$, $window=5$, $negative=5$,
   $iteration=5$
