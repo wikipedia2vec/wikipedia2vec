@@ -14,6 +14,7 @@ authors:
     orcid: 0000-0002-7980-7661
     affiliation: "1, 2"
   - name: Akari Asai
+    orcid: 0000-0003-0457-4637
     affiliation: 1
   - name: Hiroyuki Shindo
     orcid: 0000-0003-1081-9194
