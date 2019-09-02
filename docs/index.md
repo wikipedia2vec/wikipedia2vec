@@ -18,8 +18,8 @@ An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e.
 
 Pretrained embeddings for 12 languages (i.e., English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) can be downloaded from [this page](pretrained.md).
 
-Reference
----------
+References
+----------
 
 If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
 
@@ -31,6 +31,22 @@ Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [
   author={Yamada, Ikuya and Asai, Akari and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
   journal={arXiv preprint 1812.06280},
   year={2018}
+}
+```
+
+Furthermore, Wikipedia2Vec is an official implementation of the embedding model proposed in the following paper:
+
+Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
+
+```text
+@inproceedings{yamada2016joint,
+  title={Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
+  author={Yamada, Ikuya and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
+  booktitle={Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
+  year={2016},
+  publisher={Association for Computational Linguistics},
+  doi={10.18653/v1/K16-1025},
+  pages={250--259}
 }
 ```
 
