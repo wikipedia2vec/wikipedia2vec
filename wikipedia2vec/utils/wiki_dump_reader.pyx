@@ -14,7 +14,7 @@ from .wiki_page cimport WikiPage
 logger = logging.getLogger(__name__)
 
 DEFAULT_IGNORED_NS = ('wikipedia:', 'file:', 'portal:', 'template:', 'mediawiki:', 'user:',
-                      'help:', 'book:', 'draft:')
+                      'help:', 'book:', 'draft:', 'module:', 'timedtext:')
 NAMESPACE_RE = re.compile(r"^{(.*?)}")
 
 
