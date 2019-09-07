@@ -244,6 +244,8 @@ def _parse(WikiPage page, preprocess_func):
 
         elif isinstance(node, mwparserfromhell.nodes.Wikilink):
             title = node.title.strip_code().strip(' ')
+            if title.startswith(':'):
+                title = title[1:]
             if not title:
                 continue
             title = (title[0].upper() + title[1:]).replace('_', ' ')
