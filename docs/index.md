@@ -34,7 +34,7 @@ Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [
 }
 ```
 
-Furthermore, Wikipedia2Vec is an official implementation of the embedding model proposed in the following paper:
+Wikipedia2Vec is an official implementation of the embedding model proposed in the following paper:
 
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
 
