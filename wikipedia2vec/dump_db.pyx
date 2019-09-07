@@ -243,9 +243,10 @@ def _parse(WikiPage page, preprocess_func):
                     cur_links = []
 
         elif isinstance(node, mwparserfromhell.nodes.Wikilink):
-            title = node.title.strip_code()
+            title = node.title.strip_code().strip(' ')
             if not title:
                 continue
+            title = (title[0].upper() + title[1:]).replace('_', ' ')
 
             if node.text:
                 text = node.text.strip_code()
@@ -259,7 +260,7 @@ def _parse(WikiPage page, preprocess_func):
             start = len(cur_text)
             cur_text += text
             end = len(cur_text)
-            cur_links.append((_normalize_title(title), text, start, end))
+            cur_links.append((title, text, start, end))
 
         elif isinstance(node, mwparserfromhell.nodes.ExternalLink):
             if not node.title:
@@ -286,7 +287,3 @@ def _parse(WikiPage page, preprocess_func):
     ret = [paragraphs, page.is_disambiguation]
 
     return ('page', ((page.title.encode('utf-8'), zlib.compress(pickle.dumps(ret, protocol=-1)))))
-
-
-cdef unicode _normalize_title(unicode title):
-    return (title[0].upper() + title[1:]).replace('_', ' ')
