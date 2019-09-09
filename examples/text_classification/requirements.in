@@ -1,0 +1,9 @@
+beautifulsoup4==4.8.0
+click==7.0
+joblib==0.13.2
+numpy==1.17.2
+scipy==1.3.1
+scikit-learn==0.21.3
+torch==1.1.0
+tqdm==4.35.0
+wikipedia2vec==1.0.4

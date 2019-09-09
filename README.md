@@ -17,6 +17,8 @@ This tool has been tested on Linux, Windows, and macOS.
 
 An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e., FastText, Gensim, RDF2Vec, and Wiki2vec) is available [here](https://arxiv.org/abs/1812.06280).
 
+The source code of the neural text classification model built upon Wikipedia2Vec is available [here](https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification).
+
 Documentation and pretrained embeddings for 12 languages (English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
 
 Basic Usage
@@ -47,7 +49,7 @@ If you use Wikipedia2Vec in a scientific publication, please cite the following 
 
 Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia](https://arxiv.org/abs/1812.06280).
 
-```text
+```bibtex
 @article{yamada2018wikipedia2vec,
   title={Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia},
   author={Yamada, Ikuya and Asai, Akari and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
@@ -60,7 +62,7 @@ Wikipedia2Vec is an official implementation of the embedding model proposed in t
 
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
 
-```text
+```bibtex
 @inproceedings{yamada2016joint,
   title={Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
   author={Yamada, Ikuya and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
@@ -69,6 +71,20 @@ Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learni
   publisher={Association for Computational Linguistics},
   doi={10.18653/v1/K16-1025},
   pages={250--259}
+}
+```
+
+The text classification model contained in [this example](https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification) was proposed in the following paper:
+
+Ikuya Yamada, Hiroyuki Shindo, [Neural Attentive Bag-of-Entities Model for Text Classification](https://arxiv.org/abs/1909.01259).
+
+```bibtex
+@article{yamada2019neural,
+  title={Neural Attentive Bag-of-Entities Model for Text Classification},
+  author={Yamada, Ikuya and Shindo, Hiroyuki},
+  booktitle={Proceedings of The 23th SIGNLL Conference on Computational Natural Language Learning},
+  year={2019},
+  publisher={Association for Computational Linguistics}
 }
 ```
 
