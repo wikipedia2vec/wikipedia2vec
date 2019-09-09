@@ -11,7 +11,7 @@ The weights are computed using a neural attention mechanism that enables the mod
 Text classification is performed using a linear layer with the feature vector as input.
 
 The code is built upon Wikipedia2Vec and PyTorch.
-The embeddings in this model are initialized using Wikipedia2Vec pretrained embeddings.
+The embeddings in this model are initialized using Wikipedia2Vec embeddings.
 See [the paper](https://arxiv.org/abs/1909.01259) for further details.
 
 ## Results
@@ -20,30 +20,43 @@ See [the paper](https://arxiv.org/abs/1909.01259) for further details.
 
 | Model | Accuracy | F1 |
 | --- | --- | --- |
-| NABoE | **88.0** | **87.5** |
+| NABoE | **88.1** | **87.6** |
 | Bag-of-Words SVM | 79.0 | 78.3 |
+| fastText ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 79.4 | - |
+| fastText (bigrams) ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 79.7 | - |
 | BoE ([Jin et al., 2016](https://www.ijcai.org/Proceedings/16/Papers/401.pdf)) | 83.1 | 82.7 |
 | SWEM ([Shen et al., 2018](https://arxiv.org/abs/1805.09843)) | 85.3 | 85.5 |
 | TextEnt ([Yamada et al., 2018](https://arxiv.org/abs/1806.02960)) | 84.5 | 83.9 |
-| TextGCN ([Yao et al., 2018](https://arxiv.org/abs/1809.05679)) | 86.3 | - |
+| TextGCN ([Yao et al., 2019](https://arxiv.org/abs/1809.05679)) | 86.3 | - |
 
 ### R8
 
 | Model | Accuracy | F1 |
 | --- | --- | --- |
-| NABoE | **97.5** | **92.1** |
+| NABoE | **97.8** | **93.0** |
 | Bag-of-Words SVM | 94.7 | 85.1 |
+| fastText ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 96.1 | - |
+| fastText (bigrams) ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 94.7 | - |
 | BoE ([Jin et al., 2016](https://www.ijcai.org/Proceedings/16/Papers/401.pdf)) | 96.5 | 88.6 |
 | SWEM ([Shen et al., 2018](https://arxiv.org/abs/1805.09843)) | 96.7 | 89.8 |
 | TextEnt ([Yamada et al., 2018](https://arxiv.org/abs/1806.02960)) | 96.7 | 91.0 |
-| TextGCN ([Yao et al., 2018](https://arxiv.org/abs/1809.05679)) | 97.1 | - |
+| TextGCN ([Yao et al., 2019](https://arxiv.org/abs/1809.05679)) | 97.1 | - |
 
-NOTE: The above results are slightly better than the ones reported in the original paper because we tuned hyperparameters and improved the model implementation (i.e., adding weight decay, learning rate warmup, and dropout regularization).
+The above results are obtained by averaging the results over 10 runs.
 
-## Reproducing Results on 20 Newsgroups
+Note that the results are slightly better than the ones reported in the original paper because we tuned hyperparameters and improved the model implementation (i.e., adding weight decay, learning rate warmup, and dropout regularization).
 
-The results shown above can be reproduced as follows.
-Note that you need **Python 3.6+** to run this experiment.
+## Reproducing Results
+
+The results can be reproduced as follows.
+**Python 3.6+** is required to run this experiment.
+
+**Clone the repository:**
+
+```bash
+% git clone https://github.com/wikipedia2vec/wikipedia2vec.git
+% cd wikipedia2vec/examples/text_classification
+```
 
 **Install required packages:**
 
@@ -51,7 +64,7 @@ Note that you need **Python 3.6+** to run this experiment.
 % pip install -r requirements.txt
 ```
 
-**Download pretrained embeddings:**
+**Download Wikipedia2Vec embeddings:**
 
 ```bash
 % wget https://wikipedia2vec.s3-ap-northeast-1.amazonaws.com/misc/text_classification/enwiki_20180420_lg1_300d.pkl.bz2
@@ -65,19 +78,36 @@ Note that you need **Python 3.6+** to run this experiment.
 % bunzip2 enwiki_20180420_entity_linker.pkl.bz2
 ```
 
-**Run experiment:**
+**Download Reuters-21578 dataset:**
+
+```bash
+% mkdir reuters-21578
+% wget http://kdd.ics.uci.edu/databases/reuters21578/reuters21578.tar.gz
+% tar xzf reuters21578.tar.gz -C reuters-21578
+```
+
+**Run experiments:**
+
+20 Newsgroups:
 
 ```bash
 % python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=20ng
 ```
 
+R8:
+
+```bash
+% python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=r8 --dataset-path=reuters-21578
+```
+
 You can speed up the training by specifying *--use-gpu* option if your machine has a GPU.
 
-## Building Wikipedia2Vec Pretrained Embeddings and Entity Detector
+## Building Wikipedia2Vec Embeddings and Entity Detector
 
-You can easily build Wikipedia2Vec pretrained embeddings and entity detector used in the above experiment based on a Wikipedia dump file (*enwiki-DATE-pages-articles.xml.bz2*) available at [Wikimedia Downloads](https://dumps.wikimedia.org/enwiki/).
+It is easy to build Wikipedia2Vec embeddings and entity detector used above.
+First, you need to select and download a Wikipedia dump file (*enwiki-DATE-pages-articles.xml.bz2*) available at [Wikimedia Downloads](https://dumps.wikimedia.org/enwiki/).
 
-**Train Wikipedia2Vec pretrained embeddings:**
+**Train Wikipedia2Vec embeddings:**
 
 ```bash
 % wikipedia2vec train WIKIPEDIA_DUMP_FILE WIKIPEDIA2VEC_FILE

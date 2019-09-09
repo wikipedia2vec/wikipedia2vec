@@ -14,6 +14,31 @@ from data import normalize_text, load_20ng_dataset, load_r8_dataset
 from entity_linker import EntityLinker
 from train import train
 
+DEFAULT_HYPER_PARAMS = {
+    '20ng': {
+        'min_count': 3,
+        'max_word_length': 64,
+        'max_entity_length': 256,
+        'batch_size': 32,
+        'patience': 10,
+        'learning_rate': 1e-3,
+        'weight_decay': 0.1,
+        'warmup_epochs': 5,
+        'dropout_prob': 0.5,
+    },
+    'r8': {
+        'min_count': 3,
+        'max_word_length': 50,
+        'max_entity_length': 200,
+        'batch_size': 32,
+        'patience': 10,
+        'learning_rate': 1e-3,
+        'weight_decay': 0.1,
+        'warmup_epochs': 5,
+        'dropout_prob': 0.5,
+    }
+}
+
 
 @click.group()
 @click.option('--verbose', is_flag=True)
@@ -63,28 +88,32 @@ def build_entity_linker(dump_db_file, **kwargs):
 @click.option('--dataset', type=click.Choice(['20ng', 'r8']), default='20ng')
 @click.option('--dataset-path', type=click.Path(exists=True, file_okay=False))
 @click.option('--dev-size', default=0.05)
-@click.option('--min-count', default=3)
-@click.option('--max-word-length', default=100)
-@click.option('--max-entity-length', default=200)
-@click.option('--batch-size', default=32)
-@click.option('--patience', default=10)
-@click.option('--learning-rate', default=1e-3)
-@click.option('--weight-decay', default=0.1)
-@click.option('--warmup-epochs', default=5)
-@click.option('--dropout-prob', default=0.5)
+@click.option('--min-count', default=None, type=int)
+@click.option('--max-word-length', default=None, type=int)
+@click.option('--max-entity-length', default=None, type=int)
+@click.option('--batch-size', default=None, type=int)
+@click.option('--patience', default=None, type=int)
+@click.option('--learning-rate', default=None, type=float)
+@click.option('--weight-decay', default=None, type=float)
+@click.option('--warmup-epochs', default=None, type=int)
+@click.option('--dropout-prob', default=None, type=float)
 @click.option('--use-gpu', is_flag=True)
 @click.option('--use-word/--no-word', default=True)
 def train_classifier(wikipedia2vec_file, entity_linker_file, dataset, dataset_path, dev_size, **kwargs):
     if dataset == '20ng':
-        dataset = load_20ng_dataset(dev_size)
+        data = load_20ng_dataset(dev_size)
     else:
-        dataset = load_r8_dataset(dataset_path, dev_size)
+        data = load_r8_dataset(dataset_path, dev_size)
+
+    for key, value in DEFAULT_HYPER_PARAMS[dataset].items():
+        if kwargs[key] is None:
+            kwargs[key] = value
 
     tokenizer = RegexpTokenizer()
     entity_linker = EntityLinker(entity_linker_file)
     embedding = Wikipedia2Vec.load(wikipedia2vec_file)
 
-    train(dataset, embedding, tokenizer, entity_linker, **kwargs)
+    return train(data, embedding, tokenizer, entity_linker, **kwargs)
 
 
 if __name__ == '__main__':

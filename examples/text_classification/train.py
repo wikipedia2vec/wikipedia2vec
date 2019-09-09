@@ -78,7 +78,7 @@ def train(dataset, embedding, tokenizer, entity_linker, min_count, max_word_leng
             break
 
     test_data_loader = DataLoader(data['test'], shuffle=False, batch_size=batch_size)
-    evaluate(model, test_data_loader, device, 'test')
+    return evaluate(model, test_data_loader, device, 'test')
 
 
 def evaluate(model, data_loader, device, fold):
