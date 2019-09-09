@@ -17,6 +17,8 @@ This tool has been tested on Linux, Windows, and macOS.
 
 An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e., FastText, Gensim, RDF2Vec, and Wiki2vec) is available [here](https://arxiv.org/abs/1812.06280).
 
+The code of the neural text classification model built upon Wikipedia2Vec is available [here](https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification).
+
 Documentation and pretrained embeddings for 12 languages (English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
 
 Basic Usage
