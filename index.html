@@ -123,11 +123,12 @@ Embeddings can be easily trained by a single command with a publicly available W
 This tool has been used in several state-of-the-art NLP models such as <a href="https://arxiv.org/abs/1601.01343">entity linking</a>, <a href="http://www.aclweb.org/anthology/I17-2017">named entity recognition</a>, <a href="https://www.aaai.org/Papers/AAAI/2019/AAAI-ShahH.6029.pdf">knowledge graph completion</a>, <a href="https://arxiv.org/abs/1601.01343">entity relatedness</a>, and <a href="https://arxiv.org/abs/1803.08652">question answering</a>.</p>
 <p>This tool has been tested on Linux, Windows, and macOS.</p>
 <p>An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e., FastText, Gensim, RDF2Vec, and Wiki2vec) is available <a href="https://arxiv.org/abs/1812.06280">here</a>.</p>
+<p>The source code of the neural text classification model built upon Wikipedia2Vec is available <a href="https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification">here</a>.</p>
 <p>Pretrained embeddings for 12 languages (i.e., English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) can be downloaded from <a href="pretrained/">this page</a>.</p>
 <h2 id="references">References<a class="headerlink" href="#references" title="Permanent link"></a></h2>
 <p>If you use Wikipedia2Vec in a scientific publication, please cite the following paper:</p>
 <p>Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, <a href="https://arxiv.org/abs/1812.06280">Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia</a>.</p>
-<pre><code class="text">@article{yamada2018wikipedia2vec,
+<pre><code class="bibtex">@article{yamada2018wikipedia2vec,
   title={Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia},
   author={Yamada, Ikuya and Asai, Akari and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
   journal={arXiv preprint 1812.06280},
@@ -137,7 +138,7 @@ This tool has been used in several state-of-the-art NLP models such as <a href="
 
 <p>Wikipedia2Vec is an official implementation of the embedding model proposed in the following paper:</p>
 <p>Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, <a href="https://arxiv.org/abs/1601.01343">Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation</a>.</p>
-<pre><code class="text">@inproceedings{yamada2016joint,
+<pre><code class="bibtex">@inproceedings{yamada2016joint,
   title={Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
   author={Yamada, Ikuya and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
   booktitle={Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
@@ -145,6 +146,17 @@ This tool has been used in several state-of-the-art NLP models such as <a href="
   publisher={Association for Computational Linguistics},
   doi={10.18653/v1/K16-1025},
   pages={250--259}
+}
+</code></pre>
+
+<p>The text classification model implemented in <a href="https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification">this example</a> was proposed in the following paper:</p>
+<p>Ikuya Yamada, Hiroyuki Shindo, <a href="https://arxiv.org/abs/1909.01259">Neural Attentive Bag-of-Entities Model for Text Classification</a>.</p>
+<pre><code class="bibtex">@article{yamada2019neural,
+  title={Neural Attentive Bag-of-Entities Model for Text Classification},
+  author={Yamada, Ikuya and Shindo, Hiroyuki},
+  booktitle={Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
+  year={2019},
+  publisher={Association for Computational Linguistics}
 }
 </code></pre>
 
@@ -235,5 +247,5 @@ This tool has been used in several state-of-the-art NLP models such as <a href="
 
 <!--
 MkDocs version : 1.0.4
-Build Date UTC : 2019-09-07 12:45:24
+Build Date UTC : 2019-09-09 12:59:56
 -->
