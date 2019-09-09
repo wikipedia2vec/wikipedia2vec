@@ -76,11 +76,13 @@ Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learni
 
 The text classification model contained in [this example](https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification) was proposed in the following paper:
 
+Ikuya Yamada, Hiroyuki Shindo, [Neural Attentive Bag-of-Entities Model for Text Classification](https://arxiv.org/abs/1909.01259).
+
 ```bibtex
 @article{yamada2019neural,
   title={Neural Attentive Bag-of-Entities Model for Text Classification},
   author={Yamada, Ikuya and Shindo, Hiroyuki},
-  booktitle={Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
+  booktitle={Proceedings of The 23th SIGNLL Conference on Computational Natural Language Learning},
   year={2019},
   publisher={Association for Computational Linguistics}
 }
