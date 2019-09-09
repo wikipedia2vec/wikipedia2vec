@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def train(dataset, embedding, tokenizer, entity_linker, min_count, max_word_length, max_entity_length, batch_size,
-          patience, learning_rate, weight_decay, warmup_epochs, use_gpu, use_word):
+          patience, learning_rate, weight_decay, warmup_epochs, dropout_prob, use_gpu, use_word):
     if use_gpu:
         device = torch.device('cuda')
     else:
@@ -43,7 +43,7 @@ def train(dataset, embedding, tokenizer, entity_linker, min_count, max_word_leng
         except KeyError:
             continue
 
-    model = NABoE(word_embedding, entity_embedding, len(dataset.label_names), use_word)
+    model = NABoE(word_embedding, entity_embedding, len(dataset.label_names), dropout_prob, use_word)
     optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay,
                       warmup=warmup_epochs * len(train_data_loader))
 

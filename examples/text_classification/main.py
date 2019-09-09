@@ -72,6 +72,7 @@ def build_entity_linker(dump_db_file, **kwargs):
 @click.option('--learning-rate', default=1e-3)
 @click.option('--weight-decay', default=0.1)
 @click.option('--warmup-epochs', default=5)
+@click.option('--dropout-prob', default=0.5)
 @click.option('--use-gpu', is_flag=True)
 @click.option('--use-word/--no-word', default=True)
 def train_classifier(wikipedia2vec_file, entity_linker_file, dataset, dataset_path, dev_size, **kwargs):

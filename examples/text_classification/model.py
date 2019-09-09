@@ -4,7 +4,7 @@ import torch.nn.functional as F
 
 
 class NABoE(nn.Module):
-    def __init__(self, word_embedding, entity_embedding, num_classes, use_word):
+    def __init__(self, word_embedding, entity_embedding, num_classes, dropout_prob, use_word):
         super(NABoE, self).__init__()
 
         self.use_word = use_word
@@ -15,6 +15,7 @@ class NABoE(nn.Module):
         self.entity_embedding.weight = nn.Parameter(torch.FloatTensor(entity_embedding))
 
         self.attention_layer = nn.Linear(2, 1)
+        self.dropout = nn.Dropout(p=dropout_prob)
         self.output_layer = nn.Linear(word_embedding.shape[1], num_classes)
 
     def forward(self, word_ids, entity_ids, prior_probs):
@@ -35,4 +36,5 @@ class NABoE(nn.Module):
             word_feature_vector = word_sum_vector / (word_ids != 0).sum(dim=1, keepdim=True).float()
             feature_vector = feature_vector + word_feature_vector
 
+        feature_vector = self.dropout(feature_vector)
         return self.output_layer(feature_vector)
