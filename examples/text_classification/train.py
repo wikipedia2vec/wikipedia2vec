@@ -46,7 +46,6 @@ def train(dataset, embedding, tokenizer, entity_linker, min_count, max_word_leng
     model = NABoE(word_embedding, entity_embedding, len(dataset.label_names), dropout_prob, use_word)
     optimizer = AdamW(model.parameters(), lr=learning_rate, weight_decay=weight_decay,
                       warmup=warmup_epochs * len(train_data_loader))
-
     model.to(device)
 
     epoch = 0
@@ -95,9 +94,9 @@ def evaluate(model, data_loader, device, fold):
             labels += batch['label'].to('cpu').tolist()
 
     test_acc = accuracy_score(labels, predictions)
-    test_f1 = f1_score(labels, predictions, average='macro')
-
     print(f'accuracy ({fold}): {test_acc:.4f}')
+
+    test_f1 = f1_score(labels, predictions, average='macro')
     print(f'f-measure ({fold}): {test_f1:.4f}')
 
     return test_acc, test_f1

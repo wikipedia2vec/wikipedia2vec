@@ -77,17 +77,17 @@ You can speed up the training by specifying *--use-gpu* option if your machine h
 
 You can easily build your own Wikipedia2Vec pretrained embeddings and entity detector based on a Wikipedia dump file (*enwiki-DATE-pages-articles.xml.bz2*) available at [Wikimedia Downloads](https://dumps.wikimedia.org/enwiki/).
 
-**Build Wikipedia2Vec pretrained embeddings:**
+**Train Wikipedia2Vec pretrained embeddings:**
 
 ```bash
 % wikipedia2vec train WIKIPEDIA_DUMP_FILE WIKIPEDIA2VEC_FILE
 ```
 
-**Build entity detector:**
+**Build entity detector model:**
 
 ```bash
 % python main.py build-dump-db WIKIPEDIA_DUMP_FILE DUMP_DB_FILE
-% python main.py build-entity-linker DUMP_DB_FILE ENTITY_LINKER_FILE
+% python main.py build-entity-linker DUMP_DB_FILE ENTITY_DETECTOR_FILE
 ```
 
 ## References

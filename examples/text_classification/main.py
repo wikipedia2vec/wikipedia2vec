@@ -6,7 +6,6 @@ import numpy as np
 import torch
 from wikipedia2vec.dictionary import Dictionary
 from wikipedia2vec.dump_db import DumpDB
-from wikipedia2vec.mention_db import MentionDB
 from wikipedia2vec.utils.tokenizer.regexp_tokenizer import RegexpTokenizer
 from wikipedia2vec.utils.wiki_dump_reader import WikiDumpReader
 from wikipedia2vec import Wikipedia2Vec

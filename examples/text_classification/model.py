@@ -33,7 +33,7 @@ class NABoE(nn.Module):
 
         feature_vector = (entity_vectors * attention_weights.unsqueeze(-1)).sum(1)
         if self.use_word:
-            word_feature_vector = word_sum_vector / (word_ids != 0).sum(dim=1, keepdim=True).float()
+            word_feature_vector = word_sum_vector / (word_ids != 0).sum(dim=1, keepdim=True).type_as(word_sum_vector)
             feature_vector = feature_vector + word_feature_vector
 
         feature_vector = self.dropout(feature_vector)
