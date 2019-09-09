@@ -4,7 +4,7 @@
 
 ## Introduction
 
-This directory contains the implementation of **Neural Attentive Bag-of-Entities Model** (NABoE), a state-of-the-art neural network model that performs text classification using a set of Wikipedia entities (*bag of entities*) as input.
+This directory contains the implementation of **Neural Attentive Bag-of-Entities Model (NABoE)**, a state-of-the-art neural network model that performs text classification using a set of Wikipedia entities (*bag of entities*) as input.
 
 For each entity name in a document (e.g., *Apple*), this model first detects Wikipedia entities that may be referred to by this name (e.g., *Apple Inc.*, *Apple (food)*) using a simple dictionary-based entity detector, and then computes the feature vector of the document using the weighted average of the entity embeddings of the detected entities.
 The weights are computed using a neural attention mechanism that enables the model to focus on a small subset of the entities that are less ambiguous in meaning and more relevant to the document.
@@ -88,13 +88,13 @@ The results can be reproduced as follows.
 
 **Run experiments:**
 
-20 Newsgroups:
+*20 Newsgroups*
 
 ```bash
 % python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=20ng
 ```
 
-R8:
+*R8*
 
 ```bash
 % python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=r8 --dataset-path=reuters-21578
@@ -121,8 +121,6 @@ First, you need to select and download a Wikipedia dump file (*enwiki-DATE-pages
 ```
 
 ## Reference
-
-If you refer this text classification model in a scientific publication, please cite the following paper:
 
 ```bibtex
 @article{yamada2019neural,
