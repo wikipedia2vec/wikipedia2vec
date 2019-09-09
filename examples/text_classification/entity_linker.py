@@ -50,11 +50,7 @@ _dump_db = _tokenizer = _max_mention_length = _name_trie = None
 
 
 class EntityLinker(object):
-    def __init__(self, data_file, min_link_prob, min_prior_prob, min_link_count):
-        self.min_link_prob = min_link_prob
-        self.min_prior_prob = min_prior_prob
-        self.min_link_count = min_link_count
-
+    def __init__(self, data_file):
         data = joblib.load(data_file)
         self.title_trie = data['title_trie']
         self.mention_trie = data['mention_trie']
@@ -80,13 +76,6 @@ class EntityLinker(object):
                     matched = False
 
                     for title_id, link_count, total_link_count, doc_count in self.data_trie[prefix]:
-                        if doc_count == 0 or total_link_count / doc_count < self.min_link_prob:
-                            break
-                        if link_count < self.min_link_count:
-                            continue
-                        if total_link_count == 0 or link_count / total_link_count < self.min_prior_prob:
-                            continue
-
                         mention = Mention(self.title_trie.restore_key(title_id), prefix, start, end, link_count,
                                           total_link_count, doc_count)
                         ret.append(mention)

@@ -64,9 +64,6 @@ def build_entity_linker(dump_db_file, **kwargs):
 @click.option('--dataset', type=click.Choice(['20ng', 'r8']), default='20ng')
 @click.option('--dataset-path', type=click.Path(exists=True, file_okay=False))
 @click.option('--dev-size', default=0.05)
-@click.option('--min-link-prob', default=0.01)
-@click.option('--min-prior-prob', default=0.03)
-@click.option('--min-link-count', default=0)
 @click.option('--min-count', default=3)
 @click.option('--max-word-length', default=100)
 @click.option('--max-entity-length', default=200)
@@ -77,15 +74,14 @@ def build_entity_linker(dump_db_file, **kwargs):
 @click.option('--warmup-epochs', default=5)
 @click.option('--use-gpu', is_flag=True)
 @click.option('--use-word/--no-word', default=True)
-def train_classifier(wikipedia2vec_file, entity_linker_file, dataset, dataset_path, dev_size, min_link_prob,
-                     min_prior_prob, min_link_count, **kwargs):
+def train_classifier(wikipedia2vec_file, entity_linker_file, dataset, dataset_path, dev_size, **kwargs):
     if dataset == '20ng':
         dataset = load_20ng_dataset(dev_size)
     else:
         dataset = load_r8_dataset(dataset_path, dev_size)
 
     tokenizer = RegexpTokenizer()
-    entity_linker = EntityLinker(entity_linker_file, min_link_prob, min_prior_prob, min_link_count)
+    entity_linker = EntityLinker(entity_linker_file)
     embedding = Wikipedia2Vec.load(wikipedia2vec_file)
 
     train(dataset, embedding, tokenizer, entity_linker, **kwargs)

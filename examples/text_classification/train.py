@@ -14,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 
 def train(dataset, embedding, tokenizer, entity_linker, min_count, max_word_length, max_entity_length, batch_size,
-          patience, learning_rate, weight_decay, warmup_epochs, use_gpu, use_word, data_cache_file=None):
+          patience, learning_rate, weight_decay, warmup_epochs, use_gpu, use_word):
     if use_gpu:
         device = torch.device('cuda')
     else:
