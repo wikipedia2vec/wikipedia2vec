@@ -10,7 +10,7 @@ For each entity name in a document (e.g., *Apple*), this model first detects Wik
 The weights are computed using a neural attention mechanism that enables the model to focus on a small subset of the entities that are less ambiguous in meaning and more relevant to the document.
 Text classification is performed using a linear layer with the feature vector as input.
 
-The code is built upon Wikipedia2Vec and PyTorch.
+The code is built upon [Wikipedia2Vec](https://github.com/wikipedia2vec/wikipedia2vec) and [PyTorch](https://pytorch.org/).
 The embeddings in this model are initialized using Wikipedia2Vec embeddings.
 See [the paper](https://arxiv.org/abs/1909.01259) for further details.
 
@@ -35,8 +35,8 @@ See [the paper](https://arxiv.org/abs/1909.01259) for further details.
 | --- | --- | --- |
 | NABoE | **97.8** | **93.0** |
 | Bag-of-Words SVM | 94.7 | 85.1 |
-| fastText ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 96.1 | - |
 | fastText (bigrams) ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 94.7 | - |
+| fastText ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 96.1 | - |
 | BoE ([Jin et al., 2016](https://www.ijcai.org/Proceedings/16/Papers/401.pdf)) | 96.5 | 88.6 |
 | SWEM ([Shen et al., 2018](https://arxiv.org/abs/1805.09843)) | 96.7 | 89.8 |
 | TextEnt ([Yamada et al., 2018](https://arxiv.org/abs/1806.02960)) | 96.7 | 91.0 |
@@ -48,7 +48,7 @@ Note that the results are slightly better than the ones reported in the original
 
 ## Reproducing Results
 
-The results can be reproduced as follows.
+The results presented above can be reproduced as follows.
 **Python 3.6+** is required to run this experiment.
 
 **Clone the repository:**
@@ -100,11 +100,11 @@ The results can be reproduced as follows.
 % python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=r8 --dataset-path=reuters-21578
 ```
 
-You can speed up the training by specifying *--use-gpu* option if your machine has a GPU.
+NOTE: You can speed up the training by specifying *--use-gpu* option if your machine has a GPU.
 
 ## Building Wikipedia2Vec Embeddings and Entity Detector
 
-It is easy to build Wikipedia2Vec embeddings and entity detector used above.
+It is easy to build the Wikipedia2Vec embeddings and the entity detector used above.
 First, you need to select and download a Wikipedia dump file (*enwiki-DATE-pages-articles.xml.bz2*) available at [Wikimedia Downloads](https://dumps.wikimedia.org/enwiki/).
 
 **Train Wikipedia2Vec embeddings:**
@@ -119,6 +119,8 @@ First, you need to select and download a Wikipedia dump file (*enwiki-DATE-pages
 % python main.py build-dump-db WIKIPEDIA_DUMP_FILE DUMP_DB_FILE
 % python main.py build-entity-linker DUMP_DB_FILE ENTITY_DETECTOR_FILE
 ```
+
+These *WIKIPEDIA2VEC_FILE* and *ENTITY_DETECTOR_FILE* can be specified as arguments of `main.py`.
 
 ## Reference
 
