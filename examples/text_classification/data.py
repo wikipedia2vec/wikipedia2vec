@@ -64,7 +64,8 @@ def generate_features(dataset, tokenizer, entity_linker, min_count, max_word_len
     word_counter = Counter()
     entity_counter = Counter()
     for instance in tqdm(dataset):
-        word_counter.update(t.text for t in tokenize(instance.text) if t.text not in ENGLISH_STOP_WORDS)
+        word_counter.update(t.text for t in tokenize(instance.text))
+        # word_counter.update(t.text for t in tokenize(instance.text) if t.text not in ENGLISH_STOP_WORDS)
         entity_counter.update(m.title for m in detect_mentions(instance.text))
 
     words = [word for word, count in word_counter.items() if count >= min_count]
