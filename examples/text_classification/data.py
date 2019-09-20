@@ -128,7 +128,7 @@ def load_r8_dataset(dataset_path, dev_size=0.05):
     train_data = []
     test_data = []
 
-    for file_name in os.listdir(dataset_path):
+    for file_name in sorted(os.listdir(dataset_path)):
         if file_name.endswith('.sgm'):
             with open(os.path.join(dataset_path, file_name), encoding='ISO-8859-1') as f:
                 for node in BeautifulSoup(f.read(), 'html.parser').find_all('reuters'):
