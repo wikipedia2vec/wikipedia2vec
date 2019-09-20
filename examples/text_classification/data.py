@@ -8,7 +8,6 @@ from collections import Counter
 import numpy as np
 from bs4 import BeautifulSoup
 from sklearn.datasets import fetch_20newsgroups
-from sklearn.feature_extraction.stop_words import ENGLISH_STOP_WORDS
 from tqdm import tqdm
 
 PAD_TOKEN = '<PAD>'
@@ -65,7 +64,6 @@ def generate_features(dataset, tokenizer, entity_linker, min_count, max_word_len
     entity_counter = Counter()
     for instance in tqdm(dataset):
         word_counter.update(t.text for t in tokenize(instance.text))
-        # word_counter.update(t.text for t in tokenize(instance.text) if t.text not in ENGLISH_STOP_WORDS)
         entity_counter.update(m.title for m in detect_mentions(instance.text))
 
     words = [word for word, count in word_counter.items() if count >= min_count]
