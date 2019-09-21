@@ -33,7 +33,7 @@ See [the paper](https://arxiv.org/abs/1909.01259) for further details.
 
 | Model | Accuracy | F1 |
 | --- | --- | --- |
-| NABoE | **97.8** | **93.0** |
+| NABoE | **97.9** | **93.0** |
 | Bag-of-Words SVM | 94.7 | 85.1 |
 | fastText (bigrams) ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 94.7 | - |
 | fastText ([Joulin et al., 2016](https://arxiv.org/abs/1607.01759)) | 96.1 | - |

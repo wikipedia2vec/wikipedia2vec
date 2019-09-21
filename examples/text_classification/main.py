@@ -28,14 +28,14 @@ DEFAULT_HYPER_PARAMS = {
     },
     'r8': {
         'min_count': 3,
-        'max_word_length': 50,
-        'max_entity_length': 200,
+        'max_word_length': 43,
+        'max_entity_length': 500,
         'batch_size': 32,
         'patience': 10,
-        'learning_rate': 1e-3,
-        'weight_decay': 0.1,
-        'warmup_epochs': 5,
-        'dropout_prob': 0.5,
+        'learning_rate': 0.003,
+        'weight_decay': 0.01,
+        'warmup_epochs': 2,
+        'dropout_prob': 0.4,
     }
 }
 
