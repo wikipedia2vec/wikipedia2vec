@@ -11,18 +11,12 @@ This tool enables you to learn embeddings of words and entities simultaneously, 
 Embeddings can be easily trained by a single command with a publicly available Wikipedia dump as input.
 
 This tool implements the [conventional skip-gram model](https://en.wikipedia.org/wiki/Word2vec) to learn the embeddings of words, and its extension proposed in [Yamada et al. (2016)](https://arxiv.org/abs/1601.01343) to learn the embeddings of entities.
-This tool has been used in several important applications including entity linking ([Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147)), named entity recognition ([Sato et al., 2017](http://www.aclweb.org/anthology/I17-2017), [Lara-Clares and Garcia-Serrano, 2019](http://ceur-ws.org/Vol-2421/eHealth-KD_paper_6.pdf)), text classification ([Yamada et al., 2019](https://arxiv.org/abs/1909.01259)), paraphrase detection ([Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845)), knowledge graph completion ([Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162)), plot analysis of movies ([Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328)), and question answering ([Yamada et al., 2017](https://arxiv.org/abs/1803.08652)).
-
-This tool has been tested on Linux, Windows, and macOS.
 
 An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e., FastText, Gensim, RDF2Vec, and Wiki2vec) is available [here](https://arxiv.org/abs/1812.06280).
 
-The source code of the neural text classification model built upon Wikipedia2Vec is available [here](https://github.com/wikipedia2vec/wikipedia2vec/tree/master/examples/text_classification).
+Documentation  are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
 
-Documentation and pretrained embeddings for 12 languages (English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
-
-Basic Usage
------------
+## Basic Usage
 
 Wikipedia2Vec can be installed via PyPI:
 
@@ -42,8 +36,24 @@ Then, the learned embeddings are written to *MODEL\_FILE*.
 Note that this command can take many optional parameters.
 Please refer to [our documentation](https://wikipedia2vec.github.io/wikipedia2vec/commands/) for further details.
 
-References
-----------
+## Pretrained Embeddings
+
+Pretrained embeddings for 12 languages (i.e., English, Arabic, Chinese, Dutch, French, German, Italian, Japanese, Polish, Portuguese, Russian, and Spanish) can be downloaded from [this page](https://wikipedia2vec.github.io/wikipedia2vec/pretrained/).
+
+## Use Cases
+
+Wikipedia2Vec has been used in the following applications:
+
+* Entity linking: [Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147), [Chen et al., 2019](https://arxiv.org/abs/1911.03834).
+* Named entity recognition: [Sato et al., 2017](http://www.aclweb.org/anthology/I17-2017), [Lara-Clares and Garcia-Serrano, 2019](http://ceur-ws.org/Vol-2421/eHealth-KD_paper_6.pdf).
+* Question answering: [Yamada et al., 2017](https://arxiv.org/abs/1803.08652).
+* Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
+* Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162).
+* Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
+* Text classification: [Yamada et al., 2019](https://arxiv.org/abs/1909.01259).
+* Enhancement of BERT using Wikipedia knowledge: [Poerner et al., 2019](https://arxiv.org/abs/1911.03681).
+
+## References
 
 If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
 
@@ -88,7 +98,6 @@ Ikuya Yamada, Hiroyuki Shindo, [Neural Attentive Bag-of-Entities Model for Text 
 }
 ```
 
-License
--------
+## License
 
 [Apache License 2.0](http://www.apache.org/licenses/LICENSE-2.0)
