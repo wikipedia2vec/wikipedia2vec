@@ -47,10 +47,11 @@ Wikipedia2Vec has been used in the following applications:
 * Entity linking: [Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147), [Chen et al., 2019](https://arxiv.org/abs/1911.03834).
 * Named entity recognition: [Sato et al., 2017](http://www.aclweb.org/anthology/I17-2017), [Lara-Clares and Garcia-Serrano, 2019](http://ceur-ws.org/Vol-2421/eHealth-KD_paper_6.pdf).
 * Question answering: [Yamada et al., 2017](https://arxiv.org/abs/1803.08652).
+* Entity typing: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960).
+* Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259).
 * Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
 * Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162).
 * Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
-* Text classification: [Yamada et al., 2019](https://arxiv.org/abs/1909.01259).
 * Enhancement of BERT using Wikipedia knowledge: [Poerner et al., 2019](https://arxiv.org/abs/1911.03681).
 
 ## References
