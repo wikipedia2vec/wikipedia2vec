@@ -6,7 +6,7 @@ from __future__ import unicode_literals
 import re
 import six
 
-DISAMBI_REGEXP = re.compile(r"{{\s*(disambiguation|disambig|disamb|dab)\s*(\||})", re.IGNORECASE)
+DISAMBI_REGEXP = re.compile(r"{{\s*(disambiguation|disambig|disamb|dab|geodis)\s*(\||})", re.IGNORECASE)
 
 
 cdef class WikiPage:
