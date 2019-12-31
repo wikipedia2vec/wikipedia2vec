@@ -51,6 +51,7 @@ Wikipedia2Vec has been used in the following applications:
 * Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259).
 * Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
 * Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162).
+* Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126).
 * Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
 * Enhancement of BERT using Wikipedia knowledge: [Poerner et al., 2019](https://arxiv.org/abs/1911.03681).
 
