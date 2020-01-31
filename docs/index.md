@@ -36,20 +36,18 @@ Wikipedia2Vec has been used in the following applications:
 
 ### References
 
-If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
+If you use Wikipedia2Vec in a scientific publication, please cite the following papers:
 
-Ikuya Yamada, Akari Asai, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia](https://arxiv.org/abs/1812.06280).
+Ikuya Yamada, Akari Asai, Jin Sakuma, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, Yuji Matsumoto, [Wikipedia2Vec: An Efficient Toolkit for Learning and Visualizing the Embeddings of Words and Entities from Wikipedia](https://arxiv.org/abs/1812.06280).
 
 ```bibtex
-@article{yamada2018wikipedia2vec,
-  title={Wikipedia2Vec: An Optimized Tool for Learning Embeddings of Words and Entities from Wikipedia},
-  author={Yamada, Ikuya and Asai, Akari and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
-  journal={arXiv preprint 1812.06280},
-  year={2018}
+@article{yamada2020wikipedia2vec,
+  title={Wikipedia2Vec: An Efficient Toolkit for Learning and Visualizing the Embeddings of Words and Entities from Wikipedia},
+  author={Yamada, Ikuya and Asai, Akari and Sakuma, Jin and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu and Matsumoto, Yuji},
+  journal={arXiv preprint 1812.06280v3},
+  year={2020}
 }
 ```
-
-Wikipedia2Vec is an official implementation of the embedding model proposed in the following paper:
 
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
 
