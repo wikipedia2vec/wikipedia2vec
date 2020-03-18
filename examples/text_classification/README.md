@@ -91,13 +91,13 @@ The results presented above can be reproduced as follows.
 *20 Newsgroups*
 
 ```bash
-% python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=20ng
+% python main.py train_classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=20ng
 ```
 
 *R8*
 
 ```bash
-% python main.py train-classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=r8 --dataset-path=reuters-21578
+% python main.py train_classifier enwiki_20180420_lg1_300d.pkl enwiki_20180420_entity_linker.pkl --dataset=r8 --dataset-path=reuters-21578
 ```
 
 NOTE: You can speed up the training by specifying *--use-gpu* option if your machine has a GPU.
