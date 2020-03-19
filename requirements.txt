@@ -1,5 +1,5 @@
 Cython==0.28
-click==6.7
+click==7.0
 jieba==0.39
 joblib==0.11
 marisa-trie==0.7.4
