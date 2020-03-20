@@ -2,32 +2,32 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
     <url>
      <loc>/</loc>
-     <lastmod>2020-02-01</lastmod>
+     <lastmod>2020-03-20</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>/intro/</loc>
-     <lastmod>2020-02-01</lastmod>
+     <lastmod>2020-03-20</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>/install/</loc>
-     <lastmod>2020-02-01</lastmod>
+     <lastmod>2020-03-20</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>/commands/</loc>
-     <lastmod>2020-02-01</lastmod>
+     <lastmod>2020-03-20</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>/usage/</loc>
-     <lastmod>2020-02-01</lastmod>
+     <lastmod>2020-03-20</lastmod>
      <changefreq>daily</changefreq>
     </url>
     <url>
      <loc>/pretrained/</loc>
-     <lastmod>2020-02-01</lastmod>
+     <lastmod>2020-03-20</lastmod>
      <changefreq>daily</changefreq>
     </url>
 </urlset>
