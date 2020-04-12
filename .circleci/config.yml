@@ -28,7 +28,7 @@ jobs:
             virtualenv venv
             . venv/bin/activate
             pip install -r requirements.txt
-            pip install mecab-python PyICU nose
+            pip install "mecab-python==0.996" PyICU nose
 
       - save_cache:
           paths:
