@@ -6,6 +6,7 @@ jobs:
     working_directory: ~/repo_python2
     steps:
       - checkout
+      - run: sudo apt-get update
       - run: mkdir test-results
       - run:
           name: install mecab and related packages
@@ -56,6 +57,7 @@ jobs:
     working_directory: ~/repo_python3
     steps:
       - checkout
+      - run: sudo apt-get update
       - run: mkdir test-results
       - run:
           name: install mecab and related packages
