@@ -55,6 +55,7 @@ Wikipedia2Vec has been used in the following applications:
 * Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
 * Enhancement of BERT using Wikipedia knowledge: [Poerner et al., 2019](https://arxiv.org/abs/1911.03681).
 * Novel entity discovery: [Zhang et al., 2020](https://arxiv.org/abs/2002.00206).
+* Entity retrieval: [Gerritse et al., 2020](https://link.springer.com/chapter/10.1007%2F978-3-030-45439-5_7).
 
 ## References
 
