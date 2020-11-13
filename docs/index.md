@@ -28,7 +28,7 @@ Wikipedia2Vec has been applied to the following tasks:
 * Question answering: [Yamada et al., 2017](https://arxiv.org/abs/1803.08652), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
 * Entity typing: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960).
 * Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259).
-* Relation classification: [Poerner et al., 2020](https://arxiv.org/abs/1911.03681)
+* Relation classification: [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
 * Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
 * Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162).
 * Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126).
@@ -39,29 +39,32 @@ Wikipedia2Vec has been applied to the following tasks:
 
 ### References
 
-If you use Wikipedia2Vec in a scientific publication, please cite the following papers:
+If you use Wikipedia2Vec in a scientific publication, please cite the following paper:
 
 Ikuya Yamada, Akari Asai, Jin Sakuma, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, Yuji Matsumoto, [Wikipedia2Vec: An Efficient Toolkit for Learning and Visualizing the Embeddings of Words and Entities from Wikipedia](https://arxiv.org/abs/1812.06280).
 
-```bibtex
-@article{yamada2020wikipedia2vec,
-  title={Wikipedia2Vec: An Efficient Toolkit for Learning and Visualizing the Embeddings of Words and Entities from Wikipedia},
+```
+@inproceedings{yamada2020wikipedia2vec,
+  title = "{W}ikipedia2{V}ec: An Efficient Toolkit for Learning and Visualizing the Embeddings of Words and Entities from {W}ikipedia",
   author={Yamada, Ikuya and Asai, Akari and Sakuma, Jin and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu and Matsumoto, Yuji},
-  journal={arXiv preprint 1812.06280v3},
-  year={2020}
+  booktitle = {Proceedings of the 2020 Conference on Empirical Methods in Natural Language Processing: System Demonstrations},
+  year = {2020},
+  publisher = {Association for Computational Linguistics},
+  pages = {23--30}
 }
 ```
 
+The embedding model was originally proposed in the following paper:
+
 Ikuya Yamada, Hiroyuki Shindo, Hideaki Takeda, Yoshiyasu Takefuji, [Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation](https://arxiv.org/abs/1601.01343).
 
-```bibtex
+```
 @inproceedings{yamada2016joint,
   title={Joint Learning of the Embedding of Words and Entities for Named Entity Disambiguation},
   author={Yamada, Ikuya and Shindo, Hiroyuki and Takeda, Hideaki and Takefuji, Yoshiyasu},
   booktitle={Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
   year={2016},
   publisher={Association for Computational Linguistics},
-  doi={10.18653/v1/K16-1025},
   pages={250--259}
 }
 ```
@@ -70,13 +73,14 @@ The text classification model implemented in [this example](https://github.com/w
 
 Ikuya Yamada, Hiroyuki Shindo, [Neural Attentive Bag-of-Entities Model for Text Classification](https://arxiv.org/abs/1909.01259).
 
-```bibtex
+```
 @article{yamada2019neural,
   title={Neural Attentive Bag-of-Entities Model for Text Classification},
   author={Yamada, Ikuya and Shindo, Hiroyuki},
-  booktitle={Proceedings of The 20th SIGNLL Conference on Computational Natural Language Learning},
+  booktitle={Proceedings of The 23th SIGNLL Conference on Computational Natural Language Learning},
   year={2019},
-  publisher={Association for Computational Linguistics}
+  publisher={Association for Computational Linguistics},
+  pages = {563--573}
 }
 ```
 
