@@ -23,19 +23,19 @@ Pretrained embeddings for 12 languages (i.e., English, Arabic, Chinese, Dutch, F
 
 Wikipedia2Vec has been applied to the following tasks:
 
-* Entity linking: [Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147), [Chen et al., 2019](https://arxiv.org/abs/1911.03834), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
+* Entity linking: [Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147), [Chen et al., 2019](https://arxiv.org/abs/1911.03834), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681), [van Hulst et al., 2020](https://arxiv.org/abs/2006.01969).
 * Named entity recognition: [Sato et al., 2017](http://www.aclweb.org/anthology/I17-2017), [Lara-Clares and Garcia-Serrano, 2019](http://ceur-ws.org/Vol-2421/eHealth-KD_paper_6.pdf).
 * Question answering: [Yamada et al., 2017](https://arxiv.org/abs/1803.08652), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
 * Entity typing: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960).
-* Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259).
+* Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259), [Alam et al., 2020](https://link.springer.com/chapter/10.1007/978-3-030-61244-3_9).
 * Relation classification: [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
 * Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
 * Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162).
-* Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126).
+* Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126), [Ghosal et al., 2020](https://arxiv.org/abs/2010.10836).
 * Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
-* Enhancement of BERT using Wikipedia knowledge: [Poerner et al., 2019](https://arxiv.org/abs/1911.03681).
 * Novel entity discovery: [Zhang et al., 2020](https://arxiv.org/abs/2002.00206).
 * Entity retrieval: [Gerritse et al., 2020](https://link.springer.com/chapter/10.1007%2F978-3-030-45439-5_7).
+* Deepfake detection: [Zhong et al., 2020](https://arxiv.org/abs/2010.07475).
 
 ### References
 
