@@ -51,7 +51,7 @@ Wikipedia2Vec has been applied to the following tasks:
 * Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259), [Alam et al., 2020](https://link.springer.com/chapter/10.1007/978-3-030-61244-3_9).
 * Relation classification: [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
 * Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
-* Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162).
+* Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162), [Shah et al., 2020](https://www.aclweb.org/anthology/2020.textgraphs-1.9/).
 * Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126), [Ghosal et al., 2020](https://arxiv.org/abs/2010.10836).
 * Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
 * Novel entity discovery: [Zhang et al., 2020](https://arxiv.org/abs/2002.00206).
