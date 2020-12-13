@@ -36,6 +36,7 @@ Wikipedia2Vec has been applied to the following tasks:
 * Novel entity discovery: [Zhang et al., 2020](https://arxiv.org/abs/2002.00206).
 * Entity retrieval: [Gerritse et al., 2020](https://link.springer.com/chapter/10.1007%2F978-3-030-45439-5_7).
 * Deepfake detection: [Zhong et al., 2020](https://arxiv.org/abs/2010.07475).
+* Conversational information seeking: [Rodriguez et al., 2020](https://arxiv.org/abs/2005.00172).
 
 ### References
 
