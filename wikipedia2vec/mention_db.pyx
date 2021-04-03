@@ -112,6 +112,7 @@ cdef class MentionDB(object):
         ret = []
         cur = 0
 
+        target_text = text
         if not self._case_sensitive:
             target_text = text.lower()
 
