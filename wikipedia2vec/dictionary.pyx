@@ -123,6 +123,7 @@ cdef class Dictionary:
             return Word(word, index, *self._word_stats[index])
 
     cpdef int32_t get_word_index(self, unicode word):
+        word = word.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         try:
             return self._word_dict[word]
         except KeyError:
