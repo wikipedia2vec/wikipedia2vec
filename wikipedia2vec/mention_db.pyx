@@ -155,6 +155,7 @@ cdef class MentionDB(object):
                             case_sensitive=case_sensitive)
                 for ret in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
                     for (text, index) in ret:
+                        text = text.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
                         name_dict[text][index] += 1
                     bar.update(1)
 
@@ -286,6 +287,7 @@ def _count_occurrences(unicode title, int32_t max_mention_len, bint case_sensiti
 
     for paragraph in _dump_db.get_paragraphs(title):
         text = paragraph.text
+        text = text.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         tokens = _tokenizer.tokenize(text)
 
         if not case_sensitive:
