@@ -123,6 +123,7 @@ cdef class Dictionary:
             return Word(word, index, *self._word_stats[index])
 
     cpdef int32_t get_word_index(self, unicode word):
+        word = word.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         try:
             return self._word_dict[word]
         except KeyError:
@@ -142,6 +143,7 @@ cdef class Dictionary:
     cpdef int32_t get_entity_index(self, unicode title, bint resolve_redirect=True):
         cdef int32_t index
 
+        title = title.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         if resolve_redirect:
             try:
                 index = self._redirect_dict[title][0][0]
