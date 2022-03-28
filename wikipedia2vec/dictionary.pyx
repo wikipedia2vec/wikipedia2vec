@@ -123,6 +123,7 @@ cdef class Dictionary:
             return Word(word, index, *self._word_stats[index])
 
     cpdef int32_t get_word_index(self, unicode word):
+        word = word.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         try:
             return self._word_dict[word]
         except KeyError:
@@ -142,6 +143,7 @@ cdef class Dictionary:
     cpdef int32_t get_entity_index(self, unicode title, bint resolve_redirect=True):
         cdef int32_t index
 
+        title = title.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         if resolve_redirect:
             try:
                 index = self._redirect_dict[title][0][0]
@@ -225,14 +227,13 @@ cdef class Dictionary:
 
         entities = []
         for (entity, count) in six.iteritems(entity_counter):
+            entity = entity.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
             if count < min_entity_count:
                 continue
 
             if not disambi and dump_db.is_disambiguation(entity):
                 continue
-
             entities.append(entity)
-
         entity_dict = Trie(entities)
         entity_stats = np.zeros((len(entity_dict), 2), dtype=np.int32)
         for (entity, index) in six.iteritems(entity_dict):
@@ -347,7 +348,6 @@ def _process_page(unicode title, bint lowercase, int32_t min_paragraph_len):
 
     for paragraph in _dump_db.get_paragraphs(title):
         entity_counter.update(link.title for link in paragraph.wiki_links)
-
         tokens = _tokenizer.tokenize(paragraph.text)
         if len(tokens) >= min_paragraph_len:
             if lowercase:

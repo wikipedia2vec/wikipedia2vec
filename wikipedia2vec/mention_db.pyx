@@ -94,6 +94,7 @@ cdef class MentionDB(object):
         return self._prefix_search(text, start)
 
     cdef inline list _prefix_search(self, unicode text, int32_t start=0):
+        text = text.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         cdef list ret = self.mention_trie.prefixes(text[start:start+self._max_mention_len])
         ret.sort(key=len, reverse=True)
         return ret
@@ -111,7 +112,7 @@ cdef class MentionDB(object):
 
         ret = []
         cur = 0
-
+        text = text.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         target_text = text
         if not self._case_sensitive:
             target_text = text.lower()
@@ -155,6 +156,7 @@ cdef class MentionDB(object):
                             case_sensitive=case_sensitive)
                 for ret in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
                     for (text, index) in ret:
+                        text = text.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
                         name_dict[text][index] += 1
                     bar.update(1)
 
@@ -286,6 +288,7 @@ def _count_occurrences(unicode title, int32_t max_mention_len, bint case_sensiti
 
     for paragraph in _dump_db.get_paragraphs(title):
         text = paragraph.text
+        text = text.encode('utf8', 'xmlcharrefreplace').decode('utf8', 'xmlcharrefreplace')
         tokens = _tokenizer.tokenize(text)
 
         if not case_sensitive:
