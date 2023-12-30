@@ -1,23 +1,17 @@
-# -*- coding: utf-8 -*-
-# cython: profile=False
-# License: Apache License 2.0
+from typing import List
 
-import logging
-import re
 from icu import Locale, BreakIterator
 
-from .sentence cimport Sentence
+from .base_sentence_detector import BaseSentenceDetector
+from .sentence import Sentence
 
 
-cdef class ICUSentenceDetector:
-    cdef _locale
-    cdef _breaker
-
-    def __init__(self, locale):
+class ICUSentenceDetector(BaseSentenceDetector):
+    def __init__(self, locale: str):
         self._locale = locale
         self._breaker = BreakIterator.createSentenceInstance(Locale(locale))
 
-    cpdef list detect_sentences(self, unicode text):
+    def detect_sentences(self, text: str) -> List[Sentence]:
         self._breaker.setText(text)
 
         ret = []

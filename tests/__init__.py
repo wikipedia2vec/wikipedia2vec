@@ -1,6 +1,3 @@
-# -*- coding: utf-8 -*-
-# License: Apache License 2.0
-
 import pkg_resources
 from tempfile import NamedTemporaryFile
 
@@ -18,8 +15,7 @@ def get_dump_db():
 def setUp():
     global dump_db, dump_db_file
 
-    dump_file = pkg_resources.resource_filename(__name__,
-                                                'test_data/enwiki-pages-articles-sample.xml.bz2')
+    dump_file = pkg_resources.resource_filename("tests", "test_data/enwiki-pages-articles-sample.xml.bz2")
     dump_reader = WikiDumpReader(dump_file)
     dump_db_file = NamedTemporaryFile()
 

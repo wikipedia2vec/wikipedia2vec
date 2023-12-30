@@ -1,23 +1,23 @@
 import unittest
 
-from wikipedia2vec.utils.tokenizer.token import Token
+from wikipedia2vec.utils.sentence_detector.sentence import Sentence
 
 
-class TestToken(unittest.TestCase):
+class TestSentence(unittest.TestCase):
     def test_text_property(self):
-        token = Token("text", 1, 3)
-        self.assertEqual("text", token.text)
+        sentence = Sentence("text", 1, 3)
+        self.assertEqual("text", sentence.text)
 
     def test_start_property(self):
-        token = Token("text", 1, 3)
+        token = Sentence("text", 1, 3)
         self.assertEqual(1, token.start)
 
     def test_end_property(self):
-        token = Token("text", 1, 3)
+        token = Sentence("text", 1, 3)
         self.assertEqual(3, token.end)
 
     def test_span_property(self):
-        token = Token("text", 1, 3)
+        token = Sentence("text", 1, 3)
         self.assertEqual((1, 3), token.span)
 
 

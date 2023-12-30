@@ -1,28 +1,20 @@
-# -*- coding: utf-8 -*-
-# cython: profile=False
-# License: Apache License 2.0
-
-import logging
 import re
+from typing import List, Tuple
+
 from icu import Locale, BreakIterator
 
-from .base_tokenizer cimport BaseTokenizer
+from .base_tokenizer import BaseTokenizer
 
 
-cdef class ICUTokenizer(BaseTokenizer):
-    cdef _locale
-    cdef _rule
-    cdef _breaker
-    cdef _rule_obj
-
-    def __init__(self, locale, rule=r'^[\w\d]+$'):
+class ICUTokenizer(BaseTokenizer):
+    def __init__(self, locale: str, rule: str = r"^[\w\d]+$"):
         self._locale = locale
         self._rule = rule
 
         self._breaker = BreakIterator.createWordInstance(Locale(locale))
         self._rule_obj = re.compile(rule, re.UNICODE)
 
-    cdef list _span_tokenize(self, unicode text):
+    def _span_tokenize(self, text: str) -> List[Tuple[int, int]]:
         self._breaker.setText(text)
 
         ret = []
