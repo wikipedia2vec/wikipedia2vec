@@ -5,7 +5,7 @@ from typing import Iterator, Tuple
 
 from xml.etree.ElementTree import iterparse
 
-from . import normalize_title
+from .utils import normalize_title
 from .wiki_page import WikiPage
 
 logger = logging.getLogger(__name__)
