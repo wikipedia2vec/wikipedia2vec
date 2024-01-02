@@ -104,13 +104,24 @@ class DumpDB:
             for key, value in iter(cur):
                 yield (key.decode("utf-8"), value.decode("utf-8"))
 
-    def resolve_redirect(self, title: str) -> str:
-        with self._env.begin(db=self._redirect_db) as txn:
-            value = txn.get(title.encode("utf-8"))
-            if value:
-                return value.decode("utf-8")
-            else:
-                return title
+    def resolve_redirect(self, title: str, max_steps: int = 10) -> str:
+        visited = set([title])
+        cur_title = title
+        for _ in range(max_steps):
+            with self._env.begin(db=self._redirect_db) as txn:
+                value = txn.get(cur_title.encode("utf-8"))
+                if value:
+                    cur_title = value.decode("utf-8")
+                    if cur_title in visited:
+                        logger.warn(f"Detected redirect loop: {title}")
+                        return title
+                    visited.add(cur_title)
+
+                else:
+                    return cur_title
+
+        logger.warn(f"Max steps ({max_steps}) exceeded when resolving redirect: {title}")
+        return cur_title
 
     def is_redirect(self, title: str) -> bool:
         with self._env.begin(db=self._redirect_db) as txn:
