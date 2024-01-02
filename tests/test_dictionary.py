@@ -262,6 +262,7 @@ class TestDictionary(unittest.TestCase):
                     self.assertEqual(s1[key], s2[key])
 
         validate(Dictionary.load(dictionary.serialize()))
+        validate(Dictionary.load(dictionary.serialize(shared_array=True)))
 
         with NamedTemporaryFile() as f:
             dictionary.save(f.name)
