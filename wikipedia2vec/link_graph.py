@@ -82,7 +82,7 @@ class LinkGraph:
         logger.info("Step 1/2: Processing Wikipedia pages...")
 
         with closing(
-            Pool(pool_size, initializer=init_worker, initargs=(dump_db, dictionary.serialize(shared_array=True)))
+            Pool(pool_size, initializer=_init_worker, initargs=(dump_db, dictionary.serialize(shared_array=True)))
         ) as pool:
             rows = []
             cols = []
@@ -131,7 +131,7 @@ _dump_db: Optional[DumpDB] = None
 _dictionary: Optional[Dictionary] = None
 
 
-def init_worker(dump_db: DumpDB, dictionary_obj: dict):
+def _init_worker(dump_db: DumpDB, dictionary_obj: dict):
     global _dump_db, _dictionary
 
     _dump_db = dump_db

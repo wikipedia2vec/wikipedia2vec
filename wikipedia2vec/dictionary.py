@@ -193,7 +193,7 @@ class Dictionary:
         entity_counter = Counter()
         entity_doc_counter = Counter()
 
-        with closing(Pool(pool_size, initializer=init_worker, initargs=(dump_db, tokenizer))) as pool:
+        with closing(Pool(pool_size, initializer=_init_worker, initargs=(dump_db, tokenizer))) as pool:
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_process_page, lowercase=lowercase, min_paragraph_len=min_paragraph_len)
                 for word_cnt, entity_cnt in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
@@ -346,7 +346,7 @@ _dump_db: Optional[DumpDB] = None
 _tokenizer: Optional[BaseTokenizer] = None
 
 
-def init_worker(dump_db: DumpDB, tokenizer: BaseTokenizer):
+def _init_worker(dump_db: DumpDB, tokenizer: BaseTokenizer):
     global _dump_db, _tokenizer
 
     _dump_db = dump_db

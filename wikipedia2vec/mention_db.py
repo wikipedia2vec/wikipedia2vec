@@ -169,7 +169,7 @@ class MentionDB:
         name_dict = defaultdict(lambda: Counter())
         init_args = [dump_db, dictionary.serialize(shared_array=True), tokenizer, None]
 
-        with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
+        with closing(Pool(pool_size, initializer=_init_worker, initargs=init_args)) as pool:
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_extract_links, max_mention_len=max_mention_len, case_sensitive=case_sensitive)
                 for ret in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
@@ -184,7 +184,7 @@ class MentionDB:
         name_counter = Counter()
         init_args[3] = name_trie
 
-        with closing(Pool(pool_size, initializer=init_worker, initargs=init_args)) as pool:
+        with closing(Pool(pool_size, initializer=_init_worker, initargs=init_args)) as pool:
             with tqdm(total=dump_db.page_size(), mininterval=0.5, disable=not progressbar) as bar:
                 f = partial(_count_occurrences, max_mention_len=max_mention_len, case_sensitive=case_sensitive)
                 for names in pool.imap_unordered(f, dump_db.titles(), chunksize=chunk_size):
@@ -264,7 +264,7 @@ _tokenizer: Optional[BaseTokenizer] = None
 _name_trie: Optional[Trie] = None
 
 
-def init_worker(dump_db: DumpDB, dictionary_obj: dict, tokenizer: BaseTokenizer, name_trie: Trie = None):
+def _init_worker(dump_db: DumpDB, dictionary_obj: dict, tokenizer: BaseTokenizer, name_trie: Trie = None):
     global _dump_db, _dictionary, _tokenizer, _name_trie
 
     _dump_db = dump_db
