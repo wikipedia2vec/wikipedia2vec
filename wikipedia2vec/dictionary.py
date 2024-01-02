@@ -24,9 +24,9 @@ logger = logging.getLogger(__name__)
 
 @cython.cclass
 class Item:
-    index = cython.declare(cython.int, visibility="public")
-    count = cython.declare(cython.int, visibility="public")
-    doc_count = cython.declare(cython.int, visibility="public")
+    index = cython.declare(cython.int, visibility="readonly")
+    count = cython.declare(cython.int, visibility="readonly")
+    doc_count = cython.declare(cython.int, visibility="readonly")
 
     def __init__(self, index: int, count: int, doc_count: int):
         self.index = index
@@ -36,7 +36,7 @@ class Item:
 
 @cython.cclass
 class Word(Item):
-    text = cython.declare(str, visibility="public")
+    text = cython.declare(str, visibility="readonly")
 
     def __init__(self, text: str, index: int, count: int, doc_count: int):
         super().__init__(index, count, doc_count)
@@ -51,7 +51,7 @@ class Word(Item):
 
 @cython.cclass
 class Entity(Item):
-    title = cython.declare(str, visibility="public")
+    title = cython.declare(str, visibility="readonly")
 
     def __init__(self, title: str, index: int, count: int, doc_count: int):
         super().__init__(index, count, doc_count)

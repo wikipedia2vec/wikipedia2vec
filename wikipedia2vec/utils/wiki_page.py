@@ -224,10 +224,10 @@ TEMPLATE_REGEXP = re.compile(r"{{\s*([^}\|]+?)\s*(?:\||})")
 
 @cython.cclass
 class WikiPage:
-    title = cython.declare(str, visibility="public")
-    language = cython.declare(str, visibility="public")
-    wiki_text = cython.declare(str, visibility="public")
-    redirect = cython.declare(str, visibility="public")
+    title = cython.declare(str, visibility="readonly")
+    language = cython.declare(str, visibility="readonly")
+    wiki_text = cython.declare(str, visibility="readonly")
+    redirect = cython.declare(str, visibility="readonly")
 
     def __init__(self, title: str, language: str, wiki_text: str, redirect: Union[str, None]):
         self.title = title
