@@ -82,7 +82,7 @@ class TestLinkGraph(unittest.TestCase):
             s2 = obj.serialize()
             for key in s1.keys():
                 if isinstance(s1[key], np.ndarray):
-                    np.array_equal(s1[key], s2[key])
+                    self.assertTrue(np.array_equal(s1[key], s2[key]))
                 else:
                     self.assertEqual(s1[key], s2[key])
 
