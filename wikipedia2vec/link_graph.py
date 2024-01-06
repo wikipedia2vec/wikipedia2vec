@@ -127,8 +127,8 @@ class LinkGraph:
         return LinkGraph(dictionary, matrix.indices, matrix.indptr, build_params, uuid)
 
 
-_dump_db: Optional[DumpDB] = None
-_dictionary: Optional[Dictionary] = None
+_dump_db: DumpDB
+_dictionary: Dictionary
 
 
 def _init_worker(dump_db: DumpDB, dictionary_obj: dict):

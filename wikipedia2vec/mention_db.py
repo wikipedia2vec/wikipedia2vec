@@ -23,15 +23,6 @@ logger = logging.getLogger(__name__)
 
 @cython.cclass
 class Mention:
-    text = cython.declare(str, visibility="readonly")
-    index = cython.declare(int, visibility="readonly")
-    link_count = cython.declare(int, visibility="readonly")
-    total_link_count = cython.declare(int, visibility="readonly")
-    doc_count = cython.declare(int, visibility="readonly")
-    start = cython.declare(int, visibility="readonly")
-    end = cython.declare(int, visibility="readonly")
-    _dictionary: cython.declare(Dictionary)
-
     def __init__(
         self,
         dictionary: Dictionary,
@@ -258,10 +249,10 @@ class MentionDB:
         return MentionDB(mention_trie, data_trie, dictionary, **target["kwargs"])
 
 
-_dictionary: Optional[Dictionary] = None
-_dump_db: Optional[DumpDB] = None
-_tokenizer: Optional[BaseTokenizer] = None
-_name_trie: Optional[Trie] = None
+_dictionary: Dictionary
+_dump_db: DumpDB
+_tokenizer: BaseTokenizer
+_name_trie: Trie
 
 
 def _init_worker(dump_db: DumpDB, dictionary_obj: dict, tokenizer: BaseTokenizer, name_trie: Trie = None):

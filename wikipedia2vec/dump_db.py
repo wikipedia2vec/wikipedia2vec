@@ -21,11 +21,6 @@ logger = logging.getLogger(__name__)
 
 @cython.cclass
 class WikiLink:
-    title = cython.declare(str, visibility="readonly")
-    text = cython.declare(str, visibility="readonly")
-    start = cython.declare(cython.int, visibility="readonly")
-    end = cython.declare(cython.int, visibility="readonly")
-
     def __init__(self, title: str, text: str, start: int, end: int):
         self.title = title
         self.text = text
@@ -45,10 +40,6 @@ class WikiLink:
 
 @cython.cclass
 class Paragraph:
-    text = cython.declare(str, visibility="readonly")
-    wiki_links = cython.declare(List[WikiLink], visibility="readonly")
-    abstract = cython.declare(cython.bint, visibility="readonly")
-
     def __init__(self, text: str, wiki_links: List[WikiLink], abstract: bool):
         self.text = text
         self.wiki_links = wiki_links

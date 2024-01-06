@@ -5,10 +5,6 @@ from typing import Tuple
 
 @cython.cclass
 class Token:
-    text = cython.declare(str, visibility="readonly")
-    start = cython.declare(cython.int, visibility="readonly")
-    end = cython.declare(cython.int, visibility="readonly")
-
     def __init__(self, text: str, start: int, end: int):
         self.text = text
         self.start = start

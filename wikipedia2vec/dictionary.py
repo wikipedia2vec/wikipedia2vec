@@ -24,10 +24,6 @@ logger = logging.getLogger(__name__)
 
 @cython.cclass
 class Item:
-    index = cython.declare(cython.int, visibility="readonly")
-    count = cython.declare(cython.int, visibility="readonly")
-    doc_count = cython.declare(cython.int, visibility="readonly")
-
     def __init__(self, index: int, count: int, doc_count: int):
         self.index = index
         self.count = count
@@ -36,8 +32,6 @@ class Item:
 
 @cython.cclass
 class Word(Item):
-    text = cython.declare(str, visibility="readonly")
-
     def __init__(self, text: str, index: int, count: int, doc_count: int):
         super().__init__(index, count, doc_count)
         self.text = text
@@ -51,8 +45,6 @@ class Word(Item):
 
 @cython.cclass
 class Entity(Item):
-    title = cython.declare(str, visibility="readonly")
-
     def __init__(self, title: str, index: int, count: int, doc_count: int):
         super().__init__(index, count, doc_count)
         self.title = title
@@ -72,9 +64,9 @@ class Dictionary:
         redirect_dict: RecordTrie,
         word_stats: np.ndarray,
         entity_stats: np.ndarray,
-        language: str,
-        lowercase: bool,
-        build_params: dict,
+        language: Optional[str] = None,
+        lowercase: Optional[bool] = None,
+        build_params: Optional[dict] = None,
         min_paragraph_len: int = 0,
         uuid: str = "",
     ):
@@ -342,8 +334,8 @@ class Dictionary:
         return Dictionary(word_dict, entity_dict, redirect_dict, word_stats, entity_stats, **target["meta"])
 
 
-_dump_db: Optional[DumpDB] = None
-_tokenizer: Optional[BaseTokenizer] = None
+_dump_db: DumpDB
+_tokenizer: BaseTokenizer
 
 
 def _init_worker(dump_db: DumpDB, tokenizer: BaseTokenizer):
