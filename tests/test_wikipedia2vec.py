@@ -1,9 +1,9 @@
 import pkg_resources
 import unittest
 from tempfile import NamedTemporaryFile
-from unittest import mock
 
 import numpy as np
+from scipy.special import expit
 
 from wikipedia2vec.dictionary import Dictionary, Word, Entity
 from wikipedia2vec.dump_db import DumpDB
@@ -178,6 +178,32 @@ class TestWikipedia2Vec(unittest.TestCase):
                         )
                     )
                 self.assertEqual(len(dictionary), len(wiki2vec2.dictionary))
+
+    def test_build_sampling_table(self):
+        table = wiki2vec._build_word_sampling_table(0.01)
+        self.assertIsInstance(table, np.ndarray)
+        self.assertEqual(np.uint32, table.dtype)
+
+        total_count = sum(word.count for word in dictionary.words())
+        threshold = 0.01 * total_count
+        uint_max = np.iinfo(np.uint32).max
+        for word in dictionary.words():
+            if word.count > total_count * 0.01:
+                self.assertAlmostEqual(
+                    min(1.0, (np.sqrt(word.count / threshold) + 1) * (threshold / word.count)) * uint_max,
+                    table[word.index],
+                    delta=1,
+                )
+            else:
+                self.assertEqual(uint_max, table[word.index])
+
+    def test_build_exp_table(self):
+        max_exp = 6
+        table_size = 1000
+        exp_table = wiki2vec._build_exp_table(max_exp, table_size)
+        for value in range(-max_exp, max_exp):
+            index = int((value + max_exp) * (table_size / max_exp / 2))
+            self.assertAlmostEqual(expit(value), exp_table[index], delta=1e-2)
 
 
 if __name__ == "__main__":
