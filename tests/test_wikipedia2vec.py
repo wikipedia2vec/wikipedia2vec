@@ -1,5 +1,6 @@
 import pkg_resources
 import unittest
+from collections import Counter
 from tempfile import NamedTemporaryFile
 
 import numpy as np
@@ -196,6 +197,25 @@ class TestWikipedia2Vec(unittest.TestCase):
                 )
             else:
                 self.assertEqual(uint_max, table[word.index])
+
+    def test_build_unigram_neg_table(self):
+        power = 0.75
+        table_size = 100000
+        table = wiki2vec._build_unigram_neg_table(dictionary.words(), power=power, table_size=table_size)
+        denom = sum(word.count**power for word in dictionary.words())
+        for word_index, count in Counter(table).items():
+            self.assertAlmostEqual(
+                (dictionary.get_word_by_index(int(word_index)).count ** power) / denom,
+                count / table_size,
+                delta=0.0001,
+            )
+
+    def test_build_uniform_neg_table(self):
+        table = wiki2vec._build_uniform_neg_table(dictionary.words())
+        self.assertEqual(dictionary.word_size, table.shape[0])
+        counter = Counter(table)
+        for word in dictionary.words():
+            self.assertEqual(1, counter[word.index])
 
     def test_build_exp_table(self):
         max_exp = 6

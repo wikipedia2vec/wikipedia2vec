@@ -258,7 +258,7 @@ class Wikipedia2Vec:
         else:
             link_indices = None
 
-        exp_table = self._build_exp_table(max_exp=MAX_EXP, exp_table_size=EXP_TABLE_SIZE)
+        exp_table = self._build_exp_table(max_exp=MAX_EXP, table_size=EXP_TABLE_SIZE)
 
         link_graph_obj = None
         if link_graph is not None:
@@ -406,8 +406,8 @@ class Wikipedia2Vec:
         return neg_table
 
     @staticmethod
-    def _build_exp_table(max_exp: float, exp_table_size: int) -> np.ndarray:
-        exp_table = np.arange(exp_table_size, dtype=np.float32) / exp_table_size * 2 - 1
+    def _build_exp_table(max_exp: float, table_size: int) -> np.ndarray:
+        exp_table = np.arange(table_size, dtype=np.float32) / table_size * 2 - 1
         exp_table = np.exp(exp_table * max_exp)
         exp_table = exp_table / (exp_table + 1)
 
