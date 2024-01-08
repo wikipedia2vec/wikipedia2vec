@@ -258,7 +258,7 @@ class Wikipedia2Vec:
         else:
             link_indices = None
 
-        exp_table = self._build_exp_table()
+        exp_table = self._build_exp_table(max_exp=MAX_EXP, exp_table_size=EXP_TABLE_SIZE)
 
         link_graph_obj = None
         if link_graph is not None:
@@ -406,9 +406,9 @@ class Wikipedia2Vec:
         return neg_table
 
     @staticmethod
-    def _build_exp_table() -> np.ndarray:
-        exp_table = np.arange(EXP_TABLE_SIZE, dtype=np.float32) / EXP_TABLE_SIZE * 2 - 1
-        exp_table = np.exp(exp_table * MAX_EXP)
+    def _build_exp_table(max_exp: float, exp_table_size: int) -> np.ndarray:
+        exp_table = np.arange(exp_table_size, dtype=np.float32) / exp_table_size * 2 - 1
+        exp_table = np.exp(exp_table * max_exp)
         exp_table = exp_table / (exp_table + 1)
 
         return exp_table
@@ -505,11 +505,11 @@ def _init_worker(
     end=cython.int,
     span_start=cython.int,
     span_end=cython.int,
-    ent_start=cython.int,
-    ent_end=cython.int,
-    word=cython.int,
-    word2=cython.int,
-    entity=cython.int,
+    entity_start=cython.int,
+    entity_end=cython.int,
+    word_index=cython.int,
+    word_index2=cython.int,
+    entity_index=cython.int,
     text_len=cython.int,
     token_len=cython.int,
     alpha=cython.float,
@@ -518,18 +518,18 @@ def _init_worker(
     tokens=list,
     paragraphs=list,
     target_links=list,
-    entity_indices=set,
+    entity_indices_in_page=set,
     token=Token,
     sentence=Sentence,
     paragraph=Paragraph,
     wiki_link=WikiLink,
     mention=Mention,
-    words=cython.int[:],
-    word_pos=cython.int[:],
-    sent_char_pos=cython.int[:],
-    sent_token_pos=cython.int[:],
-    neighbors=cython.int[:],
-    link_flags=cython.char[:],
+    word_indices=cython.int[:],
+    word_char_positions=cython.int[:],
+    sent_char_positions=cython.int[:],
+    sent_token_positions=cython.int[:],
+    neighbor_entity_indices=cython.int[:],
+    link_char_flags=cython.int[:],
 )
 def _train_page(
     arg: Tuple[int, str, float],
@@ -544,21 +544,21 @@ def _train_page(
     if _link_graph is not None:
         start = n * entities_per_page
         for i in range(start, start + entities_per_page):
-            entity = _link_indices[i]
-            neighbors = _link_graph.neighbor_indices(entity)
-            for j in range(len(neighbors)):
-                _train_pair(entity, neighbors[j], alpha, dim_size, negative, _entity_neg_table)
+            entity_index = _link_indices[i]
+            neighbor_entity_indices = _link_graph.neighbor_indices(entity_index)
+            for j in range(len(neighbor_entity_indices)):
+                _train_pair(entity_index, neighbor_entity_indices[j], alpha, dim_size, negative, _entity_neg_table)
 
     paragraphs = _dump_db.get_paragraphs(title)
     if _mention_db is not None:
-        entity_indices = set()
-        entity_indices.add(_dictionary.get_entity_index(title))
+        entity_indices_in_page = set()
+        entity_indices_in_page.add(_dictionary.get_entity_index(title))
 
         for paragraph in paragraphs:
             for wiki_link in paragraph.wiki_links:
-                entity_indices.add(_dictionary.get_entity_index(wiki_link.title))
+                entity_indices_in_page.add(_dictionary.get_entity_index(wiki_link.title))
 
-        entity_indices.discard(-1)
+        entity_indices_in_page.discard(-1)
 
     # train using Wikipedia words and anchors
     for paragraph in paragraphs:
@@ -569,100 +569,99 @@ def _train_page(
         if not tokens or token_len < _dictionary.min_paragraph_len:
             continue
 
-        words = cython.view.array(shape=(token_len,), itemsize=cython.sizeof(cython.int), format="i")
-        word_pos = cython.view.array(shape=(text_len + 1,), itemsize=cython.sizeof(cython.int), format="i")
+        word_indices = cython.view.array(shape=(token_len,), itemsize=cython.sizeof(cython.int), format="i")
+        word_char_positions = cython.view.array(shape=(text_len + 1,), itemsize=cython.sizeof(cython.int), format="i")
 
         if _sentence_detector is not None:
-            sent_char_pos = cython.view.array(shape=(text_len + 1,), itemsize=cython.sizeof(cython.int), format="i")
-            sent_token_pos = cython.view.array(shape=(token_len,), itemsize=cython.sizeof(cython.int), format="i")
-            sent_char_pos[:] = 0
+            sent_char_positions = cython.view.array(
+                shape=(text_len + 1,), itemsize=cython.sizeof(cython.int), format="i"
+            )
+            sent_token_positions = cython.view.array(shape=(token_len,), itemsize=cython.sizeof(cython.int), format="i")
+            sent_char_positions[:] = 0
 
             for i, sentence in enumerate(_sentence_detector.detect_sentences(text)):
-                sent_char_pos[sentence.start : sentence.end] = i
+                sent_char_positions[sentence.start : sentence.end] = i
 
         j = 0
         for i, token in enumerate(tokens):
             if _dictionary.lowercase:
-                words[i] = _dictionary.get_word_index(token.text.lower())
+                word_indices[i] = _dictionary.get_word_index(token.text.lower())
             else:
-                words[i] = _dictionary.get_word_index(token.text)
+                word_indices[i] = _dictionary.get_word_index(token.text)
 
             if _sentence_detector is not None:
-                sent_token_pos[i] = sent_char_pos[token.start]
+                sent_token_positions[i] = sent_char_positions[token.start]
 
             if i > 0:
-                word_pos[j : token.start] = i - 1
+                word_char_positions[j : token.start] = i - 1
                 j = token.start
-        word_pos[j:] = i
+        word_char_positions[j:] = token_len - 1
 
-        for i in range(len(words)):
-            word = words[i]
-            if word == -1:
+        for i in range(len(word_indices)):
+            word_index = word_indices[i]
+            if word_index == -1:
                 continue
 
-            if _word_sampling_table[word] < _rng():
+            if _word_sampling_table[word_index] < _rng():
                 continue
 
             window = _rng() % window + 1
             start = max(0, i - window)
-            end = min(len(words), i + window + 1)
+            end = min(len(word_indices), i + window + 1)
             for j in range(start, end):
-                word2 = words[j]
+                word_index2 = word_indices[j]
 
-                if word2 == -1 or i == j:
+                if word_index2 == -1 or i == j:
                     continue
 
-                if _word_sampling_table[word2] < _rng():
+                if _word_sampling_table[word_index2] < _rng():
                     continue
 
-                if _sentence_detector is not None and sent_token_pos[i] != sent_token_pos[j]:
+                if _sentence_detector is not None and sent_token_positions[i] != sent_token_positions[j]:
                     continue
 
-                _train_pair(word, word2, alpha, dim_size, negative, _word_neg_table)
+                _train_pair(word_index, word_index2, alpha, dim_size, negative, _word_neg_table)
 
-        link_flags = cython.view.array(shape=(text_len + 1,), itemsize=cython.sizeof(cython.char), format="c")
-        link_flags[:] = 0
-
+        link_char_flags = np.zeros(text_len + 1, dtype=np.int32)
         target_links = []
 
         for wiki_link in paragraph.wiki_links:
-            entity = _dictionary.get_entity_index(wiki_link.title)
-            if entity == -1:
+            entity_index = _dictionary.get_entity_index(wiki_link.title)
+            if entity_index == -1:
                 continue
 
             if not (0 <= wiki_link.start <= text_len and 0 <= wiki_link.end <= text_len):
-                logger.warn("Detected invalid span of a wiki link")
+                logger.warn("Detected invalid span of a Wikipedia link")
                 continue
 
-            target_links.append((entity, wiki_link.start, wiki_link.end))
-
-            link_flags[wiki_link.start : wiki_link.end] = 1
+            target_links.append((entity_index, wiki_link.start, wiki_link.end))
+            link_char_flags[wiki_link.start : wiki_link.end] = 1
 
         if _mention_db is not None:
-            for mention in _mention_db.detect_mentions(text, tokens, entity_indices):
-                if all(flag == 0 for flag in link_flags[mention.start : mention.end]):
+            for mention in _mention_db.detect_mentions(text, tokens, entity_indices_in_page):
+                if link_char_flags[mention.start : mention.end].sum() == 0:
                     target_links.append((mention.index, mention.start, mention.end))
 
-        for entity, ent_start, ent_end in target_links:
-            span_start = word_pos[ent_start]
-            span_end = word_pos[max(0, ent_end - 1)] + 1
+        for entity_index, entity_start, entity_end in target_links:
+            span_start = word_char_positions[entity_start]
+            span_end = word_char_positions[max(0, entity_end - 1)] + 1
 
             window = _rng() % window + 1
             start = max(0, span_start - window)
-            end = min(len(words), span_end + window)
+            end = min(len(word_indices), span_end + window)
             for j in range(start, end):
-                word2 = words[j]
-                if word2 == -1 or span_start <= j < span_end:
+                word_index2 = word_indices[j]
+                if word_index2 == -1 or span_start <= j < span_end:
                     continue
 
-                if _word_sampling_table[word2] < _rng():
+                if _word_sampling_table[word_index2] < _rng():
                     continue
 
-                if _sentence_detector is not None and sent_char_pos[ent_start] != sent_token_pos[j]:
+                if _sentence_detector is not None and sent_char_positions[entity_start] != sent_token_positions[j]:
                     continue
 
-                _train_pair(entity, word2, alpha, dim_size, negative, _word_neg_table)
-                _train_pair(word2, entity, alpha, dim_size, negative, _entity_neg_table)
+                _train_pair(entity_index, word_index2, alpha, dim_size, negative, _word_neg_table)
+                _train_pair(word_index2, entity_index, alpha, dim_size, negative, _entity_neg_table)
 
 
 @cython.cfunc
