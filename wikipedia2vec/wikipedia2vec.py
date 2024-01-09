@@ -43,6 +43,12 @@ class ItemWithScore(NamedTuple):
     score: float
 
 
+class SharedArrayObject(NamedTuple):
+    array: ctypes.Array
+    dtype: type
+    shape: Tuple[int, ...]
+
+
 class Wikipedia2Vec:
     def __init__(self, dictionary: Dictionary):
         self._dictionary = dictionary
@@ -243,16 +249,16 @@ class Wikipedia2Vec:
         start_time = time.time()
 
         logger.info("Building a table for sampling frequent words...")
-        word_sampling_table = self._convert_np_array_to_shared_array(self._build_word_sampling_table(sample))
+        word_sampling_table = _convert_np_array_to_shared_array_object(self._build_word_sampling_table(sample))
 
         logger.info("Building tables for sampling negatives...")
-        word_neg_table = self._convert_np_array_to_shared_array(self._build_word_neg_table(word_neg_power))
-        entity_neg_table = self._convert_np_array_to_shared_array(self._build_entity_neg_table(entity_neg_power))
+        word_neg_table = _convert_np_array_to_shared_array_object(self._build_word_neg_table(word_neg_power))
+        entity_neg_table = _convert_np_array_to_shared_array_object(self._build_entity_neg_table(entity_neg_power))
 
         total_page_count = dump_db.page_size() * iteration
         if link_graph is not None:
             logger.info("Building a table for iterating links...")
-            link_indices = self._convert_np_array_to_shared_array(
+            link_indices = _convert_np_array_to_shared_array_object(
                 self._build_link_indices(total_page_count, entities_per_page)
             )
         else:
@@ -272,10 +278,10 @@ class Wikipedia2Vec:
 
         vocab_size = len(self.dictionary)
 
-        syn0_arr = self._convert_np_array_to_shared_array(
+        syn0_arr = _convert_np_array_to_shared_array_object(
             (np.random.rand(vocab_size * dim_size).astype(np.float32) - 0.5) / dim_size
         )
-        syn1_arr = self._convert_np_array_to_shared_array(np.zeros(vocab_size * dim_size, dtype=np.float32))
+        syn1_arr = _convert_np_array_to_shared_array_object(np.zeros(vocab_size * dim_size, dtype=np.float32))
 
         init_args = (
             dump_db,
@@ -419,9 +425,17 @@ class Wikipedia2Vec:
         rep = int(math.ceil(float(total_page_count) * entities_per_page / indices.size))
         return np.concatenate([np.random.permutation(indices) for _ in range(rep)])
 
-    @staticmethod
-    def _convert_np_array_to_shared_array(arr: np.ndarray) -> ctypes.Array:
-        return RawArray(np.ctypeslib.as_ctypes_type(arr.dtype), arr.flatten())
+
+def _convert_np_array_to_shared_array_object(arr: np.ndarray) -> SharedArrayObject:
+    return SharedArrayObject(
+        array=RawArray(np.ctypeslib.as_ctypes_type(arr.dtype), arr.flatten()),
+        dtype=arr.dtype,
+        shape=arr.shape,
+    )
+
+
+def _convert_shared_array_object_to_np_array(array_obj: SharedArrayObject) -> np.ndarray:
+    return np.frombuffer(array_obj.array, dtype=array_obj.dtype).reshape(*array_obj.shape)
 
 
 _dump_db: DumpDB
@@ -448,12 +462,12 @@ def _init_worker(
     mention_db_obj: Optional[dict],
     tokenizer: BaseTokenizer,
     sentence_detector: Optional[BaseSentenceDetector],
-    syn0_arr: ctypes.array,
-    syn1_arr: ctypes.array,
-    word_neg_table: ctypes.array,
-    entity_neg_table: ctypes.array,
-    exp_table: ctypes.array,
-    word_sampling_table: ctypes.array,
+    syn0_obj: SharedArrayObject,
+    syn1_obj: SharedArrayObject,
+    word_neg_table: SharedArrayObject,
+    entity_neg_table: SharedArrayObject,
+    exp_table: SharedArrayObject,
+    word_sampling_table: SharedArrayObject,
     link_indices: Optional[ctypes.array],
 ):
     global _dump_db, _dictionary, _link_graph, _mention_db, _tokenizer, _sentence_detector, _syn0, _syn1
@@ -461,17 +475,16 @@ def _init_worker(
 
     _dump_db = dump_db
     _tokenizer = tokenizer
-    _word_neg_table = word_neg_table
-    _entity_neg_table = entity_neg_table
-    _exp_table = exp_table
-    _word_sampling_table = word_sampling_table
+    _word_neg_table = _convert_shared_array_object_to_np_array(word_neg_table)
+    _entity_neg_table = _convert_shared_array_object_to_np_array(entity_neg_table)
+    _exp_table = _convert_shared_array_object_to_np_array(exp_table)
+    _word_sampling_table = _convert_shared_array_object_to_np_array(word_sampling_table)
     _link_indices = link_indices
 
     _dictionary = Dictionary.load(dictionary_obj)
-    vocab_size = len(_dictionary)
 
-    _syn0 = np.frombuffer(syn0_arr, dtype=np.float32).reshape(vocab_size, -1)
-    _syn1 = np.frombuffer(syn1_arr, dtype=np.float32).reshape(vocab_size, -1)
+    _syn0 = _convert_shared_array_object_to_np_array(syn0_obj)
+    _syn1 = _convert_shared_array_object_to_np_array(syn1_obj)
     _work = np.zeros(_syn0.shape[1], dtype=np.float32)
 
     np.random.seed()
