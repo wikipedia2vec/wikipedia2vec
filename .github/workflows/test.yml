@@ -1,0 +1,41 @@
+name: tests
+
+on:
+  push:
+    branches-ignore:
+      - "develop"
+
+jobs:
+  tests:
+    name: Test
+    strategy:
+      fail-fast: true
+      matrix:
+        os: [ubuntu-latest]
+        python_version: ["3.8", "3.9", "3.10", "3.11"]
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Configure Python version
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python_version }}
+
+      - name: Upgrade pip
+        run: python -m pip install --upgrade pip
+
+      - name: Cythonize
+        run: |
+          pip install numpy scipy Cython
+          sh ./cythonize.sh
+
+      - name: Install package
+        run: |
+          sudo apt-get install -y libicu-dev 
+          pip install -e .[icu,mecab]
+
+      - name: Run tests
+        run: python -m unittest discover -s ./tests

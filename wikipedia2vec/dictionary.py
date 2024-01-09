@@ -6,7 +6,7 @@ from contextlib import closing
 from functools import partial
 from itertools import chain
 from multiprocessing.pool import Pool
-from typing import Any, Iterator, Optional, Union
+from typing import Any, Iterator, Optional, Tuple, Union
 from uuid import uuid1
 
 import cython
@@ -345,7 +345,7 @@ def _init_worker(dump_db: DumpDB, tokenizer: BaseTokenizer):
     _tokenizer = tokenizer
 
 
-def _process_page(title: str, lowercase: bool, min_paragraph_len: int) -> tuple[Counter, Counter]:
+def _process_page(title: str, lowercase: bool, min_paragraph_len: int) -> Tuple[Counter, Counter]:
     word_counter = Counter()
     entity_counter = Counter()
 
