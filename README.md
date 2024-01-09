@@ -1,8 +1,7 @@
-Wikipedia2Vec
-=============
+# Wikipedia2Vec
 
-[![Fury badge](https://badge.fury.io/py/wikipedia2vec.png)](http://badge.fury.io/py/wikipedia2vec)
-[![CircleCI](https://circleci.com/gh/wikipedia2vec/wikipedia2vec.svg?style=svg)](https://circleci.com/gh/wikipedia2vec/wikipedia2vec)
+[![tests](https://github.com/wikipedia2vec/wikipedia2vec/actions/workflows/test.yml/badge.svg?branch=master)](https://github.com/wikipedia2vec/wikipedia2vec/actions/workflows/test.yml)
+[![pypi Version](https://img.shields.io/pypi/v/wikipedia2vec.svg?style=flat-square&logo=pypi&logoColor=white)](https://pypi.org/project/wikipedia2vec/)
 
 Wikipedia2Vec is a tool used for obtaining embeddings (or vector representations) of words and entities (i.e., concepts that have corresponding pages in Wikipedia) from Wikipedia.
 It is developed and maintained by [Studio Ousia](http://www.ousia.jp).
@@ -14,7 +13,7 @@ This tool implements the [conventional skip-gram model](https://en.wikipedia.org
 
 An empirical comparison between Wikipedia2Vec and existing embedding tools (i.e., FastText, Gensim, RDF2Vec, and Wiki2vec) is available [here](https://arxiv.org/abs/1812.06280).
 
-Documentation  are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
+Documentation are available online at [http://wikipedia2vec.github.io/](http://wikipedia2vec.github.io/).
 
 ## Basic Usage
 
@@ -24,7 +23,7 @@ Wikipedia2Vec can be installed via PyPI:
 % pip install wikipedia2vec
 ```
 
-With this tool, embeddings can be learned by running a *train* command with a Wikipedia dump as input.
+With this tool, embeddings can be learned by running a _train_ command with a Wikipedia dump as input.
 For example, the following commands download the latest English Wikipedia dump and learn embeddings from this dump:
 
 ```bash
@@ -32,7 +31,7 @@ For example, the following commands download the latest English Wikipedia dump a
 % wikipedia2vec train enwiki-latest-pages-articles.xml.bz2 MODEL_FILE
 ```
 
-Then, the learned embeddings are written to *MODEL\_FILE*.
+Then, the learned embeddings are written to _MODEL_FILE_.
 Note that this command can take many optional parameters.
 Please refer to [our documentation](https://wikipedia2vec.github.io/wikipedia2vec/commands/) for further details.
 
@@ -44,21 +43,21 @@ Pretrained embeddings for 12 languages (i.e., English, Arabic, Chinese, Dutch, F
 
 Wikipedia2Vec has been applied to the following tasks:
 
-* Entity linking: [Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147), [Chen et al., 2019](https://arxiv.org/abs/1911.03834), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681), [van Hulst et al., 2020](https://arxiv.org/abs/2006.01969).
-* Named entity recognition: [Sato et al., 2017](http://www.aclweb.org/anthology/I17-2017), [Lara-Clares and Garcia-Serrano, 2019](http://ceur-ws.org/Vol-2421/eHealth-KD_paper_6.pdf).
-* Question answering: [Yamada et al., 2017](https://arxiv.org/abs/1803.08652), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
-* Entity typing: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960).
-* Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259), [Alam et al., 2020](https://link.springer.com/chapter/10.1007/978-3-030-61244-3_9).
-* Relation classification: [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
-* Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
-* Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162), [Shah et al., 2020](https://www.aclweb.org/anthology/2020.textgraphs-1.9/).
-* Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126), [Ghosal et al., 2020](https://arxiv.org/abs/2010.10836).
-* Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
-* Novel entity discovery: [Zhang et al., 2020](https://arxiv.org/abs/2002.00206).
-* Entity retrieval: [Gerritse et al., 2020](https://link.springer.com/chapter/10.1007%2F978-3-030-45439-5_7).
-* Deepfake detection: [Zhong et al., 2020](https://arxiv.org/abs/2010.07475).
-* Conversational information seeking: [Rodriguez et al., 2020](https://arxiv.org/abs/2005.00172).
-* Query expansion: [Rosin et al., 2020](https://arxiv.org/abs/2012.12065).
+- Entity linking: [Yamada et al., 2016](https://arxiv.org/abs/1601.01343), [Eshel et al., 2017](https://arxiv.org/abs/1706.09147), [Chen et al., 2019](https://arxiv.org/abs/1911.03834), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681), [van Hulst et al., 2020](https://arxiv.org/abs/2006.01969).
+- Named entity recognition: [Sato et al., 2017](http://www.aclweb.org/anthology/I17-2017), [Lara-Clares and Garcia-Serrano, 2019](http://ceur-ws.org/Vol-2421/eHealth-KD_paper_6.pdf).
+- Question answering: [Yamada et al., 2017](https://arxiv.org/abs/1803.08652), [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
+- Entity typing: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960).
+- Text classification: [Yamada et al., 2018](https://arxiv.org/abs/1806.02960), [Yamada and Shindo, 2019](https://arxiv.org/abs/1909.01259), [Alam et al., 2020](https://link.springer.com/chapter/10.1007/978-3-030-61244-3_9).
+- Relation classification: [Poerner et al., 2020](https://arxiv.org/abs/1911.03681).
+- Paraphrase detection: [Duong et al., 2018](https://ieeexplore.ieee.org/abstract/document/8606845).
+- Knowledge graph completion: [Shah et al., 2019](https://aaai.org/ojs/index.php/AAAI/article/view/4162), [Shah et al., 2020](https://www.aclweb.org/anthology/2020.textgraphs-1.9/).
+- Fake news detection: [Singh et al., 2019](https://arxiv.org/abs/1906.11126), [Ghosal et al., 2020](https://arxiv.org/abs/2010.10836).
+- Plot analysis of movies: [Papalampidi et al., 2019](https://arxiv.org/abs/1908.10328).
+- Novel entity discovery: [Zhang et al., 2020](https://arxiv.org/abs/2002.00206).
+- Entity retrieval: [Gerritse et al., 2020](https://link.springer.com/chapter/10.1007%2F978-3-030-45439-5_7).
+- Deepfake detection: [Zhong et al., 2020](https://arxiv.org/abs/2010.07475).
+- Conversational information seeking: [Rodriguez et al., 2020](https://arxiv.org/abs/2005.00172).
+- Query expansion: [Rosin et al., 2020](https://arxiv.org/abs/2012.12065).
 
 ## References
 
