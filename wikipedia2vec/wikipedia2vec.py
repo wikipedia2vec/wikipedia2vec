@@ -249,54 +249,42 @@ class Wikipedia2Vec:
         start_time = time.time()
 
         logger.info("Building a table for sampling frequent words...")
-        word_sampling_table = _convert_np_array_to_shared_array_object(self._build_word_sampling_table(sample))
+        word_sampling_table = self._build_word_sampling_table(sample)
 
         logger.info("Building tables for sampling negatives...")
-        word_neg_table = _convert_np_array_to_shared_array_object(self._build_word_neg_table(word_neg_power))
-        entity_neg_table = _convert_np_array_to_shared_array_object(self._build_entity_neg_table(entity_neg_power))
+        word_neg_table = self._build_word_neg_table(word_neg_power)
+        entity_neg_table = self._build_entity_neg_table(entity_neg_power)
 
         total_page_count = dump_db.page_size() * iteration
         if link_graph is not None:
             logger.info("Building a table for iterating links...")
-            link_indices = _convert_np_array_to_shared_array_object(
-                self._build_link_indices(total_page_count, entities_per_page)
-            )
+            link_indices = self._build_link_indices(total_page_count, entities_per_page)
         else:
             link_indices = None
 
         exp_table = self._build_exp_table(max_exp=MAX_EXP, table_size=EXP_TABLE_SIZE)
 
-        link_graph_obj = None
-        if link_graph is not None:
-            link_graph_obj = link_graph.serialize(shared_array=True)
-
-        mention_db_obj = None
-        if mention_db is not None:
-            mention_db_obj = mention_db.serialize()
-
         logger.info("Initializing weights...")
 
         vocab_size = len(self.dictionary)
 
-        syn0_arr = _convert_np_array_to_shared_array_object(
-            (np.random.rand(vocab_size * dim_size).astype(np.float32) - 0.5) / dim_size
-        )
-        syn1_arr = _convert_np_array_to_shared_array_object(np.zeros(vocab_size * dim_size, dtype=np.float32))
+        syn0_arr = (np.random.rand(vocab_size * dim_size).astype(np.float32) - 0.5) / dim_size
+        syn1_arr = np.zeros(vocab_size * dim_size, dtype=np.float32)
 
         init_args = (
             dump_db,
             self.dictionary.serialize(shared_array=True),
-            link_graph_obj,
-            mention_db_obj,
+            link_graph.serialize(shared_array=True) if link_graph is not None else None,
+            mention_db.serialize() if mention_db is not None else None,
             tokenizer,
             sentence_detector,
-            syn0_arr,
-            syn1_arr,
-            word_neg_table,
-            entity_neg_table,
-            exp_table,
-            word_sampling_table,
-            link_indices,
+            _convert_np_array_to_shared_array_object(syn0_arr),
+            _convert_np_array_to_shared_array_object(syn1_arr),
+            _convert_np_array_to_shared_array_object(word_neg_table),
+            _convert_np_array_to_shared_array_object(entity_neg_table),
+            _convert_np_array_to_shared_array_object(exp_table),
+            _convert_np_array_to_shared_array_object(word_sampling_table),
+            _convert_np_array_to_shared_array_object(link_indices) if link_indices is not None else None,
         )
 
         def args_generator(titles: List[str], iteration: int):
@@ -468,7 +456,7 @@ def _init_worker(
     entity_neg_table: SharedArrayObject,
     exp_table: SharedArrayObject,
     word_sampling_table: SharedArrayObject,
-    link_indices: Optional[ctypes.array],
+    link_indices: Optional[SharedArrayObject],
 ):
     global _dump_db, _dictionary, _link_graph, _mention_db, _tokenizer, _sentence_detector, _syn0, _syn1
     global _word_neg_table, _entity_neg_table, _exp_table, _word_sampling_table, _link_indices, _work, _rng
@@ -479,7 +467,10 @@ def _init_worker(
     _entity_neg_table = _convert_shared_array_object_to_np_array(entity_neg_table)
     _exp_table = _convert_shared_array_object_to_np_array(exp_table)
     _word_sampling_table = _convert_shared_array_object_to_np_array(word_sampling_table)
-    _link_indices = link_indices
+    if link_indices is None:
+        _link_indices = None
+    else:
+        _link_indices = _convert_shared_array_object_to_np_array(link_indices)
 
     _dictionary = Dictionary.load(dictionary_obj)
 
@@ -490,15 +481,15 @@ def _init_worker(
     np.random.seed()
     _rng = mt19937(np.random.randint(2**31))
 
-    if link_graph_obj is not None:
-        _link_graph = LinkGraph.load(link_graph_obj, _dictionary)
-    else:
+    if link_graph_obj is None:
         _link_graph = None
-
-    if mention_db_obj is not None:
-        _mention_db = MentionDB.load(mention_db_obj, _dictionary)
     else:
+        _link_graph = LinkGraph.load(link_graph_obj, _dictionary)
+
+    if mention_db_obj is None:
         _mention_db = None
+    else:
+        _mention_db = MentionDB.load(mention_db_obj, _dictionary)
 
     if sentence_detector:
         _sentence_detector = sentence_detector
