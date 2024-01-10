@@ -17,9 +17,8 @@ import joblib
 import numpy as np
 from marisa_trie import RecordTrie, Trie
 from tqdm import tqdm
-
-from cython.cimports.libcpp.random cimport mt19937
-from cython.cimports.scipy.linalg.cython_blas cimport saxpy, sdot
+from cython.cimports.libcpp.random import mt19937
+from cython.cimports.scipy.linalg.cython_blas import saxpy, sdot
 
 from .dictionary import Dictionary
 from .dump_db import DumpDB
@@ -27,12 +26,11 @@ from .link_graph import LinkGraph
 from .mention_db import MentionDB
 from .utils.sentence_detector.base_sentence_detector import BaseSentenceDetector
 from .utils.tokenizer.base_tokenizer import BaseTokenizer
-
-from cython.cimports.wikipedia2vec.dictionary cimport Item, Word
-from cython.cimports.wikipedia2vec.dump_db cimport Paragraph, WikiLink
-from cython.cimports.wikipedia2vec.mention_db cimport Mention
-from cython.cimports.wikipedia2vec.utils.sentence_detector.sentence cimport Sentence
-from cython.cimports.wikipedia2vec.utils.tokenizer.token cimport Token
+from cython.cimports.wikipedia2vec.dictionary import Item, Word
+from cython.cimports.wikipedia2vec.dump_db import Paragraph, WikiLink
+from cython.cimports.wikipedia2vec.mention_db import Mention
+from cython.cimports.wikipedia2vec.utils.sentence_detector.sentence import Sentence
+from cython.cimports.wikipedia2vec.utils.tokenizer.token import Token
 
 MAX_EXP = cython.declare(cython.float, 6.0)
 EXP_TABLE_SIZE = cython.declare(cython.int, 1000)
@@ -270,8 +268,10 @@ class Wikipedia2Vec:
 
         vocab_size = len(self.dictionary)
 
-        syn0_arr = (np.random.rand(vocab_size, dim_size).astype(np.float32) - 0.5) / dim_size
-        syn1_arr = np.zeros((vocab_size, dim_size), dtype=np.float32)
+        syn0_obj = _convert_np_array_to_shared_array_object(
+            (np.random.rand(vocab_size, dim_size).astype(np.float32) - 0.5) / dim_size
+        )
+        syn1_obj = _convert_np_array_to_shared_array_object(np.zeros((vocab_size, dim_size), dtype=np.float32))
 
         init_args = (
             dump_db,
@@ -280,8 +280,8 @@ class Wikipedia2Vec:
             mention_db.serialize() if mention_db is not None else None,
             tokenizer,
             sentence_detector,
-            _convert_np_array_to_shared_array_object(syn0_arr),
-            _convert_np_array_to_shared_array_object(syn1_arr),
+            syn0_obj,
+            syn1_obj,
             _convert_np_array_to_shared_array_object(word_neg_table),
             _convert_np_array_to_shared_array_object(entity_neg_table),
             _convert_np_array_to_shared_array_object(exp_table),
@@ -314,11 +314,8 @@ class Wikipedia2Vec:
 
             logger.info("Terminating pool workers...")
 
-        syn0 = np.frombuffer(syn0_arr, dtype=np.float32).reshape((vocab_size, dim_size))
-        syn1 = np.frombuffer(syn1_arr, dtype=np.float32).reshape((vocab_size, dim_size))
-
-        self.syn0 = syn0
-        self.syn1 = syn1
+        self.syn0 = _convert_shared_array_object_to_np_array(syn0_obj)
+        self.syn1 = _convert_shared_array_object_to_np_array(syn1_obj)
 
         train_params = dict(
             dump_db=dump_db.uuid,
