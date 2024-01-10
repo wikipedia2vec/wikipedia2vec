@@ -1,6 +1,7 @@
+import os
 import pkg_resources
 import unittest
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 from wikipedia2vec.dictionary import Dictionary
 from wikipedia2vec.dump_db import DumpDB
@@ -9,20 +10,21 @@ from wikipedia2vec.utils.tokenizer import get_default_tokenizer
 from wikipedia2vec.utils.wiki_dump_reader import WikiDumpReader
 
 db = None
-db_file = None
+db_dir = None
 tokenizer = None
 dictionary = None
 
 
 def setUpModule():
-    global db, db_file, tokenizer, dictionary
+    global db, db_dir, tokenizer, dictionary
 
     dump_file = pkg_resources.resource_filename("tests", "test_data/enwiki-pages-articles-sample.xml.bz2")
     dump_reader = WikiDumpReader(dump_file)
-    db_file = NamedTemporaryFile()
+    db_dir = TemporaryDirectory()
+    db_file = os.path.join(db_dir.name, "test.db")
 
-    DumpDB.build(dump_reader, db_file.name, 1, 1)
-    db = DumpDB(db_file.name)
+    DumpDB.build(dump_reader, db_file, 1, 1)
+    db = DumpDB(db_file)
 
     tokenizer = get_default_tokenizer("en")
     dictionary = Dictionary.build(
@@ -41,7 +43,8 @@ def setUpModule():
 
 
 def tearDownModule():
-    db_file.close()
+    db.close()
+    db_dir.cleanup()
 
 
 class TestMention(unittest.TestCase):
@@ -147,9 +150,10 @@ class TestMentionDB(unittest.TestCase):
 
         validate(MentionDB.load(mention_db.serialize(), dictionary))
 
-        with NamedTemporaryFile() as f:
-            mention_db.save(f.name)
-            validate(MentionDB.load(f.name, dictionary))
+        with TemporaryDirectory() as dir_name:
+            file_name = os.path.join(dir_name, "mention.pkl")
+            mention_db.save(file_name)
+            validate(MentionDB.load(file_name, dictionary))
 
 
 if __name__ == "__main__":

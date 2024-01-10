@@ -1,6 +1,7 @@
+import os
 import pkg_resources
 import unittest
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 from unittest import mock
 
 import numpy as np
@@ -48,20 +49,21 @@ class TestEntity(unittest.TestCase):
 
 
 db = None
-db_file = None
+db_dir = None
 dictionary = None
 
 
 class TestDictionary(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        global db, db_file, tokenizer, dictionary
+        global db, db_dir, tokenizer, dictionary
         dump_file = pkg_resources.resource_filename("tests", "test_data/enwiki-pages-articles-sample.xml.bz2")
         dump_reader = WikiDumpReader(dump_file)
-        db_file = NamedTemporaryFile()
+        db_dir = TemporaryDirectory()
+        db_file = os.path.join(db_dir.name, "test.db")
 
-        DumpDB.build(dump_reader, db_file.name, 1, 1)
-        db = DumpDB(db_file.name)
+        DumpDB.build(dump_reader, db_file, 1, 1)
+        db = DumpDB(db_file)
 
         tokenizer = get_tokenizer("regexp")
         dictionary = Dictionary.build(
@@ -80,7 +82,8 @@ class TestDictionary(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        db_file.close()
+        db.close()
+        db_dir.cleanup()
 
     def test_uuid_property(self):
         self.assertIsInstance(dictionary.uuid, str)
@@ -264,9 +267,10 @@ class TestDictionary(unittest.TestCase):
         validate(Dictionary.load(dictionary.serialize()))
         validate(Dictionary.load(dictionary.serialize(shared_array=True)))
 
-        with NamedTemporaryFile() as f:
-            dictionary.save(f.name)
-            validate(Dictionary.load(f.name))
+        with TemporaryDirectory() as dir_name:
+            file_name = os.path.join(dir_name, "dictionary.pkl")
+            dictionary.save(file_name)
+            validate(Dictionary.load(file_name))
 
 
 if __name__ == "__main__":

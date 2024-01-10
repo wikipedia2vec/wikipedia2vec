@@ -155,7 +155,7 @@ class Wikipedia2Vec:
         )
 
     @staticmethod
-    def load(in_file: str, numpy_mmap_mode: str = "c"):
+    def load(in_file: str, numpy_mmap_mode: Optional[str] = "c"):
         obj = joblib.load(in_file, mmap_mode=numpy_mmap_mode)
         if isinstance(obj["dictionary"], dict):
             dictionary = Dictionary.load(obj["dictionary"])

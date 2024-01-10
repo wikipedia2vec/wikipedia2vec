@@ -1,6 +1,7 @@
+import os
 import pkg_resources
 import unittest
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 import numpy as np
 
@@ -11,7 +12,7 @@ from wikipedia2vec.utils.tokenizer import get_default_tokenizer
 from wikipedia2vec.utils.wiki_dump_reader import WikiDumpReader
 
 db = None
-db_file = None
+db_dir = None
 dictionary = None
 link_graph = None
 
@@ -19,14 +20,15 @@ link_graph = None
 class TestLinkGraph(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        global db, db_file, dictionary, link_graph
+        global db, db_dir, dictionary, link_graph
 
         dump_file = pkg_resources.resource_filename("tests", "test_data/enwiki-pages-articles-sample.xml.bz2")
         dump_reader = WikiDumpReader(dump_file)
-        db_file = NamedTemporaryFile()
+        db_dir = TemporaryDirectory()
+        db_file = os.path.join(db_dir.name, "test.db")
 
-        DumpDB.build(dump_reader, db_file.name, 1, 1)
-        db = DumpDB(db_file.name)
+        DumpDB.build(dump_reader, db_file, 1, 1)
+        db = DumpDB(db_file)
 
         tokenizer = get_default_tokenizer("en")
         dictionary = Dictionary.build(
@@ -46,7 +48,8 @@ class TestLinkGraph(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        db_file.close()
+        db.close()
+        db_dir.cleanup()
 
     def test_uuid_property(self):
         self.assertIsInstance(link_graph.uuid, str)
@@ -89,9 +92,10 @@ class TestLinkGraph(unittest.TestCase):
         validate(LinkGraph.load(link_graph.serialize(), dictionary))
         validate(LinkGraph.load(link_graph.serialize(shared_array=True), dictionary))
 
-        with NamedTemporaryFile() as f:
-            link_graph.save(f.name)
-            validate(LinkGraph.load(f.name, dictionary))
+        with TemporaryDirectory() as dir_name:
+            file_name = os.path.join(dir_name, "link_graph.pkl")
+            link_graph.save(file_name)
+            validate(LinkGraph.load(file_name, dictionary))
 
 
 if __name__ == "__main__":

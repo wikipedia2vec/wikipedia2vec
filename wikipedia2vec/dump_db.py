@@ -79,6 +79,9 @@ class DumpDB:
         with self._env.begin(db=self._meta_db) as txn:
             return txn.get(b"language").decode("utf-8")
 
+    def close(self):
+        self._env.close()
+
     def page_size(self) -> int:
         with self._env.begin(db=self._page_db) as txn:
             return txn.stat()["entries"]

@@ -32,6 +32,12 @@ jobs:
           pip install numpy scipy Cython
           sh ./cythonize.sh
 
+      - name: Install ICU
+        run: |
+          sudo apt-get install -y libicu-dev
+          pip install PyICU
+        if: matrix.os == 'ubuntu-latest'
+
       - name: Install package
         run: |
           pip install -e .[mecab]

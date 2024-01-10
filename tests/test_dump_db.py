@@ -1,8 +1,9 @@
+import os
 import pickle
 import pkg_resources
 import unittest
 import zlib
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 from wikipedia2vec import dump_db
 from wikipedia2vec.dump_db import DumpDB, Paragraph, WikiLink
@@ -50,23 +51,25 @@ class TestWikiLink(unittest.TestCase):
 
 
 db = None
-db_file = None
+db_dir = None
 
 
 class TestDumpDB(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        global db, db_file
+        global db, db_dir
         dump_file = pkg_resources.resource_filename("tests", "test_data/enwiki-pages-articles-sample.xml.bz2")
         dump_reader = WikiDumpReader(dump_file)
-        db_file = NamedTemporaryFile()
+        db_dir = TemporaryDirectory()
+        db_file = os.path.join(db_dir.name, "test.db")
 
-        DumpDB.build(dump_reader, db_file.name, 1, 1)
-        db = DumpDB(db_file.name)
+        DumpDB.build(dump_reader, db_file, 1, 1)
+        db = DumpDB(db_file)
 
     @classmethod
     def tearDownClass(cls):
-        db_file.close()
+        db.close()
+        db_dir.cleanup()
 
     def test_uuid_property(self):
         self.assertIsInstance(db.uuid, str)

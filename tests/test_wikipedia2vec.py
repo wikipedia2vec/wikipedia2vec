@@ -1,7 +1,8 @@
+import os
 import pkg_resources
 import unittest
 from collections import Counter
-from tempfile import NamedTemporaryFile
+from tempfile import TemporaryDirectory
 
 import numpy as np
 from scipy.special import expit
@@ -14,7 +15,7 @@ from wikipedia2vec.wikipedia2vec import Wikipedia2Vec, ItemWithScore
 
 
 db = None
-db_file = None
+db_dir = None
 dictionary = None
 wiki2vec = None
 
@@ -22,13 +23,14 @@ wiki2vec = None
 class TestWikipedia2Vec(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        global db, db_file, tokenizer, dictionary, wiki2vec
+        global db, db_dir, tokenizer, dictionary, wiki2vec
         dump_file = pkg_resources.resource_filename("tests", "test_data/enwiki-pages-articles-sample.xml.bz2")
         dump_reader = WikiDumpReader(dump_file)
-        db_file = NamedTemporaryFile()
+        db_dir = TemporaryDirectory()
+        db_file = os.path.join(db_dir.name, "test.db")
 
-        DumpDB.build(dump_reader, db_file.name, 1, 1)
-        db = DumpDB(db_file.name)
+        DumpDB.build(dump_reader, db_file, 1, 1)
+        db = DumpDB(db_file)
 
         tokenizer = get_tokenizer("regexp")
         dictionary = Dictionary.build(
@@ -50,7 +52,8 @@ class TestWikipedia2Vec(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls):
-        db_file.close()
+        db.close()
+        db_dir.cleanup()
 
     def test_dictionary_property(self):
         self.assertEqual(wiki2vec.dictionary, dictionary)
@@ -118,9 +121,10 @@ class TestWikipedia2Vec(unittest.TestCase):
         self.assertEqual(scores, [o.score for o in ret])
 
     def test_save_load(self):
-        with NamedTemporaryFile() as f:
-            wiki2vec.save(f.name)
-            wiki2vec2 = Wikipedia2Vec.load(f.name)
+        with TemporaryDirectory() as dir_name:
+            file_name = os.path.join(dir_name, "model.pkl")
+            wiki2vec.save(file_name)
+            wiki2vec2 = Wikipedia2Vec.load(file_name, numpy_mmap_mode=None)
             self.assertTrue(np.array_equal(wiki2vec.syn0, wiki2vec2.syn0))
             self.assertTrue(np.array_equal(wiki2vec.syn1, wiki2vec2.syn1))
 
@@ -134,9 +138,10 @@ class TestWikipedia2Vec(unittest.TestCase):
 
     def test_save_load_text(self):
         for out_format in ("word2vec", "glove", "default"):
-            with NamedTemporaryFile() as f:
-                wiki2vec.save_text(f.name, out_format=out_format)
-                with open(f.name) as f:
+            with TemporaryDirectory() as dir_name:
+                file_name = os.path.join(dir_name, "model.txt")
+                wiki2vec.save_text(file_name, out_format=out_format)
+                with open(file_name) as f:
                     if out_format == "word2vec":
                         first_line = next(f)
                         self.assertEqual(str(len(dictionary)) + " " + "100", first_line.rstrip())
@@ -163,7 +168,7 @@ class TestWikipedia2Vec(unittest.TestCase):
 
                     self.assertEqual(len(dictionary), num_items)
 
-                wiki2vec2 = Wikipedia2Vec.load_text(f.name)
+                wiki2vec2 = Wikipedia2Vec.load_text(file_name)
                 for word in dictionary.words():
                     self.assertTrue(
                         np.allclose(

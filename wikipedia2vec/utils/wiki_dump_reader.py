@@ -38,7 +38,7 @@ class WikiDumpReader:
 
 
 def _extract_pages(dump_file: str) -> Iterator[Tuple[str, str, str]]:
-    with bz2.open(dump_file, "rt") as f:
+    with bz2.open(dump_file, "rt", encoding="utf-8") as f:
         context = iterparse(f, events=("end",))
         for _, elem in context:
             if not elem.tag.endswith("page"):
