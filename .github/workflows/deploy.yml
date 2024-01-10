@@ -15,8 +15,63 @@ jobs:
     name: Build wheels on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-22.04, windows-2022, macos-11]
+        include:
+          - os: windows-latest
+            python: 38
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 39
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 310
+            platform_id: win_amd64
+          - os: windows-latest
+            python: 311
+            platform_id: win_amd64
+
+          - os: ubuntu-latest
+            python: 38
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 39
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 310
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+          - os: ubuntu-latest
+            python: 311
+            platform_id: manylinux_x86_64
+            manylinux_image: manylinux2014
+
+          - os: macos-latest
+            python: 38
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 310
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 311
+            platform_id: macosx_x86_64
+          - os: macos-latest
+            python: 38
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 39
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 310
+            platform_id: macosx_arm64
+          - os: macos-latest
+            python: 311
+            platform_id: macosx_arm64
 
     steps:
       - uses: actions/checkout@v4
