@@ -1,6 +1,6 @@
-import cython
-
 from typing import Tuple
+
+import cython
 
 
 @cython.cclass

@@ -1,6 +1,6 @@
 from typing import List
 
-from icu import Locale, BreakIterator
+from icu import BreakIterator, Locale
 
 from .base_sentence_detector import BaseSentenceDetector
 from .sentence import Sentence

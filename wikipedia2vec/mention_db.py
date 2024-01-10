@@ -1,16 +1,15 @@
 import logging
-import pkg_resources
 import time
-from collections import defaultdict, Counter
+from collections import Counter, defaultdict
 from contextlib import closing
 from functools import partial
 from multiprocessing.pool import Pool
-from typing import FrozenSet, Iterator, List, Optional, Tuple, Union
+from typing import FrozenSet, Iterator, List, Tuple, Union
 from uuid import uuid1
 
 import cython
 import joblib
-from marisa_trie import Trie, RecordTrie
+from marisa_trie import RecordTrie, Trie
 from tqdm import tqdm
 
 from .dictionary import Dictionary, Entity
@@ -213,7 +212,6 @@ class MentionDB:
             dump_db=dump_db.uuid,
             dictionary=dictionary.uuid,
             build_time=time.time() - start_time,
-            version=pkg_resources.get_distribution("wikipedia2vec").version,
         )
 
         return MentionDB(mention_trie, data_trie, dictionary, case_sensitive, max_mention_len, build_params, uuid)

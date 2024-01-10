@@ -4,8 +4,10 @@ import math
 import random
 import re
 import time
+from collections import defaultdict
 from contextlib import closing
 from functools import partial
+from itertools import islice
 from multiprocessing import RawArray
 from multiprocessing.pool import Pool
 from typing import Any, Iterable, List, NamedTuple, Optional, Tuple
@@ -13,12 +15,11 @@ from typing import Any, Iterable, List, NamedTuple, Optional, Tuple
 import cython
 import joblib
 import numpy as np
-from collections import defaultdict
-from itertools import islice
-from marisa_trie import Trie, RecordTrie
+from marisa_trie import RecordTrie, Trie
 from tqdm import tqdm
-from cython.cimports.libcpp.random import mt19937
-from cython.cimports.scipy.linalg.cython_blas import saxpy, sdot
+
+from cython.cimports.libcpp.random cimport mt19937
+from cython.cimports.scipy.linalg.cython_blas cimport saxpy, sdot
 
 from .dictionary import Dictionary
 from .dump_db import DumpDB
@@ -26,11 +27,12 @@ from .link_graph import LinkGraph
 from .mention_db import MentionDB
 from .utils.sentence_detector.base_sentence_detector import BaseSentenceDetector
 from .utils.tokenizer.base_tokenizer import BaseTokenizer
-from cython.cimports.wikipedia2vec.dictionary import Item, Word
-from cython.cimports.wikipedia2vec.dump_db import Paragraph, WikiLink
-from cython.cimports.wikipedia2vec.mention_db import Mention
-from cython.cimports.wikipedia2vec.utils.tokenizer.token import Token
-from cython.cimports.wikipedia2vec.utils.sentence_detector.sentence import Sentence
+
+from cython.cimports.wikipedia2vec.dictionary cimport Item, Word
+from cython.cimports.wikipedia2vec.dump_db cimport Paragraph, WikiLink
+from cython.cimports.wikipedia2vec.mention_db cimport Mention
+from cython.cimports.wikipedia2vec.utils.sentence_detector.sentence cimport Sentence
+from cython.cimports.wikipedia2vec.utils.tokenizer.token cimport Token
 
 MAX_EXP = cython.declare(cython.float, 6.0)
 EXP_TABLE_SIZE = cython.declare(cython.int, 1000)

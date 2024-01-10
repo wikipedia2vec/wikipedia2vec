@@ -1,7 +1,7 @@
 import re
 from typing import List, Tuple
 
-from icu import Locale, BreakIterator
+from icu import BreakIterator, Locale
 
 from .base_tokenizer import BaseTokenizer
 

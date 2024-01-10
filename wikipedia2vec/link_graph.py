@@ -5,7 +5,7 @@ from contextlib import closing
 from functools import partial
 from itertools import chain
 from multiprocessing.pool import Pool
-from typing import Optional, List, Tuple, Union
+from typing import List, Optional, Tuple, Union
 from uuid import uuid1
 
 import joblib

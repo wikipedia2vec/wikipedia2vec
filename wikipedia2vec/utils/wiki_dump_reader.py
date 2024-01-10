@@ -2,7 +2,6 @@ import bz2
 import logging
 import re
 from typing import Iterator, Tuple
-
 from xml.etree.ElementTree import iterparse
 
 from .utils import normalize_title

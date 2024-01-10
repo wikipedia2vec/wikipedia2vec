@@ -12,7 +12,7 @@ from uuid import uuid1
 import cython
 import joblib
 import numpy as np
-from marisa_trie import Trie, RecordTrie
+from marisa_trie import RecordTrie, Trie
 from tqdm import tqdm
 
 from .dump_db import DumpDB
