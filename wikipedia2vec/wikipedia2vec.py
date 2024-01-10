@@ -268,8 +268,8 @@ class Wikipedia2Vec:
 
         vocab_size = len(self.dictionary)
 
-        syn0_arr = (np.random.rand(vocab_size * dim_size).astype(np.float32) - 0.5) / dim_size
-        syn1_arr = np.zeros(vocab_size * dim_size, dtype=np.float32)
+        syn0_arr = (np.random.rand(vocab_size, dim_size).astype(np.float32) - 0.5) / dim_size
+        syn1_arr = np.zeros((vocab_size, dim_size), dtype=np.float32)
 
         init_args = (
             dump_db,
@@ -533,7 +533,6 @@ def _init_worker(
     sent_char_positions=cython.int[:],
     sent_token_positions=cython.int[:],
     neighbor_entity_indices=cython.int[:],
-    link_char_flags=cython.int[:],
 )
 def _train_page(
     arg: Tuple[int, str, float],
