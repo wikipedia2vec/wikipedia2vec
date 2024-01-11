@@ -3,14 +3,15 @@ site_description: Wikipedia2Vec is a tool used for obtaining embeddings (vector 
 repo_url: https://github.com/wikipedia2vec/wikipedia2vec
 edit_uri: ""
 site_author: Studio Ousia
-pages:
+nav:
     - Home: index.md
     - Introduction: intro.md
     - User Guide:
         - Installation: install.md
         - Learning Embeddings: commands.md
         - API Usage: usage.md
-    - Pretrained Embeddings: pretrained.md
+    - Embeddings: pretrained.md
+    - Demo: "https://wikipedia2vec.github.io/demo/"
 extra_css:
     - css/extra.css
 theme:
@@ -18,4 +19,4 @@ theme:
     custom_dir: docs/custom_theme
 markdown_extensions:
     - toc:
-        permalink: 
+        permalink: "#"
