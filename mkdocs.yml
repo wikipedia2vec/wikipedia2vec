@@ -10,7 +10,7 @@ nav:
         - Installation: install.md
         - Learning Embeddings: commands.md
         - API Usage: usage.md
-    - Embeddings: pretrained.md
+    - Pretrained Embeddings: pretrained.md
     - Demo: "https://wikipedia2vec.github.io/demo/"
 extra_css:
     - css/extra.css
