@@ -10,126 +10,141 @@
         <link rel="shortcut icon" href="../img/favicon.ico">
         <title>Learning Embeddings - Wikipedia2Vec</title>
         
-        <link href="../css/bootstrap-custom.min.css" rel="stylesheet">
-        <link href="../css/font-awesome-4.5.0.css" rel="stylesheet">
+        <link href="../css/bootstrap.min.css" rel="stylesheet">
+        <link href="../css/font-awesome.min.css" rel="stylesheet">
         <link href="../css/base.css" rel="stylesheet">
-        <link rel="stylesheet" href="../css/highlight.css">
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/styles/github.min.css">
         <link href="../css/extra.css" rel="stylesheet">
         <link href="https://fonts.googleapis.com/css?family=Raleway:400,500" rel="stylesheet">
 
-        <!-- HTML5 shim and Respond.js IE8 support of HTML5 elements and media queries -->
-        <!--[if lt IE 9]>
-            <script src="https://oss.maxcdn.com/libs/html5shiv/3.7.0/html5shiv.js"></script>
-            <script src="https://oss.maxcdn.com/libs/respond.js/1.3.0/respond.min.js"></script>
-        <![endif]-->
-
-        <script src="../js/jquery-1.10.2.min.js"></script>
-        <script src="../js/bootstrap-3.0.3.min.js"></script>
-        <script src="../js/highlight.pack.js"></script> 
+        <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.8.0/highlight.min.js"></script>
+        <script>hljs.highlightAll();</script> 
     </head>
 
     <body>
+        <div class="navbar fixed-top navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="..">Wikipedia2Vec</a>
+                <!-- Expander button -->
+                <button type="button" class="navbar-toggler" data-toggle="collapse" data-target="#navbar-collapse">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
 
-        <div class="navbar navbar-default navbar-fixed-top" role="navigation">
-    <div class="container">
-
-        <!-- Collapsed navigation -->
-        <div class="navbar-header">
-            <!-- Expander button -->
-            <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
-                <span class="sr-only">Toggle navigation</span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-                <span class="icon-bar"></span>
-            </button>
-            <a class="navbar-brand" href="..">Wikipedia2Vec</a>
-        </div>
-
-        <!-- Expanded navigation -->
-        <div class="navbar-collapse collapse">
-                <!-- Main navigation -->
-                <ul class="nav navbar-nav">
-                    <li >
-                        <a href="..">Home</a>
-                    </li>
-                    <li >
-                        <a href="../intro/">Introduction</a>
-                    </li>
-                    <li class="dropdown active">
-                        <a href="#" class="dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
-                        <ul class="dropdown-menu">
-                            
-<li >
-    <a href="../install/">Installation</a>
+                <!-- Expanded navigation -->
+                <div id="navbar-collapse" class="navbar-collapse collapse">
+                        <!-- Main navigation -->
+                        <ul class="nav navbar-nav">
+                            <li class="navitem">
+                                <a href=".." class="nav-link">Home</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="../intro/" class="nav-link">Introduction</a>
+                            </li>
+                            <li class="dropdown active">
+                                <a href="#" class="nav-link dropdown-toggle" data-toggle="dropdown">User Guide <b class="caret"></b></a>
+                                <ul class="dropdown-menu">
+                                    
+<li>
+    <a href="../install/" class="dropdown-item">Installation</a>
 </li>
-                            
-<li class="active">
-    <a href="./">Learning Embeddings</a>
+                                    
+<li>
+    <a href="./" class="dropdown-item active">Learning Embeddings</a>
 </li>
-                            
-<li >
-    <a href="../usage/">API Usage</a>
+                                    
+<li>
+    <a href="../usage/" class="dropdown-item">API Usage</a>
 </li>
+                                </ul>
+                            </li>
+                            <li class="navitem">
+                                <a href="../pretrained/" class="nav-link">Embeddings</a>
+                            </li>
+                            <li class="navitem">
+                                <a href="https://wikipedia2vec.github.io/demo/" class="nav-link">Demo</a>
+                            </li>
                         </ul>
-                    </li>
-                    <li >
-                        <a href="../pretrained/">Pretrained Embeddings</a>
-                    </li>
-                    <li>
-                      <a href="https://wikipedia2vec.github.io/demo/" target="_blank">Demonstration</a>
-                    </li>
-                </ul>
 
-            <ul class="nav navbar-nav navbar-right">
-                <li>
-                    <a href="#" data-toggle="modal" data-target="#mkdocs_search_modal">
-                        <i class="fa fa-search"></i> Search
-                    </a>
-                </li>
-                    <li >
-                        <a rel="next" href="../install/">
-                            <i class="fa fa-arrow-left"></i> Previous
-                        </a>
-                    </li>
-                    <li >
-                        <a rel="prev" href="../usage/">
-                            Next <i class="fa fa-arrow-right"></i>
-                        </a>
-                    </li>
-                    <li>
-                        <a href="https://github.com/wikipedia2vec/wikipedia2vec"><i class="fa fa-github"></i> GitHub</a>
-                    </li>
-            </ul>
+                    <ul class="nav navbar-nav ml-auto">
+                        <li class="nav-item">
+                            <a href="#" class="nav-link" data-toggle="modal" data-target="#mkdocs_search_modal">
+                                <i class="fa fa-search"></i> Search
+                            </a>
+                        </li>
+                            <li class="nav-item">
+                                <a rel="prev" href="../install/" class="nav-link">
+                                    <i class="fa fa-arrow-left"></i> Previous
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a rel="next" href="../usage/" class="nav-link">
+                                    Next <i class="fa fa-arrow-right"></i>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a href="https://github.com/wikipedia2vec/wikipedia2vec" class="nav-link"><i class="fa fa-github"></i> GitHub</a>
+                            </li>
+                    </ul>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <div class="container">
-                <div class="col-md-3"><div class="bs-sidebar hidden-print affix well" role="complementary">
-    <ul class="nav bs-sidenav">
-        <li class="main active"><a href="#learning-embeddings">Learning Embeddings</a></li>
-            <li><a href="#building-dump-database">Building Dump Database</a></li>
-            <li><a href="#building-dictionary">Building Dictionary</a></li>
-            <li><a href="#building-link-graph-optional">Building Link Graph (Optional)</a></li>
-            <li><a href="#building-mention-db-optional">Building Mention DB (Optional)</a></li>
-            <li><a href="#learning-embeddings_1">Learning Embeddings</a></li>
-            <li><a href="#saving-embeddings-in-text-format">Saving Embeddings in Text Format</a></li>
-    </ul>
-</div></div>
-                <div class="col-md-9" role="main">
+            <div class="row">
+                    <div class="col-md-3"><div class="navbar-light navbar-expand-md bs-sidebar hidden-print affix" role="complementary">
+    <div class="navbar-header">
+        <button type="button" class="navbar-toggler collapsed" data-toggle="collapse" data-target="#toc-collapse" title="Table of Contents">
+            <span class="fa fa-angle-down"></span>
+        </button>
+    </div>
 
-<h1 id="learning-embeddings">Learning Embeddings<a class="headerlink" href="#learning-embeddings" title="Permanent link"></a></h1>
+    
+    <div id="toc-collapse" class="navbar-collapse collapse card bg-secondary">
+        <ul class="nav flex-column">
+            
+            <li class="nav-item" data-level="1"><a href="#learning-embeddings" class="nav-link">Learning Embeddings</a>
+              <ul class="nav flex-column">
+            <li class="nav-item" data-level="2"><a href="#building-dump-database" class="nav-link">Building Dump Database</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#building-dictionary" class="nav-link">Building Dictionary</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#building-link-graph-optional" class="nav-link">Building Link Graph (Optional)</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#building-mention-db-optional" class="nav-link">Building Mention DB (Optional)</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#learning-embeddings_1" class="nav-link">Learning Embeddings</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+            <li class="nav-item" data-level="2"><a href="#saving-embeddings-in-text-format" class="nav-link">Saving Embeddings in Text Format</a>
+              <ul class="nav flex-column">
+              </ul>
+            </li>
+              </ul>
+            </li>
+        </ul>
+    </div>
+</div></div>
+                    <div class="col-md-9" role="main">
+
+<h1 id="learning-embeddings">Learning Embeddings<a class="headerlink" href="#learning-embeddings" title="Permanent link">#</a></h1>
 <hr />
 <p>First, you need to download a source Wikipedia dump file (e.g., enwiki-latest-pages-articles.xml.bz2) from <a href="https://dumps.wikimedia.org/">Wikimedia Downloads</a>.
 The English dump file can be obtained by running the following command.</p>
-<pre><code class="text">% wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
+<pre><code class="language-text">% wget https://dumps.wikimedia.org/enwiki/latest/enwiki-latest-pages-articles.xml.bz2
 </code></pre>
-
 <p>Note that you do not need to decompress the dump file.</p>
 <p>Then, the embeddings can be trained from a Wikipedia dump using the <em>train</em> command.</p>
-<pre><code class="text">% wikipedia2vec train DUMP_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec train DUMP_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>DUMP_FILE</em>: The Wikipedia dump file</li>
@@ -164,11 +179,10 @@ The English dump file can be obtained by running the following command.</p>
 </ul>
 <p>The <em>train</em> command internally calls the five commands described below (namely, <em>build-dump-db</em>, <em>build-dictionary</em>, <em>build-link-graph</em>, <em>build-mention-db</em>, and <em>train-embedding</em>).
 Further, the learned model file can be converted to a text file compatible with the format of <a href="https://code.google.com/archive/p/word2vec/">Word2vec</a> and <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> using the <a href="#saving-embeddings-in-text-format">save-text</a> command.</p>
-<h2 id="building-dump-database">Building Dump Database<a class="headerlink" href="#building-dump-database" title="Permanent link"></a></h2>
+<h2 id="building-dump-database">Building Dump Database<a class="headerlink" href="#building-dump-database" title="Permanent link">#</a></h2>
 <p>The <em>build-dump-db</em> command creates a database that contains Wikipedia pages each of which consists of texts and anchor links in it.</p>
-<pre><code class="text">% wikipedia2vec build-dump-db DUMP_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec build-dump-db DUMP_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>DUMP_FILE</em>: The Wikipedia dump file</li>
@@ -178,11 +192,10 @@ Further, the learned model file can be converted to a text file compatible with 
 <ul>
 <li><em>--pool-size</em>: The number of worker processes (default: the number of CPUs)</li>
 </ul>
-<h2 id="building-dictionary">Building Dictionary<a class="headerlink" href="#building-dictionary" title="Permanent link"></a></h2>
+<h2 id="building-dictionary">Building Dictionary<a class="headerlink" href="#building-dictionary" title="Permanent link">#</a></h2>
 <p>The <em>build-dictionary</em> command builds a dictionary of words and entities.</p>
-<pre><code class="text">% wikipedia2vec build-dictionary DUMP_DB_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec build-dictionary DUMP_DB_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>DUMP_DB_FILE</em>: The database file generated using the <em>build-dump-db</em> command</li>
@@ -199,11 +212,10 @@ Further, the learned model file can be converted to a text file compatible with 
 <li><em>--disambi/--no-disambi</em>: Whether to include disambiguation entities in the dictionary (default:False)</li>
 <li><em>--pool-size</em>: The number of worker processes (default: the number of CPUs)</li>
 </ul>
-<h2 id="building-link-graph-optional">Building Link Graph (Optional)<a class="headerlink" href="#building-link-graph-optional" title="Permanent link"></a></h2>
+<h2 id="building-link-graph-optional">Building Link Graph (Optional)<a class="headerlink" href="#building-link-graph-optional" title="Permanent link">#</a></h2>
 <p>The <em>build-link-graph</em> command generates a sparse matrix representing the link structure between Wikipedia entities.</p>
-<pre><code class="text">% wikipedia2vec build-link-graph DUMP_DB_FILE DIC_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec build-link-graph DUMP_DB_FILE DIC_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>DUMP_DB_FILE</em>: The database file generated using the <em>build-dump-db</em> command</li>
@@ -214,11 +226,10 @@ Further, the learned model file can be converted to a text file compatible with 
 <ul>
 <li><em>--pool-size</em>: The number of worker processes (default: the number of CPUs)</li>
 </ul>
-<h2 id="building-mention-db-optional">Building Mention DB (Optional)<a class="headerlink" href="#building-mention-db-optional" title="Permanent link"></a></h2>
+<h2 id="building-mention-db-optional">Building Mention DB (Optional)<a class="headerlink" href="#building-mention-db-optional" title="Permanent link">#</a></h2>
 <p>The <em>build-mention-db</em> command builds a database that contains the mappings of entity names (mentions) and their possible referent entities.</p>
-<pre><code class="text">% wikipedia2vec build-mention-db DUMP_DB_FILE DIC_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec build-mention-db DUMP_DB_FILE DIC_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>DUMP_DB_FILE</em>: The database file generated using the <em>build-dump-db</em> command</li>
@@ -234,11 +245,10 @@ Further, the learned model file can be converted to a text file compatible with 
 <li><em>--tokenizer</em>: The name of the tokenizer used to tokenize a text into words. Possible choices are <em>regexp</em>, <em>icu</em>, <em>mecab</em>, and <em>jieba</em></li>
 <li><em>--pool-size</em>: The number of worker processes (default: the number of CPUs)</li>
 </ul>
-<h2 id="learning-embeddings_1">Learning Embeddings<a class="headerlink" href="#learning-embeddings_1" title="Permanent link"></a></h2>
+<h2 id="learning-embeddings_1">Learning Embeddings<a class="headerlink" href="#learning-embeddings_1" title="Permanent link">#</a></h2>
 <p>The <em>train-embedding</em> command runs the training of the embeddings.</p>
-<pre><code class="text">% wikipedia2vec train-embedding DUMP_DB_FILE DIC_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec train-embedding DUMP_DB_FILE DIC_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>DUMP_DB_FILE</em>: The database file generated using the <em>build-dump-db</em> command</li>
@@ -263,11 +273,10 @@ Further, the learned model file can be converted to a text file compatible with 
 <li><em>--entity-neg-power</em>: Negative sampling of entities is performed based on the probability proportional to the frequency raised to the power specified by this option (default: 0)</li>
 <li><em>--pool-size</em>: The number of worker processes (default: the number of CPUs)</li>
 </ul>
-<h2 id="saving-embeddings-in-text-format">Saving Embeddings in Text Format<a class="headerlink" href="#saving-embeddings-in-text-format" title="Permanent link"></a></h2>
+<h2 id="saving-embeddings-in-text-format">Saving Embeddings in Text Format<a class="headerlink" href="#saving-embeddings-in-text-format" title="Permanent link">#</a></h2>
 <p><em>save-text</em> outputs a model in a text format.</p>
-<pre><code class="text">% wikipedia2vec save-text MODEL_FILE OUT_FILE
+<pre><code class="language-text">% wikipedia2vec save-text MODEL_FILE OUT_FILE
 </code></pre>
-
 <p><strong>Arguments:</strong></p>
 <ul>
 <li><em>MODEL_FILE</em>: The model file generated by the <em>train-embedding</em> command</li>
@@ -277,49 +286,51 @@ Further, the learned model file can be converted to a text file compatible with 
 <ul>
 <li><em>--out-format</em>: The output format. Possible values are <em>default</em>, <em>word2vec</em>, and <em>glove</em>. If <em>word2vec</em> and <em>glove</em> are specified, the format adopted by <a href="https://code.google.com/archive/p/word2vec/">Word2Vec</a> and <a href="https://nlp.stanford.edu/projects/glove/">GloVe</a> are used, respectively.</li>
 </ul></div>
+            </div>
         </div>
 
         <footer class="col-md-12">
             <hr>
-            <p>Documentation built with <a href="http://www.mkdocs.org/">MkDocs</a>.</p>
+            <p>Documentation built with <a href="https://www.mkdocs.org/">MkDocs</a>.</p>
         </footer>
         <script src="https://buttons.github.io/buttons.js"></script>
         
-        <script>var base_url = '..';</script>
+        <script src="../js/jquery-3.6.0.min.js"></script>
+        <script src="../js/bootstrap.min.js"></script>
+        <script>
+            var base_url = "..",
+                shortcuts = {"help": 191, "next": 78, "previous": 80, "search": 83};
+        </script>
         <script src="../js/base.js"></script>
-        <script src="../search/require.js"></script>
-        <script src="../search/search.js"></script>
+        <script src="../search/main.js"></script>
 
 
-        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="Search Modal" aria-hidden="true">
-    <div class="modal-dialog">
+        <div class="modal" id="mkdocs_search_modal" tabindex="-1" role="dialog" aria-labelledby="searchModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="searchModalLabel">Search</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Search</h4>
             </div>
             <div class="modal-body">
-                <p>
-                    From here you can search these documents. Enter
-                    your search terms below.
-                </p>
-                <form role="form">
+                <p>From here you can search these documents. Enter your search terms below.</p>
+                <form>
                     <div class="form-group">
-                        <input type="text" class="form-control" placeholder="Search..." id="mkdocs-search-query">
+                        <input type="search" class="form-control" placeholder="Search..." id="mkdocs-search-query" title="Type search term here">
                     </div>
                 </form>
-                <div id="mkdocs-search-results"></div>
+                <div id="mkdocs-search-results" data-no-results-text="No results found"></div>
             </div>
             <div class="modal-footer">
             </div>
         </div>
     </div>
-</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="Keyboard Shortcuts Modal" aria-hidden="true">
+</div><div class="modal" id="mkdocs_keyboard_modal" tabindex="-1" role="dialog" aria-labelledby="keyboardModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
             <div class="modal-header">
+                <h4 class="modal-title" id="keyboardModalLabel">Keyboard Shortcuts</h4>
                 <button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
-                <h4 class="modal-title" id="exampleModalLabel">Keyboard Shortcuts</h4>
             </div>
             <div class="modal-body">
               <table class="table">
@@ -331,19 +342,19 @@ Further, the learned model file can be converted to a text file compatible with 
                 </thead>
                 <tbody>
                   <tr>
-                    <td><kbd>?</kbd></td>
+                    <td class="help shortcut"><kbd>?</kbd></td>
                     <td>Open this help</td>
                   </tr>
                   <tr>
-                    <td><kbd>&larr;</kbd></td>
-                    <td>Previous page</td>
-                  </tr>
-                  <tr>
-                    <td><kbd>&rarr;</kbd></td>
+                    <td class="next shortcut"><kbd>n</kbd></td>
                     <td>Next page</td>
                   </tr>
                   <tr>
-                    <td><kbd>s</kbd></td>
+                    <td class="prev shortcut"><kbd>p</kbd></td>
+                    <td>Previous page</td>
+                  </tr>
+                  <tr>
+                    <td class="search shortcut"><kbd>s</kbd></td>
                     <td>Search</td>
                   </tr>
                 </tbody>
@@ -354,7 +365,6 @@ Further, the learned model file can be converted to a text file compatible with 
         </div>
     </div>
 </div>
-
 
     </body>
 </html>
